@@ -1,0 +1,39 @@
+# Cursor Rules for AI Medical Agent Project
+
+## Project Context
+Refer to `docs/project_context.md` for comprehensive project overview, tech stack, development phases, and architecture details.
+
+## Key Guidelines
+
+### Tech Stack Adherence
+- Backend: Use NestJS with Fastify adapter (not Express)
+- Database: MongoDB with vector search capabilities
+- AI: OpenAI or Gemini for medical recommendations
+- Frontend: Next.js with Capacitor for mobile apps
+
+### Code Style
+- Follow NestJS best practices and conventions
+- Use TypeScript for type safety
+- Implement proper error handling and validation
+- Write unit tests, especially for AI agent logic
+
+### Development Phases
+- Follow the 6-phase development plan outlined in `docs/project_context.md`
+- Ensure each phase is completed before moving to the next
+- Maintain clean architecture and separation of concerns
+
+### Medical Data Handling
+- Ensure proper data normalization for patient information
+- Implement secure authentication and authorization
+- Handle PDF ingestion for medical documents
+- Maintain patient data privacy and security standards
+
+### AI Agent Considerations
+- System prompts should include clear rules, language guidelines, and limits
+- Support external context injection for specialized medical areas
+- Implement orchestrator pattern for daily recommendation generation
+- Ensure recommendations are non-critical alerts only
+
+## File References
+- Project context: `docs/project_context.md`
+- Initial thoughts: `docs/initial_thoughts.md`

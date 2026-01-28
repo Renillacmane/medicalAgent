@@ -1,0 +1,63 @@
+name: Health Check
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+  # Optional: Schedule for periodic checks (uncomment if needed)
+  # schedule:
+  #   - cron: '*/30 * * * *'  # Every 30 minutes
+
+env:
+  BE_URL: ${{ secrets.BE_URL || 'https://yourdomain.com' }}
+
+jobs:
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    
+    steps:
+      - name: Backend health check
+        id: backend-health-check
+        run: |
+          echo "🏥 Performing health check..."
+          sleep 15
+          
+          BE_URL="${{ env.BE_URL }}"
+          if [ -z "$BE_URL" ] || [ "$BE_URL" = "https://yourdomain.com" ]; then
+            echo "⚠️ BE_URL not set, skipping health check"
+            exit 0
+          fi
+          
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            http_code=$(curl -s -w "%{http_code}" -o /dev/null "$BE_URL/health")
+            
+            if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+              echo "✅ Health check passed (HTTP $http_code)"
+              exit 0
+            fi
+            
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "⏳ Health check failed with HTTP $http_code, retrying ($RETRY_COUNT/$MAX_RETRIES)..."
+            sleep 10
+          done
+          
+          echo "❌ Health check failed after $MAX_RETRIES attempts"
+          exit 1
+        continue-on-error: false
+      
+      - name: Health check summary
+        if: always()
+        run: |
+          echo "## 🏥 Health Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Item | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend Health Check | ${{ steps.backend-health-check.outcome }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 Backend URL: ${{ env.BE_URL || 'Not configured' }}" >> $GITHUB_STEP_SUMMARY
+          echo "📡 Backend Health Endpoint: \`${{ env.BE_URL || 'Not configured' }}/health\`" >> $GITHUB_STEP_SUMMARY

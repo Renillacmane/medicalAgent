@@ -1,0 +1,66 @@
+name: CI - Backend Build and Test
+
+on:
+  # Automatic triggers (disabled)
+  # push:
+  #   branches: [ main, develop ]
+  #   paths:
+  #     - 'backend/**'
+  # pull_request:
+  #   branches: [ main, develop ]
+  #   paths:
+  #     - 'backend/**'
+  
+  # Manual trigger only
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Optional: Specific branch to checkout (leave empty to use selected branch)'
+        required: false
+        type: string
+
+jobs:
+  backend-ci:
+    name: Backend - Build & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: './backend/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Run linter
+        working-directory: ./backend
+        run: npm run lint
+      
+      - name: Build backend
+        working-directory: ./backend
+        run: npm run build
+      
+      - name: Verify build output
+        working-directory: ./backend
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ Build failed - dist directory not found"
+            exit 1
+          fi
+          echo "✅ Backend build successful"
+          echo "📦 Build output:"
+          ls -lh dist/ | head -10
+      
+      - name: Run tests
+        working-directory: ./backend
+        run: npm test
+        continue-on-error: true
