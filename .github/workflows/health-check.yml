@@ -9,6 +9,7 @@ on:
 
 env:
   BE_URL: ${{ secrets.BE_URL || 'https://yourdomain.com' }}
+  FE_URL: ${{ secrets.FE_URL || 'https://yourdomain.com' }}
 
 jobs:
   health-check:
@@ -50,6 +51,38 @@ jobs:
           exit 1
         continue-on-error: false
       
+      - name: Frontend health check
+        id: frontend-health-check
+        run: |
+          echo "🏥 Performing frontend health check..."
+          sleep 15
+          
+          FE_URL="${{ env.FE_URL }}"
+          if [ -z "$FE_URL" ] || [ "$FE_URL" = "https://yourdomain.com" ]; then
+            echo "⚠️ FE_URL not set, skipping frontend health check"
+            exit 0
+          fi
+          
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            http_code=$(curl -s -w "%{http_code}" -o /dev/null "$FE_URL")
+            
+            if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+              echo "✅ Frontend health check passed (HTTP $http_code)"
+              exit 0
+            fi
+            
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "⏳ Frontend health check failed with HTTP $http_code, retrying ($RETRY_COUNT/$MAX_RETRIES)..."
+            sleep 10
+          done
+          
+          echo "❌ Frontend health check failed after $MAX_RETRIES attempts"
+          exit 1
+        continue-on-error: false
+      
       - name: Health check summary
         if: always()
         run: |
@@ -58,6 +91,10 @@ jobs:
           echo "| Item | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Backend Health Check | ${{ steps.backend-health-check.outcome }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend Health Check | ${{ steps.frontend-health-check.outcome }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "🔗 Backend URL: ${{ env.BE_URL || 'Not configured' }}" >> $GITHUB_STEP_SUMMARY
           echo "📡 Backend Health Endpoint: \`${{ env.BE_URL || 'Not configured' }}/health\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 Frontend URL: ${{ env.FE_URL || 'Not configured' }}" >> $GITHUB_STEP_SUMMARY
+          echo "📡 Frontend Endpoint: \`${{ env.FE_URL || 'Not configured' }}\`" >> $GITHUB_STEP_SUMMARY
