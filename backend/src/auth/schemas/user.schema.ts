@@ -3,6 +3,17 @@ import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
+export class UserObjectives {
+  body?: string[];
+  health?: string[];
+  mind?: string[];
+}
+
+export class UserDietaryPreference {
+  type?: string;
+  restrictions?: string[];
+}
+
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
   @Prop({ required: true, trim: true })
@@ -22,6 +33,18 @@ export class User {
 
   @Prop({ default: true })
   isActive: boolean;
+
+  @Prop()
+  height?: number; // cm
+
+  @Prop()
+  weight?: number; // kg
+
+  @Prop({ type: Object })
+  dietaryPreference?: UserDietaryPreference;
+
+  @Prop({ type: Object })
+  objectives?: UserObjectives;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
