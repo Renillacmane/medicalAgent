@@ -25,6 +25,13 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Environment variables
+
+For auth to work, set in `.env` (see `.env.example` for a template):
+
+- `JWT_SECRET` – Secret used to sign JWTs (use a long random string in production).
+- `JWT_EXPIRES` – Token lifetime (e.g. `1h`, `7d`). Defaults to `1h` if unset.
+
 ## Project setup
 
 ```bash
