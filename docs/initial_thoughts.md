@@ -18,7 +18,9 @@ Backend:
 Frontend:
  Next.js
  Capacitor
+
 Plano
+
 1ª Fase - Setup inicial backend
 	•	Setup NestJS
 	•	Setup DB
@@ -53,3 +55,6 @@ Plano
 6ª fase
 	•	Bug fixes
 	•	Testes
+
+- Caching
+- Talvez vector search para medications

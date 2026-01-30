@@ -87,3 +87,9 @@
 - Vector search capabilities for semantic medical context retrieval
 - Multi-platform frontend (web PWA + native mobile apps)
 - Widget-based integration for external platforms
+
+### Frontend routing and layout
+
+- **PWA / full app**: Uses **Next.js routes** with real URLs (`/dashboard`, `/add`, `/profile`). The shared layout (header “Healthia”, footer “About Healthia”, bottom nav) is in `components/layout/` and composed by `AppShell`; `app/(app)/layout.tsx` wraps app pages with it.
+- **Widget** (floating panel): The widget is a **shell only** (rectangle + close button + iframe). The iframe loads the **full app** at `/dashboard`, so the same layout and routes run inside the iframe. One code path; no duplicate chrome or nav.
+- **Component structure**: Layout pieces live under `components/layout/` (Header, Footer, AppNav, AboutModal, AppShell, nav-config) and are reusable. Page content lives under `components/views/` (DashboardView, AddView, ProfileView). Names are layout-agnostic so they can be used by any layout (PWA, widget iframe, etc.).

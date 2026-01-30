@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-const API_URL = process.env.API_URL || "http://localhost:3911";
+import { apiUrl } from "@/lib/config";
 
 type Props = { onSuccess?: () => void };
 
@@ -17,7 +16,7 @@ export default function LoginForm({ onSuccess }: Props) {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
+      const res = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -27,7 +26,6 @@ export default function LoginForm({ onSuccess }: Props) {
         setError(data.message || "Login failed");
         return;
       }
-      // Store token for later use (e.g. Authorization header)
       if (data.access_token) {
         typeof window !== "undefined" && localStorage.setItem("access_token", data.access_token);
       }
@@ -42,11 +40,11 @@ export default function LoginForm({ onSuccess }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <label htmlFor="widget-email" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="login-email" className="mb-1 block text-sm font-medium text-slate-700">
           Email
         </label>
         <input
-          id="widget-email"
+          id="login-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -57,11 +55,11 @@ export default function LoginForm({ onSuccess }: Props) {
         />
       </div>
       <div>
-        <label htmlFor="widget-password" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="login-password" className="mb-1 block text-sm font-medium text-slate-700">
           Password
         </label>
         <input
-          id="widget-password"
+          id="login-password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
