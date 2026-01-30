@@ -35,20 +35,53 @@ frontend/src/
 │   │   ├── AboutModal.tsx
 │   │   ├── AppShell.tsx    # Composes header, main, footer, nav, modal
 │   │   └── nav-config.tsx
+│   ├── ui/                 # Shared primitives (loading, fields)
+│   │   ├── Spinner.tsx     # Loading spinner
+│   │   ├── PageLoading.tsx # Spinner + optional message (used in pages and loading.tsx)
+│   │   └── Field.tsx       # Definition-list field (profile, etc.)
+│   ├── add/
+│   │   └── AddVitalsForm.tsx
 │   ├── Dashboard.tsx       # Page-level content components
 │   ├── Add.tsx
 │   ├── Profile.tsx
 │   └── Widget.tsx          # Floating shell + iframe (one layout option)
 ├── pages/                  # Page-level forms / screens (not routes)
 │   └── LoginForm.tsx       # (RegisterForm, etc. later)
+├── types/                  # Shared TypeScript types (API responses, payloads)
+│   ├── vital.ts            # Vital, BloodPressure, CreateVitalPayload
+│   └── profile.ts           # PatientProfile, DietaryPreference, Objectives
 └── lib/
-    └── config.ts           # Env-based config (e.g. API_URL)
+    ├── config.ts           # Env-based config (e.g. API_URL)
+    ├── api.ts              # Auth-backed fetch (authGet, authPost)
+    ├── format.ts           # formatDate, todayISO (generic display helpers)
+    └── vital-format.ts     # formatBP (vital-specific formatters)
 ```
 
 - **`app/`** – Routes and layouts. `(app)` is a route group: its layout wraps `/dashboard`, `/add`, `/profile` with the shared shell.
 - **`components/`** – Reusable components. `layout/` holds the app chrome; `Dashboard`, `Add`, `Profile` are content used by the app pages. `Widget` is one way to present the app (floating iframe).
 - **`pages/`** – Form/screen components that represent full “pages” in the UI (e.g. LoginForm, RegisterForm). They are used by route pages or modals, not by the router directly.
-- **`lib/`** – Shared utilities and config.
+- **`lib/`** – Shared utilities and config (`config.ts`, `api.ts` for auth-backed fetch).
+
+---
+
+## Data fetching and Next.js App Router
+
+- **Pages** under `(app)/` are **Server Components** by default; they import Client Components (`Dashboard`, `Add`, `Profile`) that need interactivity or client-only state.
+- **Auth** is token-based and stored in `localStorage` (client-only), so the server cannot send authenticated requests. Data fetching for profile and vitals is done in **Client Components** via `useEffect` and `lib/api.ts` (`authGet` / `authPost`).
+- **Next.js patterns in use**:
+  - **`loading.tsx`** – Route-level loading UI for `(app)`, `dashboard`, and `profile`. Each file imports the shared **`PageLoading`** component (spinner + message) so route-level and in-page loading look the same and there’s no duplicate markup.
+  - **`error.tsx`** – Error boundary for the `(app)` group with "Try again" (`reset()`).
+- **Loading in the page**: Dashboard and Profile show **`PageLoading`** (spinner + message) when fetching data, so the loading state lives in the page itself; `loading.tsx` only covers the brief route/chunk load and reuses the same component.
+- **Alternative (full server-side)**: If auth used an httpOnly cookie, we could fetch in Server Components and use **Server Actions** for mutations (e.g. POST vitals) and drop client-side fetch for initial data.
+
+---
+
+## Code organization (types, format, ui)
+
+- **`types/`** – Shared TypeScript types for API responses and payloads (`Vital`, `PatientProfile`, `CreateVitalPayload`, etc.). Keeps components free of inline type definitions.
+- **`lib/format.ts`** – Generic display helpers: `formatDate(s, style)`, `todayISO()`.
+- **`lib/vital-format.ts`** – Vital-specific formatters (e.g. `formatBP`) so Dashboard and others don’t define them inline.
+- **`components/ui/`** – Shared primitives: **Spinner**, **PageLoading** (spinner + optional message), **Field** (key/value row for profile). Used by pages and by `loading.tsx` so loading UI is consistent and not duplicated.
 
 ---
 
