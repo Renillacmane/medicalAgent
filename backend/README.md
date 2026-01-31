@@ -32,6 +32,15 @@ For auth to work, set in `.env` (see `.env.example` for a template):
 - `JWT_SECRET` – Secret used to sign JWTs (use a long random string in production).
 - `JWT_EXPIRES` – Token lifetime (e.g. `1h`, `7d`). Defaults to `1h` if unset.
 
+## Deploying on Render
+
+Use a **production** build and start command so the server binds to Render’s `PORT` immediately. Do **not** use `start:dev` (watch mode), or Render may report “No open ports” because the server only listens after compilation.
+
+- **Build Command:** `npm install && npm run build`
+- **Start Command:** `npm run start:prod`
+
+Set **Root Directory** to `backend` if the repo root is the monorepo. Add `JWT_SECRET`, `JWT_EXPIRES`, and MongoDB connection vars in Render’s Environment tab; Render sets `PORT` automatically.
+
 ## Project setup
 
 ```bash

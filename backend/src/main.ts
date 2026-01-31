@@ -20,6 +20,8 @@ async function bootstrap() {
   // Enables CORS for local dev and for embedding (widget / PWA / app).
   app.enableCors({ origin: true, credentials: true });
 
-  await app.listen({ port: Number(process.env.PORT) || 3911, host: '0.0.0.0' });
+  // Use PORT from env (e.g. Render, Heroku) or default for local dev. Bind to 0.0.0.0 for PaaS.
+  const port = Number(process.env.PORT) || 3911;
+  await app.listen({ port, host: '0.0.0.0' });
 }
 bootstrap();
