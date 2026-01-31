@@ -9,10 +9,11 @@ import { PatientsModule } from './patients/patients.module';
 
 @Module({
   imports: [
-    // Loads `backend/.env` by default in Nest projects.
-    // If you later run the app from a different working directory, set envFilePath explicitly.
+    // Load .env and .env.local (relative to cwd); keys become process.env.PORT, process.env.JWT_SECRET, etc.
+    // .env.local is loaded after .env so it can override values.
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['.env', '.env.local'],
     }),
     DatabaseModule,
     AuthModule,
