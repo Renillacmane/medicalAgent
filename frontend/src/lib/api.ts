@@ -49,3 +49,13 @@ export async function authPost<T>(path: string, body: unknown): Promise<T> {
   }
   return data as T;
 }
+
+export async function authPatch<T>(path: string, body: unknown): Promise<T> {
+  const res = await authFetch(path, { method: "PATCH", body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (res.status === 401) throw new UnauthorizedError();
+    throw new Error((data as { message?: string }).message ?? "Request failed");
+  }
+  return data as T;
+}

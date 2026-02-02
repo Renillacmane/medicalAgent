@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -11,7 +12,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../auth/schemas/user.schema';
 import { PatientsService } from './patients.service';
-import { CreateVitalDto } from './dto';
+import { CreateVitalDto, UpdateProfileDto } from './dto';
 
 @Controller('patients')
 @UseGuards(JwtAuthGuard)
@@ -23,6 +24,20 @@ export class PatientsController {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
     const profile = await this.patientsService.getProfile(userId);
+    if (!profile) {
+      throw new NotFoundException('Profile not found');
+    }
+    return profile;
+  }
+
+  @Patch('profile')
+  async updateProfile(
+    @CurrentUser() user: User,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    const profile = await this.patientsService.updateProfile(userId, dto);
     if (!profile) {
       throw new NotFoundException('Profile not found');
     }

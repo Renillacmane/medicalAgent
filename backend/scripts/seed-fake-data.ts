@@ -5,7 +5,7 @@
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+dotenv.config({ path: path.join(__dirname, '..', '.env.local') });
 
 import mongoose from 'mongoose';
 import * as bcrypt from 'bcrypt';

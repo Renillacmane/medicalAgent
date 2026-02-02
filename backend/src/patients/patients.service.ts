@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { User, UserDocument } from '../auth/schemas/user.schema';
 import { UserVital, UserVitalDocument } from './schemas/user-vital.schema';
-import { CreateVitalDto } from './dto';
+import { CreateVitalDto, UpdateProfileDto } from './dto';
 
 function computeBmi(weightKg: number, heightCm: number): number {
   if (!heightCm || heightCm <= 0) return 0;
@@ -27,6 +27,27 @@ export class PatientsService {
     if (!user) return null;
     const id = (user as { _id: Types.ObjectId })._id?.toString?.();
     return { id, ...user };
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const update: Record<string, unknown> = {};
+    if (dto.firstName != null) update.firstName = dto.firstName.trim();
+    if (dto.lastName != null) update.lastName = dto.lastName.trim();
+    if (dto.dateOfBirth != null) update.dateOfBirth = new Date(dto.dateOfBirth);
+    if (dto.height != null) update.height = dto.height;
+    if (dto.weight != null) update.weight = dto.weight;
+    if (dto.isActive != null) update.isActive = dto.isActive;
+    if (dto.dietaryPreference != null) update.dietaryPreference = dto.dietaryPreference;
+    if (dto.objectives != null) update.objectives = dto.objectives;
+
+    const updated = await this.userModel
+      .findByIdAndUpdate(userId, { $set: update }, { new: true })
+      .select('-passwordHash')
+      .lean()
+      .exec();
+    if (!updated) return null;
+    const id = (updated as { _id: Types.ObjectId })._id?.toString?.();
+    return { id, ...updated };
   }
 
   async getVitals(userId: string, limit = 100) {

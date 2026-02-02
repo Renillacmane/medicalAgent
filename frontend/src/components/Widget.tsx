@@ -21,16 +21,29 @@ export default function Widget({ embedBaseUrl = EMBED_BASE }: WidgetProps) {
     >
       {expanded && (
         <div className="relative flex h-[min(560px,80vh)] w-[360px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
-          <button
-            type="button"
-            onClick={() => setExpanded(false)}
-            className="absolute right-2 top-2 z-10 rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-            aria-label="Close"
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="absolute right-2 top-2 z-10 flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => window.open(iframeSrc, "_blank", "noopener,noreferrer")}
+              className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+              aria-label="Open in new tab"
+              title="Open in new tab"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+              aria-label="Close"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
           <iframe
             src={iframeSrc}
             title="Healthia"
