@@ -27,7 +27,7 @@ jobs:
         run: |
           echo "🚀 Triggering production deployment hook..."
           
-          PROD_FE_HOOK="${{ env.PROD_FE_HOOK }}"
+          PROD_FE_HOOK="${{ env.PROD_FE_HOOK || secrets.PROD_FE_HOOK || 'http://localhost:3000/deploy' }}"
           if [ "$PROD_FE_HOOK" = "http://localhost:3000/deploy" ]; then
             echo "⚠️ PROD_FE_HOOK not set, using default (deployment will fail)"
           fi
@@ -58,7 +58,7 @@ jobs:
           echo "⏳ Waiting 90 seconds for deployment to complete..."
           sleep 90
           
-          FE_URL="${{ env.FE_URL }}"
+          FE_URL="${{ env.FE_URL || secrets.FE_URL || 'https://yourdomain.com' }}"
           if [ -z "$FE_URL" ] || [ "$FE_URL" = "https://yourdomain.com" ]; then
             echo "⚠️ FE_URL not set, skipping health check"
             exit 0

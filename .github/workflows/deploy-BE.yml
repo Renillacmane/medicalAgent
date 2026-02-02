@@ -27,7 +27,7 @@ jobs:
         run: |
           echo "🚀 Triggering production deployment hook..."
           
-          PROD_BE_HOOK="${{ env.PROD_BE_HOOK }}"
+          PROD_BE_HOOK="${{ env.PROD_BE_HOOK || secrets.PROD_BE_HOOK || 'http://localhost:3000/deploy' }}"
           if [ "$PROD_BE_HOOK" = "http://localhost:3000/deploy" ]; then
             echo "⚠️ PROD_BE_HOOK not set, using default (deployment will fail)"
           fi
@@ -58,7 +58,7 @@ jobs:
           echo "⏳ Waiting 90 seconds for deployment to complete..."
           sleep 90
           
-          BE_URL="${{ env.BE_URL }}"
+          BE_URL="${{ env.BE_URL || secrets.BE_URL || 'https://yourdomain.com' }}"
           if [ -z "$BE_URL" ] || [ "$BE_URL" = "https://yourdomain.com" ]; then
             echo "⚠️ BE_URL not set, skipping health check"
             exit 0
