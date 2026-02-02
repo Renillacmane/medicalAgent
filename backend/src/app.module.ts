@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -7,13 +8,15 @@ import { HealthModule } from './common/health/health.module';
 import { DatabaseModule } from './infra/database/database.module';
 import { PatientsModule } from './patients/patients.module';
 
+// Resolve .env from project root (parent of dist/ when compiled), so it works regardless of cwd.
+const projectRoot = join(__dirname, '..');
+const envFiles = [join(projectRoot, '.env.local'), join(projectRoot, '.env')];
+
 @Module({
   imports: [
-    // Load .env and .env.local (relative to cwd); keys become process.env.PORT, process.env.JWT_SECRET, etc.
-    // .env.local is loaded after .env so it can override values.
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env', '.env.local'],
+      envFilePath: envFiles,
     }),
     DatabaseModule,
     AuthModule,
