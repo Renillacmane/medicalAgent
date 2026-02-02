@@ -10,9 +10,9 @@ on:
   # Manual trigger only
   workflow_dispatch:
 
-env:
-  PROD_FE_HOOK: ${{ secrets.PROD_FE_HOOK || 'http://localhost:3000/deploy' }}
-  FE_URL: ${{ secrets.FE_URL || 'https://yourdomain.com' }}
+# env:
+#   PROD_FE_HOOK: ${{ secrets.PROD_FE_HOOK || 'http://localhost:3000/deploy' }}
+#   FE_URL: ${{ secrets.FE_URL || 'https://yourdomain.com' }}
 
 jobs:
   deploy-traditional:
