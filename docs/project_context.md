@@ -137,17 +137,17 @@ MedicalAgent/
 │   │   │       ├── jwt.strategy.ts
 │   │   │       └── local.strategy.ts
 │   │   ├── common/
-│   │   │   ├── health/
-│   │   │   │   ├── health.controller.ts
-│   │   │   │   ├── health.module.ts
-│   │   │   │   └── health.service.ts
 │   │   │   └── utils/
 │   │   │       ├── date.utils.ts
 │   │   │       └── index.ts
 │   │   ├── infra/
-│   │   │   └── database/
-│   │   │       ├── database.module.ts
-│   │   │       └── mongo-connection.logger.ts
+│   │   │   ├── database/
+│   │   │   │   ├── database.module.ts
+│   │   │   │   └── mongo-connection.logger.ts
+│   │   │   └── health/
+│   │   │       ├── health.controller.ts
+│   │   │       ├── health.module.ts
+│   │   │       └── health.service.ts
 │   │   ├── patients/
 │   │   │   ├── patients.controller.ts
 │   │   │   ├── patients.module.ts

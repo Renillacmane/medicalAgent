@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { HealthModule } from './common/health/health.module';
+import { HealthModule } from './infra/health/health.module';
 import { DatabaseModule } from './infra/database/database.module';
 import { PatientsModule } from './patients/patients.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
@@ -25,7 +23,5 @@ const envFiles = [join(projectRoot, '.env.local'), join(projectRoot, '.env')];
     HealthModule,
     RecommendationsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
