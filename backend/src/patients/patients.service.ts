@@ -55,9 +55,24 @@ export class PatientsService {
     return { id, ...updated };
   }
 
-  async getVitals(userId: string, limit = 100) {
+  /**
+   * Get vitals for a user, optionally restricted to the last N days.
+   * @param userId - User ID
+   * @param limit - Max number of records (default 100)
+   * @param days - If set, only vitals with date >= (now - days) are returned (e.g. 7 for last week)
+   */
+  async getVitals(userId: string, limit = 100, days?: number) {
+    const filter: { userId: Types.ObjectId; date?: { $gte: Date } } = {
+      userId: new Types.ObjectId(userId),
+    };
+    if (days != null && days > 0) {
+      const from = new Date();
+      from.setDate(from.getDate() - days);
+      from.setHours(0, 0, 0, 0);
+      filter.date = { $gte: from };
+    }
     const vitals = await this.userVitalModel
-      .find({ userId: new Types.ObjectId(userId) })
+      .find(filter)
       .sort({ date: -1 })
       .limit(limit)
       .lean()

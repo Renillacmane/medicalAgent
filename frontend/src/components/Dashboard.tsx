@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authGet, UnauthorizedError } from "@/lib/api";
@@ -43,6 +44,15 @@ export default function Dashboard() {
       <p className="mt-1 text-sm text-slate-500">
         Your dashboard and recent vitals.
       </p>
+
+      <div className="mt-4">
+        <Link
+          href="/design"
+          className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow transition-colors hover:bg-teal-700"
+        >
+          Design page
+        </Link>
+      </div>
 
       <section className="mt-6">
         <h2 className="text-sm font-semibold text-slate-700">Recent Vitals</h2>

@@ -48,11 +48,13 @@ export class PatientsController {
   async getVitals(
     @CurrentUser() user: User,
     @Query('limit') limit?: string,
+    @Query('days') days?: string,
   ) {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
     const limitNum = limit != null ? Math.min(parseInt(limit, 10) || 100, 500) : 100;
-    return this.patientsService.getVitals(userId, limitNum);
+    const daysNum = days != null ? Math.min(Math.max(1, parseInt(days, 10) || 7), 365) : undefined;
+    return this.patientsService.getVitals(userId, limitNum, daysNum);
   }
 
   @Post('vitals')

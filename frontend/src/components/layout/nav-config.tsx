@@ -1,31 +1,42 @@
 "use client";
 
-export type NavTabId = "dashboard" | "add" | "profile";
+/** Navigation tab identifiers. Use this enum when referring to a tab (e.g. styling, routing). */
+export enum NavTabId {
+  Dashboard = "dashboard",
+  Add = "add",
+  Recommendations = "recommendations",
+  Profile = "profile",
+}
 
-export const NAV_TABS: { id: NavTabId; label: string; href: string; icon: "dashboard" | "plus" | "user" }[] = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: "dashboard" },
-  { id: "add", label: "Add", href: "/add", icon: "plus" },
-  { id: "profile", label: "My profile", href: "/profile", icon: "user" },
+export interface NavTab {
+  id: NavTabId;
+  label: string;
+  href: string;
+}
+
+export const NAV_TABS: NavTab[] = [
+  { id: NavTabId.Dashboard, label: "Dashboard", href: "/dashboard" },
+  { id: NavTabId.Add, label: "Add", href: "/add" },
+  { id: NavTabId.Recommendations, label: "Recommendations", href: "/recommendations" },
+  { id: NavTabId.Profile, label: "My profile", href: "/profile" },
 ];
 
-export function NavIcon({ icon }: { icon: "dashboard" | "plus" | "user" }) {
-  if (icon === "dashboard") {
-    return (
-      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-      </svg>
-    );
-  }
-  if (icon === "plus") {
-    return (
-      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-      </svg>
-    );
-  }
+const NAV_ICON_SVG_PATHS: Record<NavTabId, string> = {
+  [NavTabId.Dashboard]:
+    "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z",
+  [NavTabId.Add]: "M12 4v16m8-8H4",
+  [NavTabId.Recommendations]:
+    "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+  [NavTabId.Profile]:
+    "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
+};
+
+export function NavIcon({ id }: { id: NavTabId }) {
+  const d = NAV_ICON_SVG_PATHS[id];
+  if (!d) return null;
   return (
     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
     </svg>
   );
 }
