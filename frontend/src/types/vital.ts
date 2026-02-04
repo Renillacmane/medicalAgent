@@ -1,6 +1,9 @@
 /** Blood pressure (API response: optional fields) */
 export type BloodPressure = { systolic?: number; diastolic?: number };
 
+/** Blood pressure for create payload (both required when present) */
+export type BloodPressureInput = { systolic: number; diastolic: number };
+
 /** Vital record from GET /patients/vitals */
 export type Vital = {
   id?: string;
@@ -15,9 +18,6 @@ export type Vital = {
   bloodGlucose?: number;
   createdAt?: string;
 };
-
-/** Blood pressure for create payload (both required when present) */
-export type BloodPressureInput = { systolic: number; diastolic: number };
 
 /** Payload for POST /patients/vitals */
 export type CreateVitalPayload = {

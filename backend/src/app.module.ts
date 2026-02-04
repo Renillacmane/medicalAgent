@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './common/health/health.module';
 import { DatabaseModule } from './infra/database/database.module';
 import { PatientsModule } from './patients/patients.module';
+import { RecommendationsModule } from './recommendations/recommendations.module';
 
 // Resolve .env from project root (parent of dist/ when compiled), so it works regardless of cwd.
 const projectRoot = join(__dirname, '..');
@@ -22,6 +23,7 @@ const envFiles = [join(projectRoot, '.env.local'), join(projectRoot, '.env')];
     AuthModule,
     PatientsModule,
     HealthModule,
+    RecommendationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

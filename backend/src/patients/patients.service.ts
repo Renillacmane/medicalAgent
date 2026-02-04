@@ -4,6 +4,11 @@ import { Model, Types } from 'mongoose';
 import { User, UserDocument } from '../auth/schemas/user.schema';
 import { UserVital, UserVitalDocument } from './schemas/user-vital.schema';
 import { CreateVitalDto, UpdateProfileDto } from './dto';
+import {
+  PatientSnapshotDto,
+  PatientProfile,
+  PatientVital,
+} from './dto/patient-snapshot.dto';
 
 function computeBmi(weightKg: number, heightCm: number): number {
   if (!heightCm || heightCm <= 0) return 0;
@@ -95,5 +100,63 @@ export class PatientsService {
     const doc = created.toObject();
     const id = (doc as { _id: Types.ObjectId })._id?.toString?.();
     return { id, ...doc };
+  }
+
+  /**
+   * Get patient snapshot for the AI agent.
+   * Phase 1: Returns profile + vitals only.
+   * Phase 2+ will add medications and exams.
+   *
+   * @param userId - The user ID
+   * @param vitalsLimit - Max number of vitals to include (default: 30)
+   * @returns PatientSnapshotDto with profile and vitals
+   */
+  async getPatientSnapshotForAgent(
+    userId: string,
+    vitalsLimit = 30,
+  ): Promise<PatientSnapshotDto> {
+    // Fetch profile and vitals in parallel
+    const [profileData, vitalsData] = await Promise.all([
+      this.getProfile(userId),
+      this.getVitals(userId, vitalsLimit),
+    ]);
+
+    // Map profile to PatientProfile type
+    const profile: PatientProfile | null = profileData
+      ? {
+          id: profileData.id,
+          firstName: profileData.firstName,
+          lastName: profileData.lastName,
+          dateOfBirth: profileData.dateOfBirth,
+          email: profileData.email,
+          isActive: profileData.isActive,
+          height: profileData.height,
+          weight: profileData.weight,
+          dietaryPreference: profileData.dietaryPreference,
+          objectives: profileData.objectives,
+        }
+      : null;
+
+    // Map vitals to PatientVital type
+    const vitals: PatientVital[] = vitalsData.map((v) => ({
+      id: v.id,
+      date: v.date,
+      heartRate: v.heartRate,
+      bloodPressure: v.bloodPressure,
+      weight: v.weight,
+      sleepHours: v.sleepHours,
+      stressPerception: v.stressPerception,
+      bmi: v.bmi,
+      bloodOxygen: v.bloodOxygen,
+      bloodGlucose: v.bloodGlucose,
+    }));
+
+    return {
+      profile,
+      vitals,
+      // Phase 2+:
+      // medications: await this.getMedications(userId),
+      // exams: await this.getExams(userId),
+    };
   }
 }
