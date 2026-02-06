@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_TABS, NavTabId, NavIcon } from "./nav-config";
+import PendingSyncBadge from "@/components/pwa/PendingSyncBadge";
 
 export default function AppNav() {
   const pathname = usePathname();
@@ -19,7 +20,7 @@ export default function AppNav() {
           <Link
             key={id}
             href={href}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-xs transition-colors ${
+            className={`relative flex flex-1 flex-col items-center gap-0.5 py-2 text-xs transition-colors ${
               isActive
                 ? isRecommendations
                   ? "font-medium text-light-green-primary"
@@ -28,7 +29,10 @@ export default function AppNav() {
             }`}
             aria-current={isActive ? "page" : undefined}
           >
-            <NavIcon id={id} />
+            <span className="relative">
+              <NavIcon id={id} />
+              {id === NavTabId.Add && <PendingSyncBadge />}
+            </span>
             <span>{label}</span>
           </Link>
         );

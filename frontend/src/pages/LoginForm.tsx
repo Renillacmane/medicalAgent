@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiUrl } from "@/lib/config";
+import { persistAuthToken, persistApiUrl } from "@/lib/pwa/offline-store";
 
 type Props = { onSuccess?: () => void };
 
@@ -28,6 +29,9 @@ export default function LoginForm({ onSuccess }: Props) {
       }
       if (data.access_token) {
         typeof window !== "undefined" && localStorage.setItem("access_token", data.access_token);
+        // Persist token and API URL to IndexedDB so the SW can use them for Background Sync
+        persistAuthToken(data.access_token).catch(() => {});
+        persistApiUrl(apiUrl).catch(() => {});
       }
       onSuccess?.();
     } catch (err) {

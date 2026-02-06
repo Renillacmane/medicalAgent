@@ -14,12 +14,19 @@ export default function Dashboard() {
   const [vitals, setVitals] = useState<Vital[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [fromCache, setFromCache] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    const wasOnline = navigator.onLine;
+
     authGet<Vital[]>("/patients/vitals?limit=20")
       .then((data) => {
-        if (!cancelled) setVitals(Array.isArray(data) ? data : []);
+        if (!cancelled) {
+          setVitals(Array.isArray(data) ? data : []);
+          // If we were offline, the data came from the IDB cache inside authGet
+          if (!wasOnline) setFromCache(true);
+        }
       })
       .catch((e) => {
         if (!cancelled) {
@@ -56,6 +63,11 @@ export default function Dashboard() {
 
       <section className="mt-6">
         <h2 className="text-sm font-semibold text-slate-700">Recent Vitals</h2>
+        {fromCache && (
+          <p className="mt-1 text-xs text-amber-600">
+            Showing cached data — you appear to be offline.
+          </p>
+        )}
         {loading && (
           <div className="mt-2">
             <PageLoading message="Loading vitals…" className="min-h-[8rem]" />

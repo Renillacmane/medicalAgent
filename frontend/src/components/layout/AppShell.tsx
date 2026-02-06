@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { hasValidToken } from "@/lib/auth";
 import RhombusLoader from "@/components/ui/RhombusLoader";
+import OfflineBanner from "@/components/pwa/OfflineBanner";
+import InstallPrompt from "@/components/pwa/InstallPrompt";
+import { PWAInstallProvider } from "@/lib/pwa/install-context";
 import AboutModal from "./AboutModal";
 import AppNav from "./AppNav";
 import Footer from "./Footer";
@@ -39,12 +42,16 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <>
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
-        <Footer onAboutClick={() => setAboutOpen(true)} />
-        <AppNav />
-      </div>
+      <PWAInstallProvider>
+        <div className="flex h-dvh min-h-screen flex-col overflow-hidden">
+          <OfflineBanner />
+          <Header />
+          <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</main>
+          <Footer onAboutClick={() => setAboutOpen(true)} />
+          <AppNav />
+        </div>
+        <InstallPrompt />
+      </PWAInstallProvider>
       <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
     </>
   );

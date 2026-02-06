@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, UnauthorizedError } from "@/lib/api";
 import { todayISO } from "@/lib/format";
+import { addPendingVital } from "@/lib/pwa/offline-store";
+import { syncPendingVitals, requestBackgroundSync } from "@/lib/pwa/sync-manager";
 import type { CreateVitalPayload } from "@/types/vital";
 
 type Props = { onSuccess?: () => void; onBack?: () => void };
@@ -25,6 +27,14 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [queued, setQueued] = useState(false);
+
+  // On mount, attempt to drain any pending offline vitals
+  useEffect(() => {
+    if (navigator.onLine) {
+      syncPendingVitals().catch(() => {});
+    }
+  }, []);
 
   function buildPayload(): CreateVitalPayload {
     const payload: CreateVitalPayload = { date };
@@ -52,6 +62,7 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
 
   function resetForm() {
     setSuccess(false);
+    setQueued(false);
     setDate(todayISO());
     setHeartRate("");
     setSystolic("");
@@ -64,12 +75,34 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
     setBloodGlucose("");
   }
 
+  // TOTO - Review this function
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setQueued(false);
     setLoading(true);
+
+    const payload = buildPayload();
+
+    // If offline, queue immediately
+    if (!navigator.onLine) {
+      try {
+        await addPendingVital(payload);
+        await requestBackgroundSync();
+        setQueued(true);
+        setSuccess(true);
+        onSuccess?.();
+      } catch {
+        setError("Failed to save vital for offline sync.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Online – try the API
     try {
-      await authPost("/patients/vitals", buildPayload());
+      await authPost("/patients/vitals", payload);
       setSuccess(true);
       onSuccess?.();
     } catch (err) {
@@ -77,7 +110,16 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
         router.replace("/login?redirect=/add");
         return;
       }
-      setError(err instanceof Error ? err.message : "Failed to save vital");
+      // Network error while "online" (flaky connection) – queue offline
+      try {
+        await addPendingVital(payload);
+        await requestBackgroundSync();
+        setQueued(true);
+        setSuccess(true);
+        onSuccess?.();
+      } catch {
+        setError(err instanceof Error ? err.message : "Failed to save vital");
+      }
     } finally {
       setLoading(false);
     }
@@ -85,13 +127,27 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
 
   if (success) {
     return (
-      <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-green-800">
-        <p className="font-medium">Vital recorded.</p>
-        <p className="mt-1 text-sm">You can add another below or go back.</p>
+      <div
+        className={`rounded-lg border p-4 ${
+          queued
+            ? "border-amber-200 bg-amber-50 text-amber-800"
+            : "border-green-200 bg-green-50 text-green-800"
+        }`}
+      >
+        <p className="font-medium">
+          {queued ? "Vital saved offline." : "Vital recorded."}
+        </p>
+        <p className="mt-1 text-sm">
+          {queued
+            ? "It will be synced automatically when you're back online."
+            : "You can add another below or go back."}
+        </p>
         <button
           type="button"
           onClick={resetForm}
-          className="mt-3 text-sm font-medium text-green-700 underline"
+          className={`mt-3 text-sm font-medium underline ${
+            queued ? "text-amber-700" : "text-green-700"
+          }`}
         >
           Add another
         </button>

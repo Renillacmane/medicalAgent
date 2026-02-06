@@ -1,5 +1,7 @@
 "use client";
 
+import InstallButton from "@/components/pwa/InstallButton";
+
 type HeaderProps = {
   onClose?: () => void;
   onBack?: () => void;
@@ -24,7 +26,9 @@ export default function Header({ onClose, onBack, showBack }: HeaderProps) {
         )}
         <h1 className="truncate text-lg font-semibold text-slate-800">Healthia</h1>
       </div>
-      {onClose && (
+      <div className="flex shrink-0 items-center gap-2">
+        <InstallButton />
+        {onClose && (
         <button
           type="button"
           onClick={onClose}
@@ -35,7 +39,8 @@ export default function Header({ onClose, onBack, showBack }: HeaderProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-      )}
+        )}
+      </div>
     </header>
   );
 }

@@ -1,4 +1,9 @@
 import { apiUrl } from "./config";
+import {
+  setCachedData,
+  getCachedData,
+  type CachedDataKey,
+} from "./pwa/offline-store";
 
 /** Thrown when the API returns 401; use to redirect to login. */
 export class UnauthorizedError extends Error {
@@ -11,7 +16,7 @@ export class UnauthorizedError extends Error {
 /**
  * Client-side auth API helpers. Token is read from localStorage (client-only),
  * so data fetching runs in Client Components (useEffect). For server-side
- * fetching or Server Actions we’d need auth via cookie.
+ * fetching or Server Actions we'd need auth via cookie.
  */
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -30,14 +35,43 @@ export function authFetch(
   return fetch(url, { ...options, headers });
 }
 
+// ---- Mapping from API path to IndexedDB cache key ----
+
+function cacheKeyForPath(path: string): CachedDataKey | null {
+  if (path.includes("/patients/vitals")) return "vitals";
+  if (path.includes("/patients/profile")) return "profile";
+  if (path.includes("/recommendations/daily")) return "recommendations";
+  return null;
+}
+
 export async function authGet<T>(path: string): Promise<T> {
-  const res = await authFetch(path);
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    if (res.status === 401) throw new UnauthorizedError();
-    throw new Error((data as { message?: string }).message ?? "Request failed");
+  const cacheKey = cacheKeyForPath(path);
+
+  try {
+    const res = await authFetch(path);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (res.status === 401) throw new UnauthorizedError();
+      throw new Error((data as { message?: string }).message ?? "Request failed");
+    }
+    // Cache successful GET responses in IndexedDB for offline use
+    if (cacheKey) {
+      setCachedData(cacheKey, data).catch(() => {
+        /* IDB write failure is non-critical */
+      });
+    }
+    return data as T;
+  } catch (err) {
+    // If it's an auth error, don't fall back to cache
+    if (err instanceof UnauthorizedError) throw err;
+
+    // Network failure – try to serve from IndexedDB cache
+    if (cacheKey) {
+      const cached = await getCachedData<T>(cacheKey).catch(() => null);
+      if (cached != null) return cached;
+    }
+    throw err;
   }
-  return data as T;
 }
 
 export async function authPost<T>(path: string, body: unknown): Promise<T> {
