@@ -52,7 +52,7 @@ const initialForm: RegisterFormData = {
 type Props = { onSuccess?: () => void };
 
 const inputClass =
-  "mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500";
+  "mt-1 block w-full rounded-lg border border-light-green-subtle/60 bg-white px-4 py-2.5 text-light-green-dark shadow-sm transition-colors focus:border-light-green-primary focus:outline-none focus:ring-1 focus:ring-light-green-primary/50";
 
 export default function RegisterForm({ onSuccess }: Props) {
   const [stepIndex, setStepIndex] = useState(0);
@@ -161,17 +161,17 @@ export default function RegisterForm({ onSuccess }: Props) {
             <button
               type="button"
               onClick={() => setStepIndex(i)}
-              className={`flex min-w-0 flex-1 flex-col rounded-md px-2 py-2 text-left transition focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${
+              className={`flex min-w-0 flex-1 flex-col rounded-lg px-3 py-2.5 text-left transition focus:outline-none focus:ring-2 focus:ring-light-green-primary focus:ring-offset-2 ${
                 i === stepIndex
-                  ? "bg-sky-50 text-sky-800 ring-1 ring-sky-200"
-                  : "text-slate-600 hover:bg-slate-50"
+                  ? "border-b-2 border-light-green-primary bg-light-green-light/50 text-light-green-primary"
+                  : "text-light-green-dark-grey hover:bg-light-green-light/30 hover:text-light-green-dark"
               }`}
             >
               <span className="truncate text-xs font-medium">{s.title}</span>
-              <span className="truncate text-[10px] text-slate-500">{s.description}</span>
+              <span className="truncate text-[10px] text-light-green-light-grey">{s.description}</span>
             </button>
             {i < STEPS.length - 1 && (
-              <span className="text-slate-300" aria-hidden>
+              <span className="text-light-green-subtle" aria-hidden>
                 ›
               </span>
             )}
@@ -189,7 +189,7 @@ export default function RegisterForm({ onSuccess }: Props) {
         {currentStep.id === "account" && (
           <>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 First name
               </label>
               <input
@@ -203,7 +203,7 @@ export default function RegisterForm({ onSuccess }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 Last name
               </label>
               <input
@@ -217,7 +217,7 @@ export default function RegisterForm({ onSuccess }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 Date of birth
               </label>
               <input
@@ -230,7 +230,7 @@ export default function RegisterForm({ onSuccess }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 Email
               </label>
               <input
@@ -244,7 +244,7 @@ export default function RegisterForm({ onSuccess }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 Password
               </label>
               <input
@@ -263,11 +263,11 @@ export default function RegisterForm({ onSuccess }: Props) {
 
         {currentStep.id === "physical" && (
           <>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-light-green-dark-grey">
               Optional. This helps us tailor recommendations (e.g. BMI, activity).
             </p>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 Height (cm)
               </label>
               <input
@@ -281,7 +281,7 @@ export default function RegisterForm({ onSuccess }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 Weight (kg)
               </label>
               <input
@@ -299,11 +299,11 @@ export default function RegisterForm({ onSuccess }: Props) {
 
         {currentStep.id === "diet" && (
           <>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-light-green-dark-grey">
               Optional. Used for nutrition suggestions.
             </p>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 Dietary type
               </label>
               <input
@@ -315,7 +315,7 @@ export default function RegisterForm({ onSuccess }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 Dietary restrictions (comma-separated)
               </label>
               <input
@@ -331,11 +331,11 @@ export default function RegisterForm({ onSuccess }: Props) {
 
         {currentStep.id === "objectives" && (
           <>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-light-green-dark-grey">
               Optional. What do you want to focus on? Comma-separated for each.
             </p>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 Body goals
               </label>
               <input
@@ -347,7 +347,7 @@ export default function RegisterForm({ onSuccess }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 Health goals
               </label>
               <input
@@ -359,7 +359,7 @@ export default function RegisterForm({ onSuccess }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-sm font-medium text-light-green-dark">
                 Mind / wellness goals
               </label>
               <input
@@ -385,7 +385,7 @@ export default function RegisterForm({ onSuccess }: Props) {
               type="button"
               onClick={goBack}
               disabled={loading}
-              className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-60"
+              className="rounded-lg border-2 border-light-green-primary bg-transparent px-5 py-2.5 text-sm font-semibold text-light-green-primary shadow-card transition-all hover:bg-light-green-primary hover:text-white active:scale-[0.98] disabled:opacity-60"
             >
               Back
             </button>
@@ -393,7 +393,7 @@ export default function RegisterForm({ onSuccess }: Props) {
           <button
             type="submit"
             disabled={loading}
-            className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-60"
+            className="rounded-lg bg-light-green-primary px-5 py-2.5 text-sm font-semibold text-white shadow-card transition-all hover:bg-light-green-primary-dark hover:shadow-card-hover active:scale-[0.98] disabled:opacity-60"
           >
             {loading
               ? "Creating account…"

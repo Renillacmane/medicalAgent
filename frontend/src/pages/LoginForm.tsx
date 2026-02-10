@@ -44,7 +44,7 @@ export default function LoginForm({ onSuccess }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <label htmlFor="login-email" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="login-email" className="mb-1 block text-sm font-medium text-light-green-dark">
           Email
         </label>
         <input
@@ -54,12 +54,12 @@ export default function LoginForm({ onSuccess }: Props) {
           onChange={(e) => setEmail(e.target.value)}
           required
           autoComplete="email"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          className="w-full rounded-lg border border-light-green-subtle/60 bg-white px-4 py-2.5 text-light-green-dark shadow-sm transition-colors focus:border-light-green-primary focus:outline-none focus:ring-1 focus:ring-light-green-primary/50"
           placeholder="you@example.com"
         />
       </div>
       <div>
-        <label htmlFor="login-password" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="login-password" className="mb-1 block text-sm font-medium text-light-green-dark">
           Password
         </label>
         <input
@@ -69,7 +69,7 @@ export default function LoginForm({ onSuccess }: Props) {
           onChange={(e) => setPassword(e.target.value)}
           required
           autoComplete="current-password"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          className="w-full rounded-lg border border-light-green-subtle/60 bg-white px-4 py-2.5 text-light-green-dark shadow-sm transition-colors focus:border-light-green-primary focus:outline-none focus:ring-1 focus:ring-light-green-primary/50"
           placeholder="••••••••"
         />
       </div>
@@ -77,7 +77,7 @@ export default function LoginForm({ onSuccess }: Props) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+        className="w-full rounded-lg bg-light-green-primary px-5 py-2.5 text-sm font-semibold text-white shadow-card transition-all hover:bg-light-green-primary-dark hover:shadow-card-hover active:scale-[0.98] disabled:opacity-60"
       >
         {loading ? "Signing in…" : "Sign in"}
       </button>
