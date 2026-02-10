@@ -1,6 +1,11 @@
-import Widget from "@/components/Widget";
+"use client";
 
-// Dummy data for testing the index page
+import { useIsNativeCapacitor } from "@/lib/capacitor/use-is-native-capacitor";
+import AppShell from "@/components/layout/AppShell";
+import Dashboard from "@/components/Dashboard";
+import Widget from "@/components/Widget";
+import Spinner from "@/components/ui/Spinner";
+
 const DUMMY_SUMMARY = {
   title: "Daily summary",
   date: new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" }),
@@ -9,9 +14,25 @@ const DUMMY_SUMMARY = {
     { id: 2, label: "Active goals", value: "2" },
     { id: 3, label: "Last check-in", value: "Yesterday" },
   ],
-};
+} as const;
 
 export default function Home() {
+  const isNative = useIsNativeCapacitor();
+
+  if (isNative !== false) {
+    return (
+      <AppShell>
+        {isNative === null ? (
+          <div className="flex min-h-[40vh] items-center justify-center p-4" aria-busy="true">
+            <Spinner />
+          </div>
+        ) : (
+          <Dashboard />
+        )}
+      </AppShell>
+    );
+  }
+
   return (
     <main className="min-h-screen p-8">
       <div className="mx-auto max-w-2xl">

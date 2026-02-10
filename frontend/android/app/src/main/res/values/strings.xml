@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Healthia</string>
+    <string name="title_activity_main">Healthia</string>
+    <string name="package_name">com.healthia.medicalagent</string>
+    <string name="custom_url_scheme">com.healthia.medicalagent</string>
+</resources>

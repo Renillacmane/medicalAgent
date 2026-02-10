@@ -33,3 +33,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Capacitor native projects (optional: commit if your team manages native code)
+# ios/App/App/Pods/
+# android/.gradle/
+# android/app/build/
+# android/build/
+# android/capacitor.build.gradle
