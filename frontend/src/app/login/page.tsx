@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import LoginForm from "@/pages/LoginForm";
 
@@ -19,6 +20,15 @@ function LoginContent() {
           router.replace(redirect);
         }}
       />
+      <p className="mt-6 text-center text-sm text-slate-600">
+        Don&apos;t have an account?{" "}
+        <Link
+          href="/register"
+          className="font-medium text-sky-600 hover:text-sky-700 focus:outline-none focus:underline"
+        >
+          Create account
+        </Link>
+      </p>
     </div>
   );
 }

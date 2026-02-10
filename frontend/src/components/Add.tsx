@@ -40,46 +40,50 @@ export default function Add() {
 
   if (selected === "vitals") {
     return (
-      <div className="p-4">
-        <h1 className="text-lg font-semibold text-slate-800">Add Vitals</h1>
-        <p className="mt-1 text-sm text-slate-500">Record a vital reading. Date is required; other fields are optional.</p>
-        <div className="mt-4">
-          <AddVitalsForm onBack={() => setSelected(null)} />
+      <div className="min-h-screen bg-light-green-light px-4 py-8 sm:px-6">
+        <div className="mx-auto max-w-2xl">
+          <h1 className="text-2xl font-semibold text-light-green-dark">Add vitals</h1>
+          <p className="mt-1 text-sm text-light-green-dark-grey">Record a vital reading. Date is required; other fields are optional.</p>
+          <div className="mt-8 rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card">
+            <AddVitalsForm onBack={() => setSelected(null)} />
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4">
-      <p className="text-slate-800 font-medium">Add</p>
-      <p className="mt-1 text-sm text-slate-500">Choose what type of data to add.</p>
+    <div className="min-h-screen bg-light-green-light px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-4xl">
+        <h1 className="text-2xl font-semibold text-light-green-dark">Add</h1>
+        <p className="mt-1 text-sm text-light-green-dark-grey">Choose what type of data to add.</p>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {ADD_OPTIONS.map((opt) => {
-          const available = opt.available;
-          const Icon =
-            opt.icon === "vitals" ? VitalsIcon : opt.icon === "prescriptions" ? PrescriptionsIcon : ExamsIcon;
-          return (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => available && opt.id && setSelected(opt.id)}
-              disabled={!available}
-              className={`flex flex-col items-center gap-3 rounded-xl border-2 p-6 transition ${
-                available
-                  ? "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
-                  : "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-400"
-              }`}
-            >
-              <span className={available ? "text-slate-700" : "text-slate-400"}>
-                <Icon className="h-10 w-10" />
-              </span>
-              <span className="text-sm font-medium">{opt.label}</span>
-              {!available && <span className="text-xs text-slate-400">Coming soon</span>}
-            </button>
-          );
-        })}
+        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
+          {ADD_OPTIONS.map((opt) => {
+            const available = opt.available;
+            const Icon =
+              opt.icon === "vitals" ? VitalsIcon : opt.icon === "prescriptions" ? PrescriptionsIcon : ExamsIcon;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => available && opt.id && setSelected(opt.id)}
+                disabled={!available}
+                className={`flex flex-col items-center gap-3 rounded-xl border-2 p-6 transition-all ${
+                  available
+                    ? "border-light-green-subtle/60 bg-white text-light-green-dark shadow-card hover:-translate-y-0.5 hover:border-light-green-primary/30 hover:shadow-card-hover"
+                    : "cursor-not-allowed border-light-green-subtle/40 bg-light-green-light/50 text-light-green-light-grey"
+                }`}
+              >
+                <span className={available ? "text-light-green-primary" : "text-light-green-light-grey"}>
+                  <Icon className="h-10 w-10" />
+                </span>
+                <span className="text-sm font-medium">{opt.label}</span>
+                {!available && <span className="text-xs text-light-green-light-grey">Coming soon</span>}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

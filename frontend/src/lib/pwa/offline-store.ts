@@ -127,6 +127,14 @@ export async function persistAuthToken(token: string): Promise<void> {
 }
 
 /**
+ * Remove the stored auth token (e.g. on logout) so the service worker does not use it.
+ */
+export async function clearAuthToken(): Promise<void> {
+  const db = await getDB();
+  await db.delete("cachedData", "authToken");
+}
+
+/**
  * Store the API URL so the service worker can read it.
  * Called once during app initialization.
  */

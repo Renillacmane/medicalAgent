@@ -12,6 +12,9 @@ type Props = { onSuccess?: () => void; onBack?: () => void };
 
 const INITIAL_DATE = todayISO();
 
+const inputClass =
+  "mt-1 block w-full rounded-lg border border-light-green-subtle/80 bg-white px-3 py-2 text-light-green-dark shadow-sm transition-colors focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30";
+
 export default function AddVitalsForm({ onSuccess, onBack }: Props) {
   const router = useRouter();
   const [date, setDate] = useState(INITIAL_DATE);
@@ -75,7 +78,7 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
     setBloodGlucose("");
   }
 
-  // TOTO - Review this function
+  // TODO - Review this function
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -131,13 +134,13 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
         className={`rounded-lg border p-4 ${
           queued
             ? "border-amber-200 bg-amber-50 text-amber-800"
-            : "border-green-200 bg-green-50 text-green-800"
+            : "border-light-green-subtle bg-light-green-light/50 text-light-green-primary-dark"
         }`}
       >
         <p className="font-medium">
           {queued ? "Vital saved offline." : "Vital recorded."}
         </p>
-        <p className="mt-1 text-sm">
+        <p className="mt-1 text-sm text-light-green-dark-grey">
           {queued
             ? "It will be synced automatically when you're back online."
             : "You can add another below or go back."}
@@ -145,9 +148,7 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
         <button
           type="button"
           onClick={resetForm}
-          className={`mt-3 text-sm font-medium underline ${
-            queued ? "text-amber-700" : "text-green-700"
-          }`}
+          className="mt-3 text-sm font-medium text-light-green-primary underline-offset-2 hover:underline"
         >
           Add another
         </button>
@@ -161,14 +162,14 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
         <button
           type="button"
           onClick={onBack}
-          className="text-sm font-medium text-slate-600 hover:text-slate-800"
+          className="text-sm font-medium text-light-green-primary underline-offset-2 transition-colors hover:underline hover:text-light-green-primary-dark"
         >
           ← Back to type
         </button>
       )}
 
       <div>
-        <label htmlFor="vital-date" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="vital-date" className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
           Date <span className="text-red-500">*</span>
         </label>
         <input
@@ -177,13 +178,13 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
           value={date}
           onChange={(e) => setDate(e.target.value)}
           required
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          className={inputClass}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="vital-hr" className="mb-1 block text-sm font-medium text-slate-700">Heart rate (bpm)</label>
+          <label htmlFor="vital-hr" className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Heart rate (bpm)</label>
           <input
             id="vital-hr"
             type="number"
@@ -191,11 +192,11 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
             value={heartRate}
             onChange={(e) => setHeartRate(e.target.value)}
             placeholder="—"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            className={inputClass}
           />
         </div>
         <div>
-          <label htmlFor="vital-weight" className="mb-1 block text-sm font-medium text-slate-700">Weight (kg)</label>
+          <label htmlFor="vital-weight" className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Weight (kg)</label>
           <input
             id="vital-weight"
             type="number"
@@ -204,14 +205,14 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             placeholder="—"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            className={inputClass}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="vital-systolic" className="mb-1 block text-sm font-medium text-slate-700">Blood pressure (systolic)</label>
+          <label htmlFor="vital-systolic" className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Blood pressure (systolic)</label>
           <input
             id="vital-systolic"
             type="number"
@@ -219,11 +220,11 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
             value={systolic}
             onChange={(e) => setSystolic(e.target.value)}
             placeholder="—"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            className={inputClass}
           />
         </div>
         <div>
-          <label htmlFor="vital-diastolic" className="mb-1 block text-sm font-medium text-slate-700">Diastolic</label>
+          <label htmlFor="vital-diastolic" className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Diastolic</label>
           <input
             id="vital-diastolic"
             type="number"
@@ -231,14 +232,14 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
             value={diastolic}
             onChange={(e) => setDiastolic(e.target.value)}
             placeholder="—"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            className={inputClass}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="vital-height" className="mb-1 block text-sm font-medium text-slate-700">Height (cm)</label>
+          <label htmlFor="vital-height" className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Height (cm)</label>
           <input
             id="vital-height"
             type="number"
@@ -246,11 +247,11 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
             value={height}
             onChange={(e) => setHeight(e.target.value)}
             placeholder="—"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            className={inputClass}
           />
         </div>
         <div>
-          <label htmlFor="vital-sleep" className="mb-1 block text-sm font-medium text-slate-700">Sleep (hours)</label>
+          <label htmlFor="vital-sleep" className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Sleep (hours)</label>
           <input
             id="vital-sleep"
             type="number"
@@ -260,14 +261,14 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
             value={sleepHours}
             onChange={(e) => setSleepHours(e.target.value)}
             placeholder="—"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            className={inputClass}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="vital-stress" className="mb-1 block text-sm font-medium text-slate-700">Stress (1–10)</label>
+          <label htmlFor="vital-stress" className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Stress (1–10)</label>
           <input
             id="vital-stress"
             type="number"
@@ -276,11 +277,11 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
             value={stressPerception}
             onChange={(e) => setStressPerception(e.target.value)}
             placeholder="—"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            className={inputClass}
           />
         </div>
         <div>
-          <label htmlFor="vital-spo2" className="mb-1 block text-sm font-medium text-slate-700">SpO₂ (%)</label>
+          <label htmlFor="vital-spo2" className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">SpO₂ (%)</label>
           <input
             id="vital-spo2"
             type="number"
@@ -289,13 +290,13 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
             value={bloodOxygen}
             onChange={(e) => setBloodOxygen(e.target.value)}
             placeholder="—"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            className={inputClass}
           />
         </div>
       </div>
 
       <div>
-        <label htmlFor="vital-glucose" className="mb-1 block text-sm font-medium text-slate-700">Blood glucose</label>
+        <label htmlFor="vital-glucose" className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Blood glucose</label>
         <input
           id="vital-glucose"
           type="number"
@@ -303,15 +304,15 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
           value={bloodGlucose}
           onChange={(e) => setBloodGlucose(e.target.value)}
           placeholder="—"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          className={inputClass}
         />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+        className="w-full rounded-lg bg-light-green-primary px-5 py-2.5 text-sm font-semibold text-white shadow-card transition-all hover:bg-light-green-primary-dark hover:shadow-card-hover active:scale-[0.98] disabled:opacity-70"
       >
         {loading ? "Saving…" : "Save vital"}
       </button>

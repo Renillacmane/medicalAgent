@@ -36,3 +36,12 @@ export function hasValidToken(): boolean {
   if (!token) return false;
   return !isTokenExpired(token);
 }
+
+/**
+ * Clear the auth token from localStorage and from the offline store (so the SW
+ * does not use it). Call this on logout.
+ */
+export function clearToken(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(TOKEN_KEY);
+}

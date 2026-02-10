@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authGet, authPatch, UnauthorizedError } from "@/lib/api";
+import { clearToken } from "@/lib/auth";
+import { clearAuthToken } from "@/lib/pwa/offline-store";
 import { formatDate } from "@/lib/format";
 import type { PatientProfile } from "@/types/profile";
 import Field from "@/components/ui/Field";
-import PageLoading from "@/components/ui/PageLoading";
 
 type EditForm = {
   firstName: string;
@@ -76,7 +77,7 @@ function editFormToPayload(form: EditForm): Record<string, unknown> {
 }
 
 const inputClass =
-  "mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500";
+  "mt-1 block w-full rounded-lg border border-light-green-subtle/80 bg-white px-3 py-2 text-light-green-dark shadow-sm transition-colors focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30";
 
 export default function Profile() {
   const router = useRouter();
@@ -87,6 +88,12 @@ export default function Profile() {
   const [form, setForm] = useState<EditForm | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const handleLogout = () => {
+    clearToken();
+    clearAuthToken().catch(() => {});
+    router.replace("/login?redirect=/profile");
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -148,28 +155,39 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="p-4">
-        <h1 className="text-lg font-semibold text-slate-800">My profile</h1>
-        <p className="mt-1 text-sm text-slate-500">Your account and health profile.</p>
-        <PageLoading message="Loading profile…" className="mt-6 min-h-[8rem]" />
+      <div className="min-h-screen bg-light-green-light px-4 py-8 sm:px-6">
+        <div className="mx-auto max-w-2xl">
+          <h1 className="text-2xl font-semibold text-light-green-dark">My profile</h1>
+          <p className="mt-1 text-sm text-light-green-dark-grey">Your account and health profile.</p>
+          <div className="mt-8 rounded-xl border border-light-green-subtle/60 bg-white p-8 shadow-card">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-10 w-10 animate-spin rounded-full border-2 border-light-green-subtle border-t-light-green-primary" />
+              <p className="text-sm text-light-green-dark-grey">Loading profile…</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4">
-        <h1 className="text-lg font-semibold text-slate-800">My profile</h1>
-        <p className="mt-2 text-sm text-red-600">{error}</p>
+      <div className="min-h-screen bg-light-green-light px-4 py-8 sm:px-6">
+        <div className="mx-auto max-w-2xl">
+          <h1 className="text-2xl font-semibold text-light-green-dark">My profile</h1>
+          <p className="mt-2 text-sm text-red-600" role="alert">{error}</p>
+        </div>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="p-4">
-        <h1 className="text-lg font-semibold text-slate-800">My profile</h1>
-        <p className="mt-2 text-sm text-slate-500">No profile data.</p>
+      <div className="min-h-screen bg-light-green-light px-4 py-8 sm:px-6">
+        <div className="mx-auto max-w-2xl">
+          <h1 className="text-2xl font-semibold text-light-green-dark">My profile</h1>
+          <p className="mt-2 text-sm text-light-green-dark-grey">No profile data.</p>
+        </div>
       </div>
     );
   }
@@ -178,33 +196,43 @@ export default function Profile() {
   const objectives = profile.objectives;
 
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-800">My profile</h1>
-          <p className="mt-1 text-sm text-slate-500">Your account and health profile.</p>
+    <div className="min-h-screen bg-light-green-light px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-2xl">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-light-green-dark">My profile</h1>
+            <p className="mt-1 text-sm text-light-green-dark-grey">Your account and health profile.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {!isEditing ? (
+              <button
+                type="button"
+                onClick={startEdit}
+                className="rounded-lg border-2 border-light-green-primary bg-transparent px-4 py-2.5 text-sm font-semibold text-light-green-primary transition-all hover:bg-light-green-primary hover:text-white active:scale-[0.98]"
+              >
+                Edit
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg border border-light-green-subtle/80 bg-white px-4 py-2.5 text-sm font-medium text-light-green-dark-grey shadow-card transition-all hover:border-light-green-primary/50 hover:bg-light-green-light/50 active:scale-[0.98]"
+            >
+              Log out
+            </button>
+          </div>
         </div>
-        {!isEditing ? (
-          <button
-            type="button"
-            onClick={startEdit}
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
-          >
-            Edit
-          </button>
-        ) : null}
-      </div>
 
-      {isEditing && form ? (
-        <div className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          {saveError && (
-            <p className="mb-4 text-sm text-red-600" role="alert">
-              {saveError}
-            </p>
-          )}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+        {isEditing && form ? (
+          <div className="mt-8 rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card">
+            {saveError && (
+              <p className="mb-4 text-sm text-red-600" role="alert">
+                {saveError}
+              </p>
+            )}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
                 First name
               </label>
               <input
@@ -216,7 +244,7 @@ export default function Profile() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
                 Last name
               </label>
               <input
@@ -239,7 +267,7 @@ export default function Profile() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
                 Height (cm)
               </label>
               <input
@@ -272,14 +300,14 @@ export default function Profile() {
                 id="profile-isActive"
                 checked={form.isActive}
                 onChange={(e) => updateForm({ isActive: e.target.checked })}
-                className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                className="h-4 w-4 rounded border-light-green-subtle text-light-green-primary focus:ring-light-green-primary"
               />
-              <label htmlFor="profile-isActive" className="text-sm text-slate-700">
+              <label htmlFor="profile-isActive" className="text-sm text-light-green-dark">
                 Account active
               </label>
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
                 Dietary preference (type)
               </label>
               <input
@@ -303,7 +331,7 @@ export default function Profile() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
                 Objectives (body) — comma-separated
               </label>
               <input
@@ -327,7 +355,7 @@ export default function Profile() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
                 Objectives (mind) — comma-separated
               </label>
               <input
@@ -339,57 +367,64 @@ export default function Profile() {
               />
             </div>
           </div>
-          <div className="mt-6 flex gap-3">
-            <button
-              type="button"
-              onClick={saveProfile}
-              disabled={saving}
-              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : "Save"}
-            </button>
-            <button
-              type="button"
-              onClick={cancelEdit}
-              disabled={saving}
-              className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-60"
-            >
-              Cancel
-            </button>
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={saveProfile}
+                disabled={saving}
+                className="rounded-lg bg-light-green-primary px-5 py-2.5 text-sm font-semibold text-white shadow-card transition-all hover:bg-light-green-primary-dark hover:shadow-card-hover active:scale-[0.98] disabled:opacity-70"
+              >
+                {saving ? "Saving…" : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={cancelEdit}
+                disabled={saving}
+                className="rounded-lg border-2 border-light-green-primary bg-transparent px-5 py-2.5 text-sm font-semibold text-light-green-primary transition-all hover:bg-light-green-primary hover:text-white active:scale-[0.98] disabled:opacity-70"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
-        </div>
       ) : (
-        <dl className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <Field label="Name" value={`${profile.firstName} ${profile.lastName}`} />
-          <Field label="Email" value={profile.email} />
-          <Field label="Date of birth" value={formatDate(profile.dateOfBirth, "long")} />
-          <Field label="Status" value={profile.isActive !== false ? "Active" : "Inactive"} />
-          <Field label="Height" value={profile.height != null ? `${profile.height} cm` : undefined} />
-          <Field label="Weight" value={profile.weight != null ? `${profile.weight} kg` : undefined} />
-          <Field
-            label="Dietary preference"
-            value={
-              diet
-                ? [diet.type, diet.restrictions?.length ? `(${diet.restrictions.join(", ")})` : null]
-                    .filter(Boolean)
-                    .join(" ") || "—"
-                : undefined
-            }
-          />
-          <Field
-            label="Objectives (body)"
-            value={objectives?.body?.length ? objectives.body.join(", ") : undefined}
-          />
-          <Field
-            label="Objectives (health)"
-            value={objectives?.health?.length ? objectives.health.join(", ") : undefined}
-          />
-          <Field
-            label="Objectives (mind)"
-            value={objectives?.mind?.length ? objectives.mind.join(", ") : undefined}
-          />
-        </dl>
+        <div className="mt-8 rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card transition-all hover:shadow-card-hover">
+          <dl className="divide-y-0">
+            <Field variant="lightGreen" label="Name" value={`${profile.firstName} ${profile.lastName}`} />
+            <Field variant="lightGreen" label="Email" value={profile.email} />
+            <Field variant="lightGreen" label="Date of birth" value={formatDate(profile.dateOfBirth, "long")} />
+            <Field variant="lightGreen" label="Status" value={profile.isActive !== false ? "Active" : "Inactive"} />
+            <Field variant="lightGreen" label="Height" value={profile.height != null ? `${profile.height} cm` : undefined} />
+            <Field variant="lightGreen" label="Weight" value={profile.weight != null ? `${profile.weight} kg` : undefined} />
+            <Field
+              variant="lightGreen"
+              label="Dietary preference"
+              value={
+                diet
+                  ? [diet.type, diet.restrictions?.length ? `(${diet.restrictions.join(", ")})` : null]
+                      .filter(Boolean)
+                      .join(" ") || "—"
+                  : undefined
+              }
+            />
+            <Field
+              variant="lightGreen"
+              label="Objectives (body)"
+              value={objectives?.body?.length ? objectives.body.join(", ") : undefined}
+            />
+            <Field
+              variant="lightGreen"
+              label="Objectives (health)"
+              value={objectives?.health?.length ? objectives.health.join(", ") : undefined}
+            />
+            <Field
+              variant="lightGreen"
+              label="Objectives (mind)"
+              value={objectives?.mind?.length ? objectives.mind.join(", ") : undefined}
+            />
+          </dl>
+        </div>
       )}
+      </div>
     </div>
   );
 }
