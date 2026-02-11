@@ -21,6 +21,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  // Required for env(safe-area-inset-*) on iOS so the bottom nav sits above the home indicator
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

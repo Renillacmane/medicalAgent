@@ -1,0 +1,16 @@
+ 1038  npm run build && npx cap sync
+ 1039  npm run build && npx cap sync
+ 1040  npm run dev
+ 1041  npm run build && npx cap sync
+ 1042  npm run dev
+ 1043  npm run build && npx cap sync
+ 1044  npm run dev
+ 1045  npm run dev
+ 1046  npm run build && npx cap sync
+ 1047  npm run dev
+ 1048  npm run build && npx cap sync
+ 1049  npm run dev
+ 1050  npm run build && npx cap sync
+ 1051  npm run dev
+ 1052  npm run build && npx cap sync
+ 1053  npm run dev

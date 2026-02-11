@@ -24,6 +24,8 @@ export function isNativeCapacitor(): boolean {
   if (typeof window === "undefined") return false;
   // Prefer Capacitor set by the native bridge (injected before our app runs)
   if (window.Capacitor?.isNativePlatform?.()) return true;
+  // Capacitor iOS WebView loads from "capacitor://" protocol (reliable, no timing issues)
+  if (window.location.protocol === "capacitor:") return true;
   // Fallback: detect native WebView by bridge presence (same checks @capacitor/core uses)
   if (window.androidBridge) return true;
   if (window.webkit?.messageHandlers?.bridge) return true;
@@ -34,6 +36,8 @@ export function isNativeCapacitor(): boolean {
 export function getCapacitorPlatform(): string {
   if (typeof window === "undefined") return "web";
   if (window.Capacitor?.getPlatform?.()) return window.Capacitor.getPlatform();
+  // Capacitor iOS uses the "capacitor:" protocol
+  if (window.location.protocol === "capacitor:") return "ios";
   if (window.androidBridge) return "android";
   if (window.webkit?.messageHandlers?.bridge) return "ios";
   return "web";

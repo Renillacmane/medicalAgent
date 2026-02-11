@@ -32,11 +32,16 @@ export type PWAInstallContextValue = {
   openApp: () => void;
   /** Stored install context (when/where), if any. */
   installContext: { installedAt: string; platform: string } | null;
+  /** True when running in standalone and the live manifest version differs from the one we last saw (user should reinstall). */
+  manifestUpdateAvailable: boolean;
+  /** Call after the user acknowledges the manifest-update banner (stores current version so we don’t show again). */
+  dismissManifestUpdate: () => void;
 };
 
 const DISMISSED_KEY = "healthia-install-dismissed";
 const INSTALLED_KEY = "healthia-pwa-installed";
 const INSTALL_CONTEXT_KEY = "healthia-pwa-install-context";
+const MANIFEST_VERSION_KEY = "healthia-pwa-manifest-version";
 
 function getPlatform(): string {
   if (typeof navigator === "undefined") return "unknown";
@@ -82,6 +87,8 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
   const [installContext, setInstallContext] = useState<
     PWAInstallContextValue["installContext"]
   >(null);
+  // TODO - set message to show in the banner
+  const [manifestUpdateAvailable, setManifestUpdateAvailable] = useState(false);
 
   useEffect(() => {
     setIsInstalled(readInstalled());
@@ -106,13 +113,81 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // When we're running in standalone, the user has the app installed (via our prompt or system UI).
+  // Persist that so when they open the site in a browser tab we can show "Open app" instead of "Install".
+  useEffect(() => {
+    if (isStandalone) {
+      if (localStorage.getItem(INSTALLED_KEY) !== "1") {
+        const context = {
+          installedAt: new Date().toISOString(),
+          platform: getPlatform(),
+        };
+        localStorage.setItem(INSTALLED_KEY, "1");
+        localStorage.setItem(INSTALL_CONTEXT_KEY, JSON.stringify(context));
+        setInstallContext(context);
+      }
+      setIsInstalled(true);
+    }
+  }, [isStandalone]);
+
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
+      // If beforeinstallprompt fires and we're not in standalone, the app is NOT installed.
+      // Clear stale localStorage flag so we show "Install" instead of "Open app".
+      if (!isStandalone && localStorage.getItem(INSTALLED_KEY) === "1") {
+        localStorage.removeItem(INSTALLED_KEY);
+        localStorage.removeItem(INSTALL_CONTEXT_KEY);
+        setIsInstalled(false);
+        setInstallContext(null);
+      }
     };
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, [isStandalone]);
+
+  // When running in standalone (installed PWA), fetch live manifest and compare version to stored.
+  // Run only when isStandalone is true. Use cache-busting so we get the server manifest, not a cached one.
+  useEffect(() => {
+    if (typeof window === "undefined" || !isStandalone) return;
+
+    let cancelled = false;
+    const url = `/manifest.json?vc=${Date.now()}`;
+    fetch(url)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((manifest: { version?: string } | null) => {
+        if (cancelled || !manifest) return;
+        const liveVersion = String(manifest.version ?? "").trim();
+        if (liveVersion === "") return;
+        const stored = (localStorage.getItem(MANIFEST_VERSION_KEY) ?? "").trim();
+        if (stored === "") {
+          // First time in standalone: record current version so we don’t prompt until the next update
+          localStorage.setItem(MANIFEST_VERSION_KEY, liveVersion);
+          return;
+        }
+        if (liveVersion !== stored) {
+          setManifestUpdateAvailable(true);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isStandalone]);
+
+  const dismissManifestUpdate = useCallback(() => {
+    if (typeof window === "undefined") return;
+    fetch("/manifest.json")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((manifest: { version?: string } | null) => {
+        if (manifest?.version != null) {
+          localStorage.setItem(MANIFEST_VERSION_KEY, String(manifest.version));
+        }
+        setManifestUpdateAvailable(false);
+      })
+      .catch(() => setManifestUpdateAvailable(false));
   }, []);
 
   const runInstall = useCallback(
@@ -145,15 +220,23 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
     window.location.href = "/pwa/dashboard";
   }, []);
 
+  // Compute canInstall and isInstalled
+  const canInstall = !!deferredPrompt;
+  // isInstalled: true if in standalone (definitive), otherwise trust localStorage
+  // If beforeinstallprompt fired, we already cleared stale localStorage in the handler
+  const computedIsInstalled = isStandalone || isInstalled;
+
   const value: PWAInstallContextValue = {
-    canInstall: !!deferredPrompt,
-    isInstalled,
+    canInstall,
+    isInstalled: computedIsInstalled,
     isStandalone,
     runInstall,
     dismissBanner,
     bannerDismissed,
     openApp,
     installContext,
+    manifestUpdateAvailable,
+    dismissManifestUpdate,
   };
 
   return (

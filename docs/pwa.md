@@ -180,6 +180,14 @@ The `activate` event handler automatically deletes old caches.
 
 ---
 
+## Manifest versioning (reinstall prompt)
+
+The manifest has a `version` field (e.g. `"version": "1"` in `public/manifest.json`). When the app runs in standalone (installed PWA), it fetches the live manifest and compares this version to the last one stored in `localStorage`. If they differ, a banner is shown asking the user to uninstall the old app and reinstall from the website, with short instructions (Chrome: `chrome://apps` → right‑click Healthia → Uninstall; Android: long‑press icon → Uninstall; iOS: long‑press → Remove App).
+
+**When to bump the version:** Increment the manifest `version` when you change something that requires users to reinstall for correct behavior (e.g. `scope`, `start_url`, or other breaking manifest changes). After bumping, deploy; existing installs will see the banner once. See `ManifestUpdateBanner.tsx` and the `manifestUpdateAvailable` / `dismissManifestUpdate` flow in `install-context.tsx`.
+
+---
+
 ## Browser vs PWA navigation (how others do it)
 
 Chrome and other browsers decide whether a link opens in a **browser tab** or in the **installed PWA window** using **navigation capturing**:
@@ -199,7 +207,12 @@ So the common pattern for “Open in app” vs “Open in tab” is:
 - **“Open in app”** → link to an **in-scope** URL (e.g. `/pwa/dashboard`) → browser opens the PWA.
 - **“Open in tab”** → link to an **out-of-scope** URL (e.g. `/dashboard`) → browser opens a normal tab.
 
-That’s what we do: manifest has `start_url: "/pwa/dashboard"` and `scope: "/pwa"`. The widget’s “Open app” and “Open in new tab” buttons point to the appropriate path so the browser’s default behavior gives the right result. Because some browsers or cached manifests can still treat `/dashboard` as the PWA, we currently wire the widget so that “Open app” uses `/dashboard` and “Open in new tab” uses `/pwa/dashboard` to match observed behavior; see `frontend/src/components/Widget.tsx`.
+That’s what we do: manifest has `start_url: "/pwa/dashboard"` and `scope: "/pwa"`. The widget’s buttons work as follows:
+
+- **“Open app”** → `window.location.href = "/pwa/dashboard"` — a top-level navigation to an **in-scope** URL. The browser’s navigation capturing intercepts this and opens the installed PWA. We use `location.href` (not `window.open(_blank)`) because `_blank` explicitly requests a new tab and **bypasses** PWA navigation capturing.
+- **“Open in new tab”** → `window.open("/dashboard", "_blank")` — an **out-of-scope** URL opened with `_blank`. Since `/dashboard` is outside the `/pwa` scope, the browser will never try to capture it for the PWA.
+
+See `frontend/src/components/Widget.tsx`.
 
 ---
 

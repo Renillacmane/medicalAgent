@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePWAInstall } from "@/lib/pwa/install-context";
 
 /**
@@ -18,17 +17,14 @@ export default function InstallButton() {
 
   if (isInstalled) {
     return (
-      <Link
-        href="/pwa/dashboard"
-        onClick={(e) => {
-          e.preventDefault();
-          openApp();
-        }}
+      <button
+        type="button"
+        onClick={openApp}
         className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-teal-700"
         aria-label="Open Healthia app"
       >
         Open app
-      </Link>
+      </button>
     );
   }
 

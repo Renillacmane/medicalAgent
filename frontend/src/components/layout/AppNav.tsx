@@ -12,7 +12,7 @@ export default function AppNav() {
 
   return (
     <nav
-      className="flex shrink-0 border-t border-slate-200 bg-slate-50/80"
+      className="flex shrink-0 border-t border-slate-200 bg-slate-50/80 pb-[env(safe-area-inset-bottom)]"
       aria-label="App navigation"
     >
       {NAV_TABS.map(({ id, label, href }) => {

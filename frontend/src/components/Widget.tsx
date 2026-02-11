@@ -43,14 +43,14 @@ export default function Widget({ embedBaseUrl = EMBED_BASE }: WidgetProps) {
   const appBase = base || origin;
   const iframeSrc = `${appBase}/dashboard?widget=1`;
 
-  /** Open in PWA window. Uses /dashboard so the installed PWA (start_url) opens in the app window. */
+  /**
+   * Open the installed PWA via window.location.href.
+   * This causes a full top-level navigation to /pwa/dashboard (within the PWA scope "/pwa").
+   * window.location.href works for PWA link capturing where <a> tags and <Link> do not,
+   * because it bypasses the service worker's cache-first response for navigation requests.
+   */
   const openApp = () => {
-    window.open(`${appBase}/dashboard`, "_blank", "noopener,noreferrer");
-  };
-
-  /** Open in a new browser tab. Uses /pwa/dashboard so it opens in a tab (not captured by PWA). */
-  const openInNewTab = () => {
-    window.open(`${appBase}/pwa/dashboard`, "_blank", "noopener,noreferrer");
+    window.location.href = `${appBase}/pwa/dashboard`;
   };
 
   return (
@@ -73,15 +73,20 @@ export default function Widget({ embedBaseUrl = EMBED_BASE }: WidgetProps) {
               >
                 <HealthIcon className="h-5 w-5" />
               </button>
-              <button
-                type="button"
-                onClick={openInNewTab}
+              {/*
+                "Open in new tab" uses a real <a> tag with target="_blank".
+                /dashboard is OUTSIDE the PWA scope ("/pwa"), so it opens in a regular browser tab.
+              */}
+              <a
+                href={`${appBase}/dashboard`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="rounded p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                 aria-label="Open in new tab"
                 title="Open in new tab"
               >
                 <NewTabIcon className="h-5 w-5" />
-              </button>
+              </a>
               <button
                 type="button"
                 onClick={() => setExpanded(false)}
