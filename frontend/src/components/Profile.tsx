@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useBasePath } from "@/lib/base-path";
 import { authGet, authPatch, UnauthorizedError } from "@/lib/api";
 import { clearToken } from "@/lib/auth";
 import { clearAuthToken } from "@/lib/pwa/offline-store";
 import { formatDate } from "@/lib/format";
 import type { PatientProfile } from "@/types/profile";
+import LoadingPulse from "@/components/design/LoadingPulse";
 import Field from "@/components/ui/Field";
 
 type EditForm = {
@@ -81,6 +83,7 @@ const inputClass =
 
 export default function Profile() {
   const router = useRouter();
+  const basePath = useBasePath();
   const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +95,7 @@ export default function Profile() {
   const handleLogout = () => {
     clearToken();
     clearAuthToken().catch(() => {});
-    router.replace("/login?redirect=/profile");
+    router.replace(`${basePath}/login?redirect=${encodeURIComponent(basePath + "/profile")}`);
   };
 
   useEffect(() => {
@@ -104,7 +107,7 @@ export default function Profile() {
       .catch((e) => {
         if (!cancelled) {
           if (e instanceof UnauthorizedError) {
-            router.replace("/login?redirect=/profile");
+            router.replace(`${basePath}/login?redirect=${encodeURIComponent(basePath + "/profile")}`);
             return;
           }
           setError(e instanceof Error ? e.message : "Failed to load profile");
@@ -116,7 +119,7 @@ export default function Profile() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, basePath]);
 
   const startEdit = () => {
     if (profile) {
@@ -160,10 +163,7 @@ export default function Profile() {
           <h1 className="text-2xl font-semibold text-light-green-dark">My profile</h1>
           <p className="mt-1 text-sm text-light-green-dark-grey">Your account and health profile.</p>
           <div className="mt-8 rounded-xl border border-light-green-subtle/60 bg-white p-8 shadow-card">
-            <div className="flex flex-col items-center gap-4">
-              <div className="h-10 w-10 animate-spin rounded-full border-2 border-light-green-subtle border-t-light-green-primary" />
-              <p className="text-sm text-light-green-dark-grey">Loading profile…</p>
-            </div>
+            <LoadingPulse message="Loading profile…" />
           </div>
         </div>
       </div>

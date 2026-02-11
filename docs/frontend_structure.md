@@ -11,6 +11,61 @@ Layout components (header, footer, nav) are shared and layout-agnostic. They are
 
 ---
 
+## Where AppShell and Widget live (layout diagram)
+
+**AppShell** = the app chrome (Header, main content area, Footer, AppNav, AboutModal). It wraps the **content** of the app (dashboard, add, profile, etc.). It is **not** the top-level window; it is the inner layout used by the `(app)` routes.
+
+**Widget** = a floating shell on the **landing page** (`/`). It has its own frame (title bar + "Open app", "Open in new tab", Close) and an **iframe** that loads the app. The iframe's content is the same app that uses **AppShell** inside it.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  BROWSER TAB (or PWA window)                                                │
+│                                                                             │
+│  Scenario A: Direct app (e.g. /dashboard, or PWA)                           │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │  Root layout (html, body, ServiceWorkerRegistrar)                      │  │
+│  │  ┌─────────────────────────────────────────────────────────────────┐  │  │
+│  │  │  AppShell                                                        │  │  │
+│  │  │  ┌───────────────────────────────────────────────────────────┐  │  │  │
+│  │  │  │  Header (title, nav links)                                 │  │  │  │
+│  │  │  ├───────────────────────────────────────────────────────────┤  │  │  │
+│  │  │  │  main (dashboard / add / profile content)                   │  │  │  │
+│  │  │  ├───────────────────────────────────────────────────────────┤  │  │  │
+│  │  │  │  Footer                                                    │  │  │  │
+│  │  │  ├───────────────────────────────────────────────────────────┤  │  │  │
+│  │  │  │  AppNav (bottom nav) + AboutModal                          │  │  │  │
+│  │  │  └───────────────────────────────────────────────────────────┘  │  │  │
+│  │  └─────────────────────────────────────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+│  Scenario B: Landing page (/) with Widget                                    │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │  Root layout                                                          │  │
+│  │  ┌─────────────────────────────────────────────────────────────────┐  │  │
+│  │  │  Landing content (title, dummy summary, "Click Hi…")            │  │  │
+│  │  └─────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                        │  │
+│  │  ┌─ Widget (fixed bottom-right) ───────────────────────────────────┐   │  │
+│  │  │  [ "Hi" button ]  ← toggles panel open/close                    │   │  │
+│  │  │  ┌─ Expanded panel ─────────────────────────────────────────┐   │   │  │
+│  │  │  │  Widget header: "Healthia" | [Open app] [Open tab] [Close] │   │   │  │
+│  │  │  ├──────────────────────────────────────────────────────────┤   │   │  │
+│  │  │  │  IFRAME (src = /dashboard)                                 │   │   │  │
+│  │  │  │  ┌────────────────────────────────────────────────────┐   │   │   │  │
+│  │  │  │  │  Same as Scenario A: AppShell + Header/main/Footer  │   │   │   │  │
+│  │  │  │  │  (the full app runs inside the iframe)             │   │   │   │  │
+│  │  │  │  └────────────────────────────────────────────────────┘   │   │   │  │
+│  │  │  └──────────────────────────────────────────────────────────┘   │   │  │
+│  │  └─────────────────────────────────────────────────────────────────┘   │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+- **AppShell** appears in both scenarios: once as the main layout when you're on `/dashboard` (or PWA), and again **inside the widget's iframe** when the iframe loads `/dashboard`.
+- **Widget** appears only on the landing page (`/`); it is the outer frame (header + iframe). It does not wrap the full window; it sits in a corner of the page.
+
+---
+
 ## Folder structure
 
 ```

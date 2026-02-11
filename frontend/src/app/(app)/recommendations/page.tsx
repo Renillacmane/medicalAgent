@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useBasePath } from "@/lib/base-path";
 import { authGet, UnauthorizedError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import type { Vital } from "@/types/vital";
@@ -61,6 +62,7 @@ function buildChartData(
 
 export default function RecommendationsPage() {
   const router = useRouter();
+  const basePath = useBasePath();
   const [recommendations, setRecommendations] = useState<DailyRecommendationResponse | null>(null);
   const [vitals, setVitals] = useState<Vital[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +95,7 @@ export default function RecommendationsPage() {
       .catch((e) => {
         if (!cancelled) {
           if (e instanceof UnauthorizedError) {
-            router.replace("/login?redirect=/recommendations");
+            router.replace(`${basePath}/login?redirect=${encodeURIComponent(basePath + "/recommendations")}`);
             return;
           }
           setError(e instanceof Error ? e.message : "Failed to load");
@@ -103,7 +105,7 @@ export default function RecommendationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, basePath]);
 
   if (error) {
     return (

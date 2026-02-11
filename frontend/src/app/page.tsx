@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useIsNativeCapacitor } from "@/lib/capacitor/use-is-native-capacitor";
 import AppShell from "@/components/layout/AppShell";
 import Dashboard from "@/components/Dashboard";
@@ -19,17 +20,22 @@ const DUMMY_SUMMARY = {
 export default function Home() {
   const isNative = useIsNativeCapacitor();
 
-  if (isNative !== false) {
+  // Only use AppShell when we know we're in the native app (isNative === true).
+  // When isNative is null (still resolving) or false (web), show the landing page so we
+  // don't trigger AppShell's auth check and redirect to login on reload.
+  if (isNative === true) {
     return (
-      <AppShell>
-        {isNative === null ? (
+      <Suspense
+        fallback={
           <div className="flex min-h-[40vh] items-center justify-center p-4" aria-busy="true">
             <Spinner />
           </div>
-        ) : (
+        }
+      >
+        <AppShell>
           <Dashboard />
-        )}
-      </AppShell>
+        </AppShell>
+      </Suspense>
     );
   }
 

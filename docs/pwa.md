@@ -180,6 +180,29 @@ The `activate` event handler automatically deletes old caches.
 
 ---
 
+## Browser vs PWA navigation (how others do it)
+
+Chrome and other browsers decide whether a link opens in a **browser tab** or in the **installed PWA window** using **navigation capturing**:
+
+1. **Scope** – Only URLs that fall **within** the manifest `scope` are “captured” for the PWA. Links to URLs **outside** scope open in a normal browser tab (or in-app browser with URL bar, depending on platform).
+2. **User preference** – From Chrome 139+, users can opt out of link capturing in the app’s settings, so in-scope links open in a tab instead of the PWA.
+3. **Launch Handler API** – This does **not** choose “browser vs PWA”. It only controls **how** the PWA is launched when it is chosen: new window (`navigate-new`), reuse existing window (`navigate-existing`), or focus existing and pass URL via `window.launchQueue` (`focus-existing`). Example: [Google Chat](https://developer.chrome.com/docs/capabilities/pwa-navigation-management) uses `focus-existing` so links from Calendar open in the already-open Chat PWA. The [MDN Launch Handler demo](https://github.com/mdn/dom-examples/tree/main/launch-handler) uses `launchQueue.setConsumer()` to handle `targetURL` (e.g. play a track).
+
+There is **no** web API that lets a developer say “this specific link must open in a browser tab”. The only levers are:
+
+- **Scope** – Put “open in tab” URLs **outside** the PWA scope so they are not captured.
+- **User setting** – User opts out of link capturing for the app.
+
+So the common pattern for “Open in app” vs “Open in tab” is:
+
+- **PWA scope** = a subset of the site (e.g. `scope: "/pwa"` or `scope: "/app"`).
+- **“Open in app”** → link to an **in-scope** URL (e.g. `/pwa/dashboard`) → browser opens the PWA.
+- **“Open in tab”** → link to an **out-of-scope** URL (e.g. `/dashboard`) → browser opens a normal tab.
+
+That’s what we do: manifest has `start_url: "/pwa/dashboard"` and `scope: "/pwa"`. The widget’s “Open app” and “Open in new tab” buttons point to the appropriate path so the browser’s default behavior gives the right result. Because some browsers or cached manifests can still treat `/dashboard` as the PWA, we currently wire the widget so that “Open app” uses `/dashboard` and “Open in new tab” uses `/pwa/dashboard` to match observed behavior; see `frontend/src/components/Widget.tsx`.
+
+---
+
 ## Future work (not yet implemented)
 
 - **Push notifications** -- requires backend VAPID key setup and a `/push/subscribe` endpoint

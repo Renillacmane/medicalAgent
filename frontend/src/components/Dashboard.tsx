@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useBasePath } from "@/lib/base-path";
+import LoadingPulse from "@/components/design/LoadingPulse";
 import { authGet, UnauthorizedError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { formatBP } from "@/lib/vital-format";
@@ -10,6 +12,7 @@ import type { Vital } from "@/types/vital";
 
 export default function Dashboard() {
   const router = useRouter();
+  const basePath = useBasePath();
   const [vitals, setVitals] = useState<Vital[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +32,7 @@ export default function Dashboard() {
       .catch((e) => {
         if (!cancelled) {
           if (e instanceof UnauthorizedError) {
-            router.replace("/login?redirect=/dashboard");
+            router.replace(`${basePath}/login?redirect=${encodeURIComponent(basePath + "/dashboard")}`);
             return;
           }
           setError(e instanceof Error ? e.message : "Failed to load vitals");
@@ -41,7 +44,7 @@ export default function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, basePath]);
 
   return (
     <div className="min-h-screen bg-light-green-light px-4 py-8 sm:px-6">
@@ -53,7 +56,7 @@ export default function Dashboard() {
 
         <div className="mt-4">
           <Link
-            href="/design"
+            href={`${basePath}/design`}
             className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-light-green-primary underline-offset-2 transition-colors hover:underline active:text-light-green-primary-dark"
           >
             Design page
@@ -69,10 +72,7 @@ export default function Dashboard() {
           )}
           {loading && (
             <div className="mt-6 rounded-xl border border-light-green-subtle/60 bg-white p-8 shadow-card">
-              <div className="flex flex-col items-center gap-4">
-                <div className="h-10 w-10 animate-spin rounded-full border-2 border-light-green-subtle border-t-light-green-primary" />
-                <p className="text-sm text-light-green-dark-grey">Loading vitals…</p>
-              </div>
+              <LoadingPulse message="Loading vitals…" />
             </div>
           )}
           {error && (
@@ -84,7 +84,7 @@ export default function Dashboard() {
                 No vitals yet. Add some from the Add tab.
               </p>
               <Link
-                href="/add"
+                href={`${basePath}/add`}
                 className="mt-4 inline-block text-sm font-medium text-light-green-primary transition-colors hover:text-light-green-primary-dark hover:underline"
               >
                 Add vitals →

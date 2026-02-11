@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useBasePath } from "@/lib/base-path";
 import { authPost, UnauthorizedError } from "@/lib/api";
 import { todayISO } from "@/lib/format";
 import { addPendingVital } from "@/lib/pwa/offline-store";
@@ -17,6 +18,7 @@ const inputClass =
 
 export default function AddVitalsForm({ onSuccess, onBack }: Props) {
   const router = useRouter();
+  const basePath = useBasePath();
   const [date, setDate] = useState(INITIAL_DATE);
   const [heartRate, setHeartRate] = useState("");
   const [systolic, setSystolic] = useState("");
@@ -110,7 +112,7 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
       onSuccess?.();
     } catch (err) {
       if (err instanceof UnauthorizedError) {
-        router.replace("/login?redirect=/add");
+        router.replace(`${basePath}/login?redirect=${encodeURIComponent(basePath + "/add")}`);
         return;
       }
       // Network error while "online" (flaky connection) – queue offline

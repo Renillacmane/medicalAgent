@@ -1,17 +1,1 @@
-{
-  "id": "/dashboard",
-  "name": "Healthia - Medical Agent",
-  "short_name": "Healthia",
-  "description": "AI-powered daily health recommendations",
-  "start_url": "/dashboard",
-  "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
-  "background_color": "#f8fafc",
-  "theme_color": "#0d9488",
-  "orientation": "portrait-primary",
-  "icons": [
-    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/icons/icon-maskable-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ]
-}
+{"id":"/pwa/dashboard","name":"Healthia - Medical Agent","short_name":"Healthia","description":"AI-powered daily health recommendations","start_url":"/pwa/dashboard","display":"standalone","display_override":["window-controls-overlay","standalone"],"background_color":"#f8fafc","theme_color":"#0d9488","orientation":"portrait-primary","icons":[{"src":"/icons/icon-192x192.png","sizes":"192x192","type":"image/png"},{"src":"/icons/icon-512x512.png","sizes":"512x512","type":"image/png"},{"src":"/icons/icon-maskable-512x512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}],"scope":"/pwa"}

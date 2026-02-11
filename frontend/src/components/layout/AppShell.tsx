@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { hasValidToken } from "@/lib/auth";
-import RhombusLoader from "@/components/ui/RhombusLoader";
+import { useBasePath } from "@/lib/base-path";
+import { useWidgetMode } from "@/lib/widget-mode";
+import LoadingPulse from "@/components/design/LoadingPulse";
 import OfflineBanner from "@/components/pwa/OfflineBanner";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
 import { PWAInstallProvider } from "@/lib/pwa/install-context";
@@ -21,21 +23,23 @@ export default function AppShell({ children }: AppShellProps) {
   const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const basePath = useBasePath();
+  const isWidget = useWidgetMode();
 
   useEffect(() => {
     if (!hasValidToken()) {
-      const redirect = pathname ? `/login?redirect=${encodeURIComponent(pathname)}` : "/login";
+      const loginPath = `${basePath}/login`;
+      const redirect = pathname ? `${loginPath}?redirect=${encodeURIComponent(pathname)}` : loginPath;
       router.replace(redirect);
       return;
     }
     setAuthChecked(true);
-  }, [router, pathname]);
+  }, [router, pathname, basePath]);
 
   if (!authChecked) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-50">
-        <RhombusLoader size={44} />
-        <p className="text-sm text-slate-500">Checking session…</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-light-green-light">
+        <LoadingPulse message="Checking session…" />
       </div>
     );
   }
@@ -43,14 +47,14 @@ export default function AppShell({ children }: AppShellProps) {
   return (
     <>
       <PWAInstallProvider>
-        <div className="flex h-dvh min-h-screen flex-col overflow-hidden">
+        <div className="flex h-dvh min-h-screen flex-col overflow-hidden bg-light-green-light">
           <OfflineBanner />
-          <Header />
+          {!isWidget && <Header />}
           <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</main>
-          <Footer onAboutClick={() => setAboutOpen(true)} />
+          {!isWidget && <Footer onAboutClick={() => setAboutOpen(true)} />}
           <AppNav />
         </div>
-        <InstallPrompt />
+        {!isWidget && <InstallPrompt />}
       </PWAInstallProvider>
       <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
     </>

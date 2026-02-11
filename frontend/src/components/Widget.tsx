@@ -41,17 +41,16 @@ export default function Widget({ embedBaseUrl = EMBED_BASE }: WidgetProps) {
   const base = embedBaseUrl.replace(/\/$/, "") || "";
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const appBase = base || origin;
-  const iframeSrc = `${appBase}/dashboard`;
+  const iframeSrc = `${appBase}/dashboard?widget=1`;
 
-  /** Open app (same URL; in PWA context may open in app window). */
+  /** Open in PWA window. Uses /dashboard so the installed PWA (start_url) opens in the app window. */
   const openApp = () => {
     window.open(`${appBase}/dashboard`, "_blank", "noopener,noreferrer");
   };
 
-  /** Open in a new browser tab; use a query param so the URL differs from PWA start_url and is more likely to open in a normal tab. */
+  /** Open in a new browser tab. Uses /pwa/dashboard so it opens in a tab (not captured by PWA). */
   const openInNewTab = () => {
-    const url = `${appBase}/dashboard?tb=1`;
-    window.open(url, "_blank", "noopener,noreferrer");
+    window.open(`${appBase}/pwa/dashboard`, "_blank", "noopener,noreferrer");
   };
 
   return (

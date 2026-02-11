@@ -10,13 +10,13 @@ type HeaderProps = {
 
 export default function Header({ onClose, onBack, showBack }: HeaderProps) {
   return (
-    <header className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 px-1 py-2">
+    <header className="flex shrink-0 items-center justify-between gap-2 border-b border-light-green-subtle/50 bg-white px-1 py-2 shadow-card">
       <div className="flex min-w-0 items-center gap-2">
         {showBack && onBack && (
           <button
             type="button"
             onClick={onBack}
-            className="shrink-0 rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+            className="shrink-0 rounded-lg p-1.5 text-light-green-dark-grey transition-colors hover:bg-light-green-light/50 hover:text-light-green-primary"
             aria-label="Go back"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,7 +24,7 @@ export default function Header({ onClose, onBack, showBack }: HeaderProps) {
             </svg>
           </button>
         )}
-        <h1 className="truncate text-lg font-semibold text-slate-800">Healthia</h1>
+        <h1 className="truncate text-lg font-semibold text-light-green-primary">Healthia</h1>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <InstallButton />
@@ -32,7 +32,7 @@ export default function Header({ onClose, onBack, showBack }: HeaderProps) {
         <button
           type="button"
           onClick={onClose}
-          className="shrink-0 rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+          className="shrink-0 rounded-lg p-1.5 text-light-green-dark-grey transition-colors hover:bg-light-green-light/50 hover:text-light-green-primary"
           aria-label="Close"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

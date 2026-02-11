@@ -19,7 +19,7 @@ export default function InstallButton() {
   if (isInstalled) {
     return (
       <Link
-        href="/dashboard"
+        href="/pwa/dashboard"
         onClick={(e) => {
           e.preventDefault();
           openApp();

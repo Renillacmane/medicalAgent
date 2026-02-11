@@ -142,7 +142,7 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const openApp = useCallback(() => {
-    window.location.href = "/dashboard";
+    window.location.href = "/pwa/dashboard";
   }, []);
 
   const value: PWAInstallContextValue = {

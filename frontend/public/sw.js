@@ -9,7 +9,8 @@
  */
 
 // ---- Cache names (bump suffix to bust) ----
-const SHELL_CACHE = "healthia-shell-v1";
+// v3: manifest.json served network-first so PWA scope (/pwa) is always up to date
+const SHELL_CACHE = "healthia-shell-v3";
 const API_CACHE = "healthia-api-v1";
 const ALL_CACHES = [SHELL_CACHE, API_CACHE];
 
@@ -51,7 +52,11 @@ self.addEventListener("install", (event) => {
         "/profile",
         "/recommendations",
         "/login",
-        "/manifest.json",
+        "/pwa/dashboard",
+        "/pwa/add",
+        "/pwa/profile",
+        "/pwa/recommendations",
+        "/pwa/login",
         "/icons/icon-192x192.png",
         "/icons/icon-512x512.png",
       ]);
@@ -85,6 +90,13 @@ self.addEventListener("fetch", (event) => {
 
   // API GET requests: network-first, fall back to cache
   if (isApiRequest(request.url)) {
+    event.respondWith(networkFirstThenCache(request));
+    return;
+  }
+
+  // Manifest: always network-first so PWA scope/start_url stay correct (Open app vs Open tab)
+  const url = new URL(request.url);
+  if (url.origin === self.location.origin && url.pathname === "/manifest.json") {
     event.respondWith(networkFirstThenCache(request));
     return;
   }
