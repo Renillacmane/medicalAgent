@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { openApp as openAppPwa } from "@/lib/pwa/open-app";
 
 /** Fired by the browser when the app is installable; we keep it to call .prompt() later. */
 export interface BeforeInstallPromptEvent extends Event {
@@ -91,17 +92,21 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
   const [manifestUpdateAvailable, setManifestUpdateAvailable] = useState(false);
 
   useEffect(() => {
-    setIsInstalled(readInstalled());
-    setInstallContext(readInstallContext());
-    setBannerDismissed(readBannerDismissed());
+    const installed = readInstalled();
+    const context = readInstallContext();
+    const dismissed = readBannerDismissed();
+    setIsInstalled(installed);
+    setInstallContext(context);
+    setBannerDismissed(dismissed);
   }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(display-mode: standalone)");
     const mqMinimal = window.matchMedia("(display-mode: minimal-ui)");
     const mqFullscreen = window.matchMedia("(display-mode: fullscreen)");
-    const check = () =>
+    const check = () => {
       setIsStandalone(mq.matches || mqMinimal.matches || mqFullscreen.matches);
+    };
     check();
     mq.addEventListener("change", check);
     mqMinimal.addEventListener("change", check);
@@ -117,7 +122,8 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
   // Persist that so when they open the site in a browser tab we can show "Open app" instead of "Install".
   useEffect(() => {
     if (isStandalone) {
-      if (localStorage.getItem(INSTALLED_KEY) !== "1") {
+      const wasStored = localStorage.getItem(INSTALLED_KEY) === "1";
+      if (!wasStored) {
         const context = {
           installedAt: new Date().toISOString(),
           platform: getPlatform(),
@@ -217,7 +223,7 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const openApp = useCallback(() => {
-    window.location.href = "/pwa/dashboard";
+    openAppPwa("/pwa/dashboard");
   }, []);
 
   // Compute canInstall and isInstalled

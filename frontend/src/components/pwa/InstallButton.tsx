@@ -16,10 +16,13 @@ export default function InstallButton() {
   if (isStandalone) return null;
 
   if (isInstalled) {
+    // Uses PWA context openApp(), which delegates to shared openApp() in @/lib/pwa/open-app.
+    // That uses getTargetWindow() (parent/top if in iframe, else current) and targetWindow.open(url, "_blank").
+    // The URL "/pwa/dashboard" is within the PWA scope. Link capturing requires user opt-in in Chrome.
     return (
       <button
         type="button"
-        onClick={openApp}
+        onClick={() => openApp()}
         className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-teal-700"
         aria-label="Open Healthia app"
       >

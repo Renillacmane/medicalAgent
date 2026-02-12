@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const WIDGET_STORAGE_KEY = "healthia-widget-mode";
@@ -17,9 +17,14 @@ function getInitialWidgetMode(): boolean {
  * True when the app is running inside the widget iframe (or was opened with ?widget=1).
  * Used to hide header/footer and show a minimal layout.
  * Persists in sessionStorage so client-side nav inside the iframe keeps widget mode.
+ * 
+ * IMPORTANT: Widget mode is automatically cleared when:
+ * - Running in PWA standalone mode (we're in the installed app, not an iframe)
+ * - Navigating to PWA scope URLs (/pwa/*) from outside an iframe
  */
 export function useWidgetMode(): boolean {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [isWidget, setIsWidget] = useState(getInitialWidgetMode);
 
   const paramWidget = searchParams?.get("widget") === "1";
@@ -27,12 +32,34 @@ export function useWidgetMode(): boolean {
     typeof window !== "undefined" && window.self !== window.top;
 
   useEffect(() => {
+    // Check if we're in PWA standalone mode - if so, clear widget mode
+    const isStandalone = typeof window !== "undefined" && 
+      (window.matchMedia("(display-mode: standalone)").matches ||
+       window.matchMedia("(display-mode: minimal-ui)").matches ||
+       window.matchMedia("(display-mode: fullscreen)").matches);
+    
+    // If in standalone PWA, we're not in widget mode
+    if (isStandalone) {
+      sessionStorage.removeItem(WIDGET_STORAGE_KEY);
+      setIsWidget(false);
+      return;
+    }
+
+    // If we're navigating to a PWA scope URL (/pwa/*) and NOT in an iframe, clear widget mode
+    // This handles the case where "Open app" link was clicked from the widget
+    const isPwaScope = pathname?.startsWith("/pwa/") ?? false;
+    if (isPwaScope && !inIframe && !paramWidget) {
+      sessionStorage.removeItem(WIDGET_STORAGE_KEY);
+      setIsWidget(false);
+      return;
+    }
+
     const widget = paramWidget || inIframe || getInitialWidgetMode();
     if (paramWidget || inIframe) {
       sessionStorage.setItem(WIDGET_STORAGE_KEY, "1");
     }
     setIsWidget(widget);
-  }, [paramWidget, inIframe]);
+  }, [paramWidget, inIframe, pathname]);
 
   return isWidget;
 }

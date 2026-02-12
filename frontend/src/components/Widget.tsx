@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { openApp } from "@/lib/pwa/open-app";
 
 const EMBED_BASE = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
@@ -42,16 +43,10 @@ export default function Widget({ embedBaseUrl = EMBED_BASE }: WidgetProps) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const appBase = base || origin;
   const iframeSrc = `${appBase}/dashboard?widget=1`;
-
-  /**
-   * Open the installed PWA via window.location.href.
-   * This causes a full top-level navigation to /pwa/dashboard (within the PWA scope "/pwa").
-   * window.location.href works for PWA link capturing where <a> tags and <Link> do not,
-   * because it bypasses the service worker's cache-first response for navigation requests.
-   */
-  const openApp = () => {
-    window.location.href = `${appBase}/pwa/dashboard`;
-  };
+  
+  // For "Open app" link, use relative path (consistent with manifest start_url)
+  // appBase is only needed for iframe src when embedded on different origin
+  const openAppHref = "/pwa/dashboard";
 
   return (
     <div
@@ -64,9 +59,15 @@ export default function Widget({ embedBaseUrl = EMBED_BASE }: WidgetProps) {
           <header className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 px-3 py-2">
             <h2 className="truncate text-base font-semibold text-slate-800">Healthia</h2>
             <div className="flex shrink-0 items-center gap-0.5">
+              {/*
+                "Open app" uses window.open() in the parent window to open the PWA.
+                Since we're in an iframe, we need to open in the parent window (window.top).
+                The URL "/pwa/dashboard" is within the PWA scope.
+                Note: Link capturing requires user opt-in (chrome://apps → App info → "Open supported links").
+              */}
               <button
                 type="button"
-                onClick={openApp}
+                onClick={() => openApp(openAppHref)}
                 className="rounded p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                 aria-label="Open app"
                 title="Open app"
@@ -76,9 +77,10 @@ export default function Widget({ embedBaseUrl = EMBED_BASE }: WidgetProps) {
               {/*
                 "Open in new tab" uses a real <a> tag with target="_blank".
                 /dashboard is OUTSIDE the PWA scope ("/pwa"), so it opens in a regular browser tab.
+                Relative path is sufficient - browser resolves it relative to current origin.
               */}
               <a
-                href={`${appBase}/dashboard`}
+                href="/dashboard"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"

@@ -35,6 +35,12 @@ function isAppShellRequest(request) {
   return !isApiRequest(request.url);
 }
 
+/** Returns true if this is a navigation request (HTML page). */
+function isNavigationRequest(request) {
+  return request.mode === "navigate" || 
+         (request.headers.get("accept") && request.headers.get("accept").includes("text/html"));
+}
+
 // ---- Install: pre-cache critical shell assets ----
 
 self.addEventListener("install", (event) => {
@@ -88,6 +94,20 @@ self.addEventListener("fetch", (event) => {
   // Only handle GET requests in the SW; mutations are network-only
   if (request.method !== "GET") return;
 
+  const url = new URL(request.url);
+
+  // Bypass service worker for Next.js dev mode assets (/_next/static/...)
+  // These are generated dynamically and shouldn't be cached
+  if (url.pathname.startsWith("/_next/")) {
+    return; // Let browser handle normally (no event.respondWith)
+  }
+
+  // Bypass service worker for .well-known paths (favicon, Chrome DevTools, etc.)
+  // These should be served directly by the server
+  if (url.pathname.startsWith("/.well-known/") || url.pathname === "/favicon.ico") {
+    return; // Let browser handle normally (no event.respondWith)
+  }
+
   // API GET requests: network-first, fall back to cache
   if (isApiRequest(request.url)) {
     event.respondWith(networkFirstThenCache(request));
@@ -95,13 +115,26 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Manifest: always network-first so PWA scope/start_url stay correct (Open app vs Open tab)
-  const url = new URL(request.url);
   if (url.origin === self.location.origin && url.pathname === "/manifest.json") {
     event.respondWith(networkFirstThenCache(request));
     return;
   }
 
-  // App shell: cache-first, update cache in background
+  // HTML navigation requests: network-first in dev mode (localhost) to avoid stale cached HTML
+  // In production (static export), HTML is static so cache-first is fine
+  if (isAppShellRequest(request) && isNavigationRequest(request)) {
+    const isDev = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+    if (isDev) {
+      // Dev mode: network-first for HTML to avoid stale cached pages with different client state
+      event.respondWith(networkFirstThenCache(request));
+      return;
+    }
+    // Production: cache-first for HTML (static export, no dynamic state)
+    event.respondWith(cacheFirstThenNetwork(request));
+    return;
+  }
+
+  // Other app shell assets (JS, CSS, images): cache-first, update in background
   if (isAppShellRequest(request)) {
     event.respondWith(cacheFirstThenNetwork(request));
     return;

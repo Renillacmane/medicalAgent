@@ -48,8 +48,7 @@ export function useIsNativeCapacitor(): boolean | null {
 
     // Bridge might inject after initial load — recheck once
     const t = setTimeout(() => {
-      const finalResult = isNativeCapacitor();
-      setValue(finalResult ? true : false);
+      setValue(isNativeCapacitor() ? true : false);
     }, BRIDGE_RECHECK_MS);
 
     return () => clearTimeout(t);

@@ -1,6 +1,6 @@
 {
   "id": "/pwa/dashboard",
-  "version": "2",
+  "version": "3",
   "name": "Healthia - Medical Agent",
   "short_name": "Healthia",
   "description": "AI-powered daily health recommendations",

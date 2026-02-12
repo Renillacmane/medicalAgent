@@ -12,11 +12,16 @@ export function useIsSmallViewport(): boolean {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    let prevValue = false;
     const checkSize = () => {
-      setIsSmall(window.innerWidth < 640); // Tailwind's sm breakpoint
+      const newValue = window.innerWidth < 640; // Tailwind's sm breakpoint
+      if (newValue !== prevValue) {
+        prevValue = newValue;
+      }
+      setIsSmall(newValue);
     };
 
-    checkSize();
+    checkSize(); // Initial check
     window.addEventListener("resize", checkSize);
     return () => window.removeEventListener("resize", checkSize);
   }, []);

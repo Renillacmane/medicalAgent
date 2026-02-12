@@ -209,10 +209,12 @@ So the common pattern for “Open in app” vs “Open in tab” is:
 
 That’s what we do: manifest has `start_url: "/pwa/dashboard"` and `scope: "/pwa"`. The widget’s buttons work as follows:
 
-- **“Open app”** → `window.location.href = "/pwa/dashboard"` — a top-level navigation to an **in-scope** URL. The browser’s navigation capturing intercepts this and opens the installed PWA. We use `location.href` (not `window.open(_blank)`) because `_blank` explicitly requests a new tab and **bypasses** PWA navigation capturing.
-- **“Open in new tab”** → `window.open("/dashboard", "_blank")` — an **out-of-scope** URL opened with `_blank`. Since `/dashboard` is outside the `/pwa` scope, the browser will never try to capture it for the PWA.
+- **“Open app”** → shared `openApp("/pwa/dashboard")` in `frontend/src/lib/pwa/open-app.ts` — calls `getTargetWindow().open(url, "_blank", "noopener,noreferrer")` (parent/top if in iframe, else current window). New top-level context allows link capturing to open the PWA.
+- **“Open in new tab”** → `<a href="/dashboard" target="_blank">` — an **out-of-scope** URL. Since `/dashboard` is outside the `/pwa` scope, the browser never tries to capture it for the PWA.
 
-See `frontend/src/components/Widget.tsx`.
+**Important:** Chrome's link capturing requires user opt-in (Chrome 139+). Users must enable it in `chrome://apps` → right-click Healthia → App info → "Open supported links". There is no web API to detect if link capturing is enabled, so links may open in tabs if the user has opted out.
+
+See `frontend/src/components/Widget.tsx` and `frontend/src/components/pwa/InstallButton.tsx`.
 
 ---
 

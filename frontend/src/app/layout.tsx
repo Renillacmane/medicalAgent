@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     title: "Healthia",
   },
   icons: {
+    icon: "/favicon.ico",
     apple: "/icons/apple-touch-icon.png",
   },
 };
