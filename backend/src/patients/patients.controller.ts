@@ -44,6 +44,23 @@ export class PatientsController {
     return profile;
   }
 
+  @Get('exams')
+  async getExams(@CurrentUser() user: User) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    return this.patientsService.getExams(userId);
+  }
+
+  @Get('documents')
+  async getDocuments(
+    @CurrentUser() user: User,
+    @Query('documentType') documentType?: string,
+  ) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    return this.patientsService.getDocuments(userId, documentType);
+  }
+
   @Get('vitals')
   async getVitals(
     @CurrentUser() user: User,

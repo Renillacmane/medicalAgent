@@ -9,6 +9,8 @@ import {
   UserMedicationSchema,
   UserExam,
   UserExamSchema,
+  UserDocument,
+  UserDocumentSchema,
 } from './schemas';
 import { PatientsController } from './patients.controller';
 import { PatientsService } from './patients.service';
@@ -21,6 +23,7 @@ import { PatientsService } from './patients.service';
       { name: UserVital.name, schema: UserVitalSchema },
       { name: UserMedication.name, schema: UserMedicationSchema },
       { name: UserExam.name, schema: UserExamSchema },
+      { name: UserDocument.name, schema: UserDocumentSchema },
     ]),
   ],
   controllers: [PatientsController],

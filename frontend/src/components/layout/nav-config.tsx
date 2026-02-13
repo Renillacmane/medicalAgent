@@ -5,6 +5,7 @@ export enum NavTabId {
   Dashboard = "dashboard",
   Add = "add",
   Recommendations = "recommendations",
+  MyHealth = "my-health",
   Profile = "profile",
 }
 
@@ -18,6 +19,7 @@ export const NAV_TABS: NavTab[] = [
   { id: NavTabId.Dashboard, label: "Dashboard", href: "/dashboard" },
   { id: NavTabId.Add, label: "Add", href: "/add" },
   { id: NavTabId.Recommendations, label: "Recommendations", href: "/recommendations" },
+  { id: NavTabId.MyHealth, label: "My Health", href: "/my-health" },
   { id: NavTabId.Profile, label: "My profile", href: "/profile" },
 ];
 
@@ -27,6 +29,8 @@ const NAV_ICON_SVG_PATHS: Record<NavTabId, string> = {
   [NavTabId.Add]: "M12 4v16m8-8H4",
   [NavTabId.Recommendations]:
     "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+  [NavTabId.MyHealth]:
+    "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
   [NavTabId.Profile]:
     "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
 };

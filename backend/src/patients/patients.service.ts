@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { User, UserDocument } from '../auth/schemas/user.schema';
 import { UserVital, UserVitalDocument } from './schemas/user-vital.schema';
+import { UserExam, UserExamDocument } from './schemas/user-exam.schema';
+import { UserDocument as UserDocumentModel, UserDocumentDocument } from './schemas/user-document.schema';
 import { CreateVitalDto, UpdateProfileDto } from './dto';
 import {
   PatientSnapshotDto,
@@ -21,6 +23,8 @@ export class PatientsService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(UserVital.name) private userVitalModel: Model<UserVitalDocument>,
+    @InjectModel(UserExam.name) private userExamModel: Model<UserExamDocument>,
+    @InjectModel(UserDocumentModel.name) private userDocumentModel: Model<UserDocumentDocument>,
   ) {}
 
   async getProfile(userId: string) {
@@ -53,6 +57,52 @@ export class PatientsService {
     if (!updated) return null;
     const id = (updated as { _id: Types.ObjectId })._id?.toString?.();
     return { id, ...updated };
+  }
+
+  /**
+   * Get exams for a user (e.g. for My Health / Exams tab).
+   */
+  async getExams(userId: string) {
+    const exams = await this.userExamModel
+      .find({ userId: new Types.ObjectId(userId) })
+      .sort({ date: -1 })
+      .limit(100)
+      .lean()
+      .exec();
+    return exams.map((e) => ({
+      id: (e as { _id: Types.ObjectId })._id?.toString?.(),
+      name: e.name,
+      date: e.date,
+      attachmentId: e.attachmentId,
+    }));
+  }
+
+  /**
+   * Get user documents (e.g. prescriptions, medical reports) for My Health.
+   * @param documentType - Optional filter: 'prescription' | 'medical_report' | 'blood_analysis' | etc.
+   */
+  async getDocuments(userId: string, documentType?: string) {
+    const filter: { userId: Types.ObjectId; documentType?: string } = {
+      userId: new Types.ObjectId(userId),
+    };
+    if (documentType) filter.documentType = documentType;
+    const docs = await this.userDocumentModel
+      .find(filter)
+      .sort({ documentDate: -1, processedAt: -1 })
+      .limit(100)
+      .lean()
+      .exec();
+    return docs.map((d) => ({
+      id: (d as { _id: Types.ObjectId })._id?.toString?.(),
+      documentType: d.documentType,
+      originalFilename: d.originalFilename,
+      attachmentId: d.attachmentId,
+      extractedData: d.extractedData,
+      analysisSummary: d.analysisSummary,
+      documentDate: d.documentDate,
+      processedAt: d.processedAt,
+      status: d.status,
+    }));
   }
 
   /**

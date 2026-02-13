@@ -85,7 +85,7 @@ function AppShellInner({ children }: AppShellProps) {
           <DesignFooter
             title={
               <>
-                "Big Things Happen When You Do the Little Things Right"
+                {'"'}Big Things Happen When You Do the Little Things Right{'"'}
                 <span className="text-light-green-dark-grey"> — Don Gabor</span>
               </>
             }

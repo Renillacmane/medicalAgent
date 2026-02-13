@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { ChartSeries } from "@/types/recommendations";
 
 interface VitalsLineChartProps {
@@ -90,7 +90,7 @@ export default function VitalsLineChart({
     pointIdx: number;
   } | null>(null);
 
-  const padding = { top: 8, right: 8, bottom: 40, left: 8 };
+  const padding = useMemo(() => ({ top: 8, right: 8, bottom: 40, left: 8 }), []);
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const stepX = labels.length > 1 ? chartWidth / (labels.length - 1) : 0;
@@ -107,7 +107,7 @@ export default function VitalsLineChart({
         })
         .join(" ");
     },
-    [stepX, padding],
+    [stepX, padding, chartHeight],
   );
 
   const getPoint = useCallback(
@@ -118,7 +118,7 @@ export default function VitalsLineChart({
       const y = padding.top + chartHeight - (vals[pointIdx] / 100) * chartHeight;
       return { x, y };
     },
-    [normalized, stepX, padding],
+    [normalized, stepX, padding, chartHeight],
   );
 
   const handlePointClick = useCallback(

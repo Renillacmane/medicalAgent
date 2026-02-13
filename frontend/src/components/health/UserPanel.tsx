@@ -62,13 +62,13 @@ export interface Last7DaysVitals {
   dateKeys: string[];
 }
 
-interface RecommendationsUserPanelProps {
+export interface UserPanelProps {
   profile: PatientProfile | null;
   vitals: Vital[];
   last7DaysVitals: Last7DaysVitals;
 }
 
-export default function RecommendationsUserPanel({ profile, vitals, last7DaysVitals }: RecommendationsUserPanelProps) {
+export default function UserPanel({ profile, vitals, last7DaysVitals }: UserPanelProps) {
   const [mediaTab, setMediaTab] = useState<"photo" | "body">("photo");
 
   const { vitalsByDay } = last7DaysVitals;
@@ -105,7 +105,6 @@ export default function RecommendationsUserPanel({ profile, vitals, last7DaysVit
   return (
     <aside className="w-full shrink-0 lg:w-52 xl:w-56">
       <div className="rounded-xl border border-light-green-subtle/60 bg-white shadow-card overflow-hidden">
-        {/* Media section with tabs */}
         <div className="border-b border-light-green-subtle/40">
           <div className="flex">
             <button
@@ -150,7 +149,6 @@ export default function RecommendationsUserPanel({ profile, vitals, last7DaysVit
           )}
         </div>
 
-        {/* Latest data */}
         <dl className="divide-y divide-light-green-subtle/40 p-3 text-sm">
           <div className="flex justify-between py-1.5">
             <dt className="text-light-green-dark-grey">Age</dt>

@@ -19,11 +19,12 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node scripts/seed-fake-data.ts",
-    "seed:jane": "ts-node scripts/seed-jane-vitals.ts"
+    "seed:jane": "ts-node scripts/seed-jane-vitals.ts",
+    "seed:rag": "ts-node scripts/seed-rag-data.ts",
+    "seed:pdfs": "ts-node scripts/generate-seed-pdfs.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
-    "openai": "^4.77.0",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.2",
@@ -36,6 +37,7 @@
     "class-validator": "^0.14.3",
     "fastify": "^5.7.2",
     "mongoose": "^9.1.5",
+    "openai": "^4.77.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
@@ -61,6 +63,7 @@
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^16.0.0",
     "jest": "^30.0.0",
+    "pdf-lib": "^1.17.1",
     "prettier": "^3.4.2",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",

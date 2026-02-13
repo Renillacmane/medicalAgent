@@ -53,14 +53,14 @@ export default function Header({ onClose, onBack, showBack, showNavInDesktop = f
                   {NAV_TABS.filter((tab) => tab.id !== NavTabId.Profile).map((tab) => {
                     const fullHref = basePath + tab.href;
                     const isActive = pathname === fullHref;
-                    const isRecommendations = tab.id === NavTabId.Recommendations;
+                    const isHighlightTab = tab.id === NavTabId.Recommendations || tab.id === NavTabId.MyHealth;
                     return (
                       <Link
                         key={tab.id}
                         href={fullHref}
                         className={`text-sm font-medium transition-colors ${
                           isActive
-                            ? isRecommendations
+                            ? isHighlightTab
                               ? "text-light-green-primary"
                               : "text-slate-800"
                             : "text-light-green-dark-grey hover:text-light-green-primary"
@@ -97,7 +97,7 @@ export default function Header({ onClose, onBack, showBack, showNavInDesktop = f
                       {NAV_TABS.filter((tab) => tab.id !== NavTabId.Profile).map((tab) => {
                         const fullHref = basePath + tab.href;
                         const isActive = pathname === fullHref;
-                        const isRecommendations = tab.id === NavTabId.Recommendations;
+                        const isHighlightTab = tab.id === NavTabId.Recommendations || tab.id === NavTabId.MyHealth;
                         return (
                           <Link
                             key={tab.id}
@@ -105,7 +105,7 @@ export default function Header({ onClose, onBack, showBack, showNavInDesktop = f
                             onClick={() => setMenuOpen(false)}
                             className={`block px-4 py-2 text-sm transition-colors hover:bg-light-green-light ${
                               isActive
-                                ? isRecommendations
+                                ? isHighlightTab
                                   ? "text-light-green-primary font-medium"
                                   : "text-slate-800 font-medium"
                                 : "text-light-green-dark-grey hover:text-light-green-primary"
