@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { hasValidToken } from "@/lib/auth";
 import { useBasePath } from "@/lib/base-path";
@@ -13,9 +13,10 @@ import LoadingPulse from "@/components/design/LoadingPulse";
 import ManifestUpdateBanner from "@/components/pwa/ManifestUpdateBanner";
 import OfflineBanner from "@/components/pwa/OfflineBanner";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
+import DesignFooter from "@/components/design/DesignFooter";
+import GoToTop from "@/components/design/GoToTop";
 import AboutModal from "./AboutModal";
 import AppNav from "./AppNav";
-import Footer from "./Footer";
 import Header from "./Header";
 
 type AppShellProps = {
@@ -26,6 +27,7 @@ type AppShellProps = {
  * Inner shell that lives INSIDE PWAInstallProvider so it can use usePWAInstall().
  */
 function AppShellInner({ children }: AppShellProps) {
+  const mainRef = useRef<HTMLElement>(null);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
@@ -78,8 +80,22 @@ function AppShellInner({ children }: AppShellProps) {
       <div className="flex h-dvh min-h-screen flex-col overflow-hidden bg-light-green-light">
         <OfflineBanner />
         {!isWidget && <Header showNavInDesktop={!showBottomMenu} />}
-        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</main>
-        {!isWidget && <Footer onAboutClick={() => setAboutOpen(true)} />}
+        <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</main>
+        {!isWidget && (
+          <DesignFooter
+            title={
+              <>
+                "Big Things Happen When You Do the Little Things Right"
+                <span className="text-light-green-dark-grey"> — Don Gabor</span>
+              </>
+            }
+            links={[]}
+            onAboutClick={() => setAboutOpen(true)}
+            copyright="© 2026 Medical Agent. Your trusted health companion."
+            withTopMargin={false}
+          />
+        )}
+        {!isWidget && <GoToTop scrollContainerRef={mainRef} bottomOffset={showBottomMenu ? "5rem" : "1.5rem"} />}
         {showBottomMenu && <AppNav />}
       </div>
       {!isWidget && <InstallPrompt />}

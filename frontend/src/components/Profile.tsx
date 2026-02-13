@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
 import { authGet, authPatch, UnauthorizedError } from "@/lib/api";
-import { clearToken } from "@/lib/auth";
-import { clearAuthToken } from "@/lib/pwa/offline-store";
 import { formatDate } from "@/lib/format";
 import type { PatientProfile } from "@/types/profile";
 import LoadingPulse from "@/components/design/LoadingPulse";
@@ -91,12 +89,6 @@ export default function Profile() {
   const [form, setForm] = useState<EditForm | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-
-  const handleLogout = () => {
-    clearToken();
-    clearAuthToken().catch(() => {});
-    router.replace(`${basePath}/login?redirect=${encodeURIComponent(basePath + "/profile")}`);
-  };
 
   useEffect(() => {
     let cancelled = false;
@@ -203,171 +195,150 @@ export default function Profile() {
             <h1 className="text-2xl font-semibold text-light-green-dark">My profile</h1>
             <p className="mt-1 text-sm text-light-green-dark-grey">Your account and health profile.</p>
           </div>
-          <div className="flex items-center gap-2">
-            {!isEditing ? (
-              <button
-                type="button"
-                onClick={startEdit}
-                className="rounded-lg border-2 border-light-green-primary bg-transparent px-4 py-2.5 text-sm font-semibold text-light-green-primary transition-all hover:bg-light-green-primary hover:text-white active:scale-[0.98]"
-              >
-                Edit
-              </button>
-            ) : null}
+          {!isEditing ? (
             <button
               type="button"
-              onClick={handleLogout}
-              className="rounded-lg border border-light-green-subtle/80 bg-white px-4 py-2.5 text-sm font-medium text-light-green-dark-grey shadow-card transition-all hover:border-light-green-primary/50 hover:bg-light-green-light/50 active:scale-[0.98]"
+              onClick={startEdit}
+              className="rounded-lg border-2 border-light-green-primary bg-transparent px-4 py-2.5 text-sm font-semibold text-light-green-primary transition-all hover:bg-light-green-primary hover:text-white active:scale-[0.98]"
             >
-              Log out
+              Edit
             </button>
-          </div>
+          ) : null}
         </div>
 
         {isEditing && form ? (
-          <div className="mt-8 rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card">
+          <div className="mt-8 space-y-8">
             {saveError && (
-              <p className="mb-4 text-sm text-red-600" role="alert">
+              <p className="text-sm text-red-600" role="alert">
                 {saveError}
               </p>
             )}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
-                First name
-              </label>
-              <input
-                type="text"
-                value={form.firstName}
-                onChange={(e) => updateForm({ firstName: e.target.value })}
-                className={inputClass}
-                placeholder="First name"
-              />
+            {/* Account */}
+            <div className="rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-light-green-dark-grey">Account</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">First name</label>
+                  <input
+                    type="text"
+                    value={form.firstName}
+                    onChange={(e) => updateForm({ firstName: e.target.value })}
+                    className={inputClass}
+                    placeholder="First name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Last name</label>
+                  <input
+                    type="text"
+                    value={form.lastName}
+                    onChange={(e) => updateForm({ lastName: e.target.value })}
+                    className={inputClass}
+                    placeholder="Last name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">Date of birth</label>
+                  <input
+                    type="date"
+                    value={form.dateOfBirth}
+                    onChange={(e) => updateForm({ dateOfBirth: e.target.value })}
+                    className={inputClass}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="profile-isActive"
+                    checked={form.isActive}
+                    onChange={(e) => updateForm({ isActive: e.target.checked })}
+                    className="h-4 w-4 rounded border-light-green-subtle text-light-green-primary focus:ring-light-green-primary"
+                  />
+                  <label htmlFor="profile-isActive" className="text-sm text-light-green-dark">Account active</label>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
-                Last name
-              </label>
-              <input
-                type="text"
-                value={form.lastName}
-                onChange={(e) => updateForm({ lastName: e.target.value })}
-                className={inputClass}
-                placeholder="Last name"
-              />
+            {/* Vitals & preferences */}
+            <div className="rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-light-green-dark-grey">Vitals & preferences</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Height (cm)</label>
+                  <input
+                    type="number"
+                    min={50}
+                    max={250}
+                    value={form.height}
+                    onChange={(e) => updateForm({ height: e.target.value })}
+                    className={inputClass}
+                    placeholder="e.g. 170"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">Weight (kg)</label>
+                  <input
+                    type="number"
+                    min={20}
+                    max={300}
+                    value={form.weight}
+                    onChange={(e) => updateForm({ weight: e.target.value })}
+                    className={inputClass}
+                    placeholder="e.g. 70"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Dietary preference (type)</label>
+                  <input
+                    type="text"
+                    value={form.dietaryType}
+                    onChange={(e) => updateForm({ dietaryType: e.target.value })}
+                    className={inputClass}
+                    placeholder="e.g. Vegetarian"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">Dietary restrictions (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={form.dietaryRestrictions}
+                    onChange={(e) => updateForm({ dietaryRestrictions: e.target.value })}
+                    className={inputClass}
+                    placeholder="e.g. gluten-free, dairy-free"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Objectives (body) — comma-separated</label>
+                  <input
+                    type="text"
+                    value={form.objectivesBody}
+                    onChange={(e) => updateForm({ objectivesBody: e.target.value })}
+                    className={inputClass}
+                    placeholder="e.g. lose weight, build muscle"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">Objectives (health) — comma-separated</label>
+                  <input
+                    type="text"
+                    value={form.objectivesHealth}
+                    onChange={(e) => updateForm({ objectivesHealth: e.target.value })}
+                    className={inputClass}
+                    placeholder="e.g. lower blood pressure"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">Objectives (mind) — comma-separated</label>
+                  <input
+                    type="text"
+                    value={form.objectivesMind}
+                    onChange={(e) => updateForm({ objectivesMind: e.target.value })}
+                    className={inputClass}
+                    placeholder="e.g. reduce stress, sleep better"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                Date of birth
-              </label>
-              <input
-                type="date"
-                value={form.dateOfBirth}
-                onChange={(e) => updateForm({ dateOfBirth: e.target.value })}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
-                Height (cm)
-              </label>
-              <input
-                type="number"
-                min={50}
-                max={250}
-                value={form.height}
-                onChange={(e) => updateForm({ height: e.target.value })}
-                className={inputClass}
-                placeholder="e.g. 170"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                Weight (kg)
-              </label>
-              <input
-                type="number"
-                min={20}
-                max={300}
-                value={form.weight}
-                onChange={(e) => updateForm({ weight: e.target.value })}
-                className={inputClass}
-                placeholder="e.g. 70"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="profile-isActive"
-                checked={form.isActive}
-                onChange={(e) => updateForm({ isActive: e.target.checked })}
-                className="h-4 w-4 rounded border-light-green-subtle text-light-green-primary focus:ring-light-green-primary"
-              />
-              <label htmlFor="profile-isActive" className="text-sm text-light-green-dark">
-                Account active
-              </label>
-            </div>
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
-                Dietary preference (type)
-              </label>
-              <input
-                type="text"
-                value={form.dietaryType}
-                onChange={(e) => updateForm({ dietaryType: e.target.value })}
-                className={inputClass}
-                placeholder="e.g. Vegetarian"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                Dietary restrictions (comma-separated)
-              </label>
-              <input
-                type="text"
-                value={form.dietaryRestrictions}
-                onChange={(e) => updateForm({ dietaryRestrictions: e.target.value })}
-                className={inputClass}
-                placeholder="e.g. gluten-free, dairy-free"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
-                Objectives (body) — comma-separated
-              </label>
-              <input
-                type="text"
-                value={form.objectivesBody}
-                onChange={(e) => updateForm({ objectivesBody: e.target.value })}
-                className={inputClass}
-                placeholder="e.g. lose weight, build muscle"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                Objectives (health) — comma-separated
-              </label>
-              <input
-                type="text"
-                value={form.objectivesHealth}
-                onChange={(e) => updateForm({ objectivesHealth: e.target.value })}
-                className={inputClass}
-                placeholder="e.g. lower blood pressure"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-light-green-dark-grey">
-                Objectives (mind) — comma-separated
-              </label>
-              <input
-                type="text"
-                value={form.objectivesMind}
-                onChange={(e) => updateForm({ objectivesMind: e.target.value })}
-                className={inputClass}
-                placeholder="e.g. reduce stress, sleep better"
-              />
-            </div>
-          </div>
-            <div className="mt-6 flex gap-3">
+            <div className="flex gap-3">
               <button
                 type="button"
                 onClick={saveProfile}
@@ -387,41 +358,51 @@ export default function Profile() {
             </div>
           </div>
       ) : (
-        <div className="mt-8 rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card transition-all hover:shadow-card-hover">
-          <dl className="divide-y-0">
-            <Field variant="lightGreen" label="Name" value={`${profile.firstName} ${profile.lastName}`} />
-            <Field variant="lightGreen" label="Email" value={profile.email} />
-            <Field variant="lightGreen" label="Date of birth" value={formatDate(profile.dateOfBirth, "long")} />
-            <Field variant="lightGreen" label="Status" value={profile.isActive !== false ? "Active" : "Inactive"} />
-            <Field variant="lightGreen" label="Height" value={profile.height != null ? `${profile.height} cm` : undefined} />
-            <Field variant="lightGreen" label="Weight" value={profile.weight != null ? `${profile.weight} kg` : undefined} />
-            <Field
-              variant="lightGreen"
-              label="Dietary preference"
-              value={
-                diet
-                  ? [diet.type, diet.restrictions?.length ? `(${diet.restrictions.join(", ")})` : null]
-                      .filter(Boolean)
-                      .join(" ") || "—"
-                  : undefined
-              }
-            />
-            <Field
-              variant="lightGreen"
-              label="Objectives (body)"
-              value={objectives?.body?.length ? objectives.body.join(", ") : undefined}
-            />
-            <Field
-              variant="lightGreen"
-              label="Objectives (health)"
-              value={objectives?.health?.length ? objectives.health.join(", ") : undefined}
-            />
-            <Field
-              variant="lightGreen"
-              label="Objectives (mind)"
-              value={objectives?.mind?.length ? objectives.mind.join(", ") : undefined}
-            />
-          </dl>
+        <div className="mt-8 space-y-8">
+          {/* Account */}
+          <section className="rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card transition-all hover:shadow-card-hover">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-light-green-dark-grey">Account</h2>
+            <dl className="divide-y-0">
+              <Field variant="lightGreen" label="Name" value={`${profile.firstName} ${profile.lastName}`} />
+              <Field variant="lightGreen" label="Email" value={profile.email} />
+              <Field variant="lightGreen" label="Date of birth" value={formatDate(profile.dateOfBirth, "long")} />
+              <Field variant="lightGreen" label="Status" value={profile.isActive !== false ? "Active" : "Inactive"} />
+            </dl>
+          </section>
+          {/* Vitals and user data */}
+          <section className="rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card transition-all hover:shadow-card-hover">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-light-green-dark-grey">Vitals & preferences</h2>
+            <dl className="divide-y-0">
+              <Field variant="lightGreen" label="Height" value={profile.height != null ? `${profile.height} cm` : undefined} />
+              <Field variant="lightGreen" label="Weight" value={profile.weight != null ? `${profile.weight} kg` : undefined} />
+              <Field
+                variant="lightGreen"
+                label="Dietary preference"
+                value={
+                  diet
+                    ? [diet.type, diet.restrictions?.length ? `(${diet.restrictions.join(", ")})` : null]
+                        .filter(Boolean)
+                        .join(" ") || "—"
+                    : undefined
+                }
+              />
+              <Field
+                variant="lightGreen"
+                label="Objectives (body)"
+                value={objectives?.body?.length ? objectives.body.join(", ") : undefined}
+              />
+              <Field
+                variant="lightGreen"
+                label="Objectives (health)"
+                value={objectives?.health?.length ? objectives.health.join(", ") : undefined}
+              />
+              <Field
+                variant="lightGreen"
+                label="Objectives (mind)"
+                value={objectives?.mind?.length ? objectives.mind.join(", ") : undefined}
+              />
+            </dl>
+          </section>
         </div>
       )}
       </div>
