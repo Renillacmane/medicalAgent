@@ -9,7 +9,7 @@ import { useIsNativeCapacitor } from "@/lib/capacitor/use-is-native-capacitor";
 import { usePWAInstall, PWAInstallProvider } from "@/lib/pwa/install-context";
 import { useMobileBrowser } from "@/lib/use-mobile-browser";
 import { useIsSmallViewport } from "@/lib/use-viewport-size";
-import LoadingPulse from "@/components/design/LoadingPulse";
+import { LoadingPulse } from "@/components/design";
 import ManifestUpdateBanner from "@/components/pwa/ManifestUpdateBanner";
 import OfflineBanner from "@/components/pwa/OfflineBanner";
 import InstallPrompt from "@/components/pwa/InstallPrompt";

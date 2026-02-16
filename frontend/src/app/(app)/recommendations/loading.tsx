@@ -1,4 +1,4 @@
-import LoadingPulse from "@/components/design/LoadingPulse";
+import { LoadingPulse } from "@/components/design";
 
 export default function RecommendationsLoading() {
   return (

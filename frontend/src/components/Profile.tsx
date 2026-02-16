@@ -6,7 +6,7 @@ import { useBasePath } from "@/lib/base-path";
 import { authGet, authPatch, UnauthorizedError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import type { PatientProfile } from "@/types/profile";
-import LoadingPulse from "@/components/design/LoadingPulse";
+import { LoadingPulse } from "@/components/design";
 import Field from "@/components/ui/Field";
 
 type EditForm = {

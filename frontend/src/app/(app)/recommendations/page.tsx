@@ -18,6 +18,7 @@ import RhombusLoader from "@/components/ui/RhombusLoader";
 import VitalsLineChart from "@/components/recommendations/VitalsLineChart";
 import UserPanel from "@/components/health/UserPanel";
 import HealthyValuesPanel from "@/components/recommendations/HealthyValuesPanel";
+import { TextHeading2, TextBody, InfoIcon } from "@/components/design";
 
 const RECOMMENDATION_TYPES: RecommendationCategory[] = ["nutrition", "exercise", "lifestyle", "alerts"];
 
@@ -136,18 +137,56 @@ export default function RecommendationsPage() {
 
           {/* Center: overall score + recommendations and graphs */}
           <main className="min-w-0 flex-1 space-y-6">
-            <section
-              className="rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card"
-              aria-label="Overall score placeholder"
-            >
-              <h2 className="text-sm font-medium text-light-green-dark-grey">Overall score</h2>
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-light-green-primary">—</span>
-                <span className="text-sm text-light-green-light-grey">(coming soon)</span>
+            {/* Top row: Overall score sections */}
+            <div className="flex flex-col gap-6 lg:flex-row">
+              {/* Left: Overall score */}
+              <section
+                className="flex-1 rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card"
+                aria-label="Overall score placeholder"
+              >
+                <h2 className="text-sm font-medium text-light-green-dark-grey">Overall score</h2>
+                <div className="mt-2 flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-light-green-primary">—</span>
+                  <span className="text-sm text-light-green-light-grey">(coming soon)</span>
+                </div>
+                <p className="mt-2 text-xs text-light-green-light-grey">
+                  A single wellness score will be added here once we choose an appropriate algorithm.
+                </p>
+              </section>
+
+              {/* Right: Score graph */}
+              <section className="flex shrink-0 flex-col rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card lg:w-64">
+                <div className="mt-4 flex flex-1 flex-col">
+                  <VitalsLineChart
+                    labels={["—", "—", "—", "—", "—", "—", "—"]}
+                    series={[
+                      {
+                        label: "",
+                        values: [null, null, null, null, null, null, null],
+                        color: "#0d9488",
+                      },
+                    ]}
+                    width={220}
+                    height={100}
+                  />
+                </div>
+              </section>
+            </div>
+
+            {/* Bottom: The Little Thing Right card */}
+            {/* 
+              The Little Thing Right card - This will be informed by AI analysis in the future.
+              Based on AI analysis, it will suggest little changes in categories that are close to changing,
+              keeping the user motivated without extreme changes to their current lifestyle.
+            */}
+            <section className="rounded-lg border border-light-green-subtle/40 bg-light-green-light/30 p-6">
+              <div className="mb-3 flex items-center gap-2">
+                <InfoIcon iconSize="large" className="mb-0" />
+                <TextHeading2 className="mb-0">The Little Thing Right</TextHeading2>
               </div>
-              <p className="mt-2 text-xs text-light-green-light-grey">
-                A single wellness score will be added here once we choose an appropriate algorithm.
-              </p>
+              <TextBody>
+                If you add 2 minutes to your walk and if you reduce the hidrocarbonates by 100 gms you might go down one weight category.
+              </TextBody>
             </section>
 
             <div className="space-y-6">

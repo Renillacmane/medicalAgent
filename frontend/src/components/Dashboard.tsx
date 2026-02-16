@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
-import LoadingPulse from "@/components/design/LoadingPulse";
+import { LoadingPulse } from "@/components/design";
 import { authGet, UnauthorizedError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { formatBP } from "@/lib/vital-format";

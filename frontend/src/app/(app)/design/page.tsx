@@ -19,6 +19,7 @@ import {
   DataTable,
   DesignFooter,
   DesignHeader,
+  InfoIcon,
   InlineLinkList,
   LinksCard,
   LoadingIdleMessage,
@@ -196,6 +197,18 @@ export default function DesignPage() {
           <LinksCard>
             <InlineLinkList links={links} />
           </LinksCard>
+        </section>
+
+        {/* Info Icon */}
+        <section className="mb-14">
+          <h2 className="mb-6 text-2xl font-semibold text-light-green-dark">Info Icon</h2>
+          <div className="space-y-4 rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card">
+            <InfoIcon text="Additional information or helpful context can be displayed here." />
+            <InfoIcon text="Small size info icon" iconSize="small" />
+            <InfoIcon text="Default size info icon" iconSize="default" />
+            <InfoIcon text="Large size info icon" iconSize="large" />
+            <InfoIcon />
+          </div>
         </section>
 
         {/* Animated elements */}
