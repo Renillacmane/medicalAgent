@@ -18,6 +18,9 @@ async function bootstrap() {
     adapter,
   );
 
+  // Register multipart plugin for file uploads
+  await app.register(require('@fastify/multipart'));
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

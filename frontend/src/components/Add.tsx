@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AddVitalsForm from "./add/AddVitalsForm";
+import AddPrescriptionForm from "./add/AddPrescriptionForm";
 
 type AddType = "vitals" | "prescriptions" | "exams" | null;
 
@@ -31,7 +32,7 @@ function ExamsIcon({ className }: { className?: string }) {
 
 const ADD_OPTIONS: { id: AddType; label: string; icon: "vitals" | "prescriptions" | "exams"; available: boolean }[] = [
   { id: "vitals", label: "Vitals", icon: "vitals", available: true },
-  { id: "prescriptions", label: "Prescriptions", icon: "prescriptions", available: false },
+  { id: "prescriptions", label: "Prescriptions", icon: "prescriptions", available: true },
   { id: "exams", label: "Exams", icon: "exams", available: false },
 ];
 
@@ -46,6 +47,20 @@ export default function Add() {
           <p className="mt-1 text-sm text-light-green-dark-grey">Record a vital reading. Date is required; other fields are optional.</p>
           <div className="mt-8 rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card">
             <AddVitalsForm onBack={() => setSelected(null)} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (selected === "prescriptions") {
+    return (
+      <div className="min-h-screen bg-light-green-light px-4 py-8 sm:px-6">
+        <div className="mx-auto max-w-2xl">
+          <h1 className="text-2xl font-semibold text-light-green-dark">Add prescription</h1>
+          <p className="mt-1 text-sm text-light-green-dark-grey">Upload a prescription PDF. The system will extract medication information automatically.</p>
+          <div className="mt-8 rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card">
+            <AddPrescriptionForm onBack={() => setSelected(null)} />
           </div>
         </div>
       </div>

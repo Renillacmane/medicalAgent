@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../auth/auth.module';
+import { LlmModule } from '../llm/llm.module';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import {
   UserVital,
@@ -14,10 +15,12 @@ import {
 } from './schemas';
 import { PatientsController } from './patients.controller';
 import { PatientsService } from './patients.service';
+import { DocumentProcessorService } from './services/document-processor.service';
 
 @Module({
   imports: [
     AuthModule,
+    LlmModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: UserVital.name, schema: UserVitalSchema },
@@ -27,7 +30,7 @@ import { PatientsService } from './patients.service';
     ]),
   ],
   controllers: [PatientsController],
-  providers: [PatientsService],
+  providers: [PatientsService, DocumentProcessorService],
   exports: [MongooseModule, PatientsService],
 })
 export class PatientsModule {}

@@ -31,7 +31,10 @@ export function authFetch(
   const url = path.startsWith("http") ? path : `${apiUrl}${path}`;
   const headers = new Headers(options.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  // Only set Content-Type for JSON if not already set and not FormData
+  if (!headers.has("Content-Type") && !(options.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
   return fetch(url, { ...options, headers });
 }
 
@@ -86,6 +89,16 @@ export async function authPost<T>(path: string, body: unknown): Promise<T> {
 
 export async function authPatch<T>(path: string, body: unknown): Promise<T> {
   const res = await authFetch(path, { method: "PATCH", body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (res.status === 401) throw new UnauthorizedError();
+    throw new Error((data as { message?: string }).message ?? "Request failed");
+  }
+  return data as T;
+}
+
+export async function authPostFormData<T>(path: string, formData: FormData): Promise<T> {
+  const res = await authFetch(path, { method: "POST", body: formData });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     if (res.status === 401) throw new UnauthorizedError();

@@ -7,17 +7,28 @@ import {
   Query,
   UseGuards,
   NotFoundException,
+  BadRequestException,
+  Req,
 } from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../auth/schemas/user.schema';
 import { PatientsService } from './patients.service';
+import { DocumentProcessorService } from './services/document-processor.service';
 import { CreateVitalDto, UpdateProfileDto } from './dto';
+import { PDFParse } from 'pdf-parse';
+import type { LoadParameters } from 'pdf-parse';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Controller('patients')
 @UseGuards(JwtAuthGuard)
 export class PatientsController {
-  constructor(private readonly patientsService: PatientsService) {}
+  constructor(
+    private readonly patientsService: PatientsService,
+    private readonly documentProcessor: DocumentProcessorService,
+  ) {}
 
   @Get('profile')
   async getProfile(@CurrentUser() user: User) {
@@ -59,6 +70,74 @@ export class PatientsController {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
     return this.patientsService.getDocuments(userId, documentType);
+  }
+
+  @Post('documents/upload')
+  async uploadDocument(
+    @CurrentUser() user: User,
+    @Req() req: FastifyRequest & { isMultipart: () => boolean; file: () => Promise<any> },
+  ) {
+    if (!req.isMultipart()) {
+      throw new BadRequestException('Request must be multipart');
+    }
+
+    const data = await req.file();
+    if (!data) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    const documentType = (data.fields?.documentType as any)?.value || 'prescription';
+
+    if (data.mimetype !== 'application/pdf') {
+      throw new BadRequestException('Only PDF files are supported');
+    }
+
+    if (documentType !== 'prescription') {
+      throw new BadRequestException('Only prescription documents are currently supported');
+    }
+
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+
+    // Read file buffer
+    const buffer = await data.toBuffer();
+
+    // Extract text from PDF
+    let pdfText: string;
+    try {
+      const loadParams: LoadParameters = { data: buffer };
+      const parser = new PDFParse(loadParams);
+      const textResult = await parser.getText();
+      pdfText = textResult.text;
+      await parser.destroy();
+    } catch (error) {
+      throw new BadRequestException('Failed to parse PDF file');
+    }
+
+    // Save file to public directory
+    const publicDir = path.join(process.cwd(), '..', 'frontend', 'public', 'documents');
+    if (!fs.existsSync(publicDir)) {
+      fs.mkdirSync(publicDir, { recursive: true });
+    }
+
+    const filename = `${Date.now()}_${data.filename}`;
+    const filePath = path.join(publicDir, filename);
+    fs.writeFileSync(filePath, buffer);
+    const attachmentId = `/documents/${filename}`;
+
+    // Process document asynchronously
+    const result = await this.documentProcessor.processPrescription(
+      userId,
+      data.filename,
+      pdfText,
+      attachmentId,
+    );
+
+    return {
+      id: result.id,
+      status: result.status,
+      message: 'Document uploaded and processing started',
+    };
   }
 
   @Get('vitals')
