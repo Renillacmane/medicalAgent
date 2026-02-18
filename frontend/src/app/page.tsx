@@ -1,24 +1,29 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState, useCallback } from "react";
 import { useIsNativeCapacitor } from "@/lib/capacitor/use-is-native-capacitor";
 import AppShell from "@/components/layout/AppShell";
 import Dashboard from "@/components/Dashboard";
 import Widget from "@/components/Widget";
 import Spinner from "@/components/ui/Spinner";
+import { LoadingPulse } from "@/components/design";
+import { apiUrl } from "@/lib/config";
 
-const DUMMY_SUMMARY = {
-  title: "Daily summary",
-  date: new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" }),
-  items: [
-    { id: 1, label: "Recommendations today", value: "3" },
-    { id: 2, label: "Active goals", value: "2" },
-    { id: 3, label: "Last check-in", value: "Yesterday" },
-  ],
-} as const;
+type EngineStatus = "red" | "loading" | "green";
 
 export default function Home() {
   const isNative = useIsNativeCapacitor();
+  const [engineStatus, setEngineStatus] = useState<EngineStatus>("red");
+
+  const startEngine = useCallback(async () => {
+    setEngineStatus("loading");
+    try {
+      const res = await fetch(`${apiUrl}/health`);
+      setEngineStatus(res.ok ? "green" : "red");
+    } catch {
+      setEngineStatus("red");
+    }
+  }, []);
 
   // Only use AppShell when we know we're in the native app (isNative === true).
   // When isNative is null (still resolving) or false (web), show the landing page so we
@@ -39,24 +44,40 @@ export default function Home() {
     );
   }
 
+  const engineStatusIndicator =
+    engineStatus === "loading" ? (
+      <div className="flex items-center gap-1" aria-busy="true" aria-live="polite">
+        <LoadingPulse className="flex flex-row gap-1 items-center" />
+      </div>
+    ) : (
+      <span
+        className={`h-3 w-3 shrink-0 rounded-full ${engineStatus === "green" ? "bg-green-500" : "bg-red-500"}`}
+        aria-hidden
+      />
+    );
+
   return (
     <main className="min-h-screen p-8">
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-2 text-2xl font-bold text-slate-800">Medical Agent</h1>
-        <p className="mb-6 text-slate-600">Test page – widget in bottom right.</p>
+        <div className="mb-6 flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-bold text-slate-800">Healthia</h1>
+          {engineStatusIndicator}
+          <button
+            type="button"
+            onClick={startEngine}
+            disabled={engineStatus === "loading"}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-800 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-60"
+          >
+            Start Engine
+          </button>
+        </div>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-800">{DUMMY_SUMMARY.title}</h2>
-          <p className="mb-4 text-sm text-slate-500">{DUMMY_SUMMARY.date}</p>
-          <ul className="space-y-2">
-            {DUMMY_SUMMARY.items.map((item) => (
-              <li key={item.id} className="flex justify-between text-sm">
-                <span className="text-slate-600">{item.label}</span>
-                <span className="font-medium text-slate-800">{item.value}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <p className="mb-6 text-slate-600 leading-relaxed">
+          Healthia is your personal health companion. It helps you track vitals, medications, and
+          daily check-ins, and delivers gentle, non-critical recommendations to support your
+          wellbeing. Quick access to your dashboard, add new entries, and manage your profile from
+          anywhere.
+        </p>
 
         <p className="mt-6 text-sm text-slate-500">
           Click the &quot;Hi&quot; button in the bottom right to open the widget and sign in.

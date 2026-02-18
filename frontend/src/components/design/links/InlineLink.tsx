@@ -4,7 +4,7 @@ import type { DesignLinkItem } from "./InlineLinkList";
 
 const VARIANT_CLASSES = {
   default: "text-light-green-primary underline-offset-2 hover:underline",
-  footer: "text-sm text-light-green-dark-grey transition-colors hover:text-light-green-primary",
+  footer: "text-xs text-light-green-dark-grey transition-colors hover:text-light-green-primary",
 } as const;
 
 type InlineLinkProps = DesignLinkItem & {

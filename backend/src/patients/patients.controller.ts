@@ -153,6 +153,23 @@ export class PatientsController {
     return this.patientsService.getVitals(userId, limitNum, daysNum);
   }
 
+  @Get('vitals/latest-by-period')
+  async getLatestVitalsByPeriod(
+    @CurrentUser() user: User,
+    @Query('period') period?: string,
+  ) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    
+    // Validate period parameter - must be 7, 15, or 30
+    const periodNum = period != null ? parseInt(period, 10) : 7;
+    if (![7, 15, 30].includes(periodNum)) {
+      throw new BadRequestException('Period must be 7, 15, or 30 days');
+    }
+    
+    return this.patientsService.getLatestVitalsByPeriod(userId, periodNum);
+  }
+
   @Post('vitals')
   async createVital(
     @CurrentUser() user: User,

@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
-import { authPost, UnauthorizedError } from "@/lib/api";
+import { UnauthorizedError } from "@/lib/api";
+import { createVital } from "@/services/patients.service";
 import { todayISO } from "@/lib/format";
 import { addPendingVital } from "@/lib/pwa/offline-store";
 import { syncPendingVitals, requestBackgroundSync } from "@/lib/pwa/sync-manager";
@@ -107,7 +108,7 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
 
     // Online – try the API
     try {
-      await authPost("/patients/vitals", payload);
+      await createVital(payload);
       setSuccess(true);
       onSuccess?.();
     } catch (err) {

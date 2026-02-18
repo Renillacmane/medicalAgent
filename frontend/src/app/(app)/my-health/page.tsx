@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
-import { authGet, UnauthorizedError } from "@/lib/api";
+import { UnauthorizedError } from "@/lib/api";
+import { getProfile, getVitals, getExams, getDocuments } from "@/services/patients.service";
 import { formatDate } from "@/lib/format";
-import { getLast7DaysVitals } from "@/lib/last7-days-vitals";
+import { getDailyVitals } from "@/lib/daily-vitals";
 import type { Vital } from "@/types/vital";
 import type { PatientProfile } from "@/types/profile";
 import type { Exam } from "@/types/health";
@@ -32,10 +33,10 @@ export default function MyHealthPage() {
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      authGet<PatientProfile>("/patients/profile").catch((e) => { if (e instanceof UnauthorizedError) throw e; return null; }),
-      authGet<Vital[]>("/patients/vitals?limit=100").catch((e) => { if (e instanceof UnauthorizedError) throw e; return []; }),
-      authGet<Exam[]>("/patients/exams").catch((e) => { if (e instanceof UnauthorizedError) throw e; return []; }),
-      authGet<UserHealthDocument[]>("/patients/documents?documentType=prescription").catch((e) => {
+      getProfile().catch((e) => { if (e instanceof UnauthorizedError) throw e; return null; }),
+      getVitals({ limit: 100 }).catch((e) => { if (e instanceof UnauthorizedError) throw e; return []; }),
+      getExams().catch((e) => { if (e instanceof UnauthorizedError) throw e; return []; }),
+      getDocuments("prescription").catch((e) => {
         if (e instanceof UnauthorizedError) throw e;
         return [];
       }),
@@ -70,7 +71,7 @@ export default function MyHealthPage() {
     );
   }
 
-  const last7DaysVitals = getLast7DaysVitals(vitals);
+  const dailyVitals = getDailyVitals(vitals, 7);
 
   const tabs: { id: TabId; label: string }[] = [
     { id: "vitals", label: "Vitals" },
@@ -89,7 +90,7 @@ export default function MyHealthPage() {
         </p>
 
         <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start">
-          <UserPanel profile={profile} vitals={vitals} last7DaysVitals={last7DaysVitals} />
+          <UserPanel profile={profile} vitals={vitals} dailyVitals={dailyVitals} />
 
           <main className="min-w-0 flex-1">
             <div className="rounded-xl border border-light-green-subtle/60 bg-white shadow-card overflow-hidden">

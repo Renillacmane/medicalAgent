@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { apiUrl } from "@/lib/config";
 import { persistAuthToken, persistApiUrl } from "@/lib/pwa/offline-store";
-import { authPatch } from "@/lib/api";
+import { updateProfile } from "@/services/patients.service";
 import type { PatientProfile } from "@/types/profile";
 
 const STEPS = [
@@ -141,7 +141,7 @@ export default function RegisterForm({ onSuccess }: Props) {
       const profilePayload = buildProfilePayload();
       const hasProfileData = Object.keys(profilePayload).length > 0;
       if (hasProfileData) {
-        await authPatch<PatientProfile>("/patients/profile", profilePayload);
+        await updateProfile(profilePayload);
       }
 
       onSuccess?.();

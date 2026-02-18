@@ -9,7 +9,7 @@ export type DesignFooterLink = {
 };
 
 const FOOTER_LINK_CLASS =
-  "text-sm text-light-green-dark-grey transition-colors hover:text-light-green-primary";
+  "text-xs text-light-green-dark-grey transition-colors hover:text-light-green-primary";
 
 type DesignFooterProps = {
   id?: string;
@@ -58,7 +58,7 @@ export default function DesignFooter({
     <footer id={id} className={footerClass}>
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-medium text-light-green-dark">{title}</p>
+          <p className="text-xs font-medium text-light-green-dark">{title}</p>
           <div className="flex flex-wrap items-center gap-6">
             {onAboutClick && (
               <button
@@ -74,7 +74,7 @@ export default function DesignFooter({
             )}
           </div>
         </div>
-        <TextLabel className="mt-4 block">{copyright}</TextLabel>
+        <TextLabel className="mt-4 block text-[0.6875rem]">{copyright}</TextLabel>
       </div>
     </footer>
   );

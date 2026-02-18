@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
-import { authPostFormData, UnauthorizedError } from "@/lib/api";
+import { UnauthorizedError } from "@/lib/api";
+import { uploadDocument } from "@/services/patients.service";
 import LoadingPulse from "@/components/design/loading/LoadingPulse";
 
 type Props = { onSuccess?: () => void; onBack?: () => void };
@@ -50,7 +51,7 @@ export default function AddPrescriptionForm({ onSuccess, onBack }: Props) {
       formData.append("file", file);
       formData.append("documentType", "prescription");
 
-      await authPostFormData("/patients/documents/upload", formData);
+      await uploadDocument(formData);
 
       setSuccess(true);
       setFile(null);

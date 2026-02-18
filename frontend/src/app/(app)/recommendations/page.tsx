@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
-import { authGet, UnauthorizedError } from "@/lib/api";
+import { UnauthorizedError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
-import { getLast7DaysVitals } from "@/lib/last7-days-vitals";
+import { getDailyVitals, VITALS_PERIOD_OPTIONS, type VitalsPeriodDays } from "@/lib/daily-vitals";
+import { getProfile, getLatestVitalsByPeriod } from "@/services/patients.service";
+import { getDailyRecommendations } from "@/services/recommendations.service";
 import type { Vital } from "@/types/vital";
 import type { PatientProfile } from "@/types/profile";
 import type {
@@ -43,15 +45,16 @@ function getVitalValue(v: Vital, key: VitalChartKey): number | null {
 }
 
 function buildChartData(
-  last7: { vitalsByDay: (Vital | null)[]; dateKeys: string[] },
+  periodData: { vitalsByDay: (Vital | null)[]; dateKeys: string[] },
   type: RecommendationCategory,
 ): { labels: string[]; series: ChartSeries[] } {
   const keys = RECOMMENDATION_VITALS[type];
-  const { vitalsByDay, dateKeys } = last7;
+  const { vitalsByDay, dateKeys } = periodData;
+  const fallbackLabels = Array.from({ length: dateKeys.length || 7 }, () => "—");
   const labels =
     dateKeys.length > 0
       ? dateKeys.map((k) => (k === "—" ? k : formatDate(k, "short")))
-      : ["—", "—", "—", "—", "—", "—", "—"];
+      : fallbackLabels;
   const series: ChartSeries[] = keys.map((key) => ({
     label: VITAL_LABELS[key],
     values: vitalsByDay.map((v) => (v ? getVitalValue(v, key) : null)),
@@ -65,31 +68,29 @@ export default function RecommendationsPage() {
   const [recommendations, setRecommendations] = useState<DailyRecommendationResponse | null>(null);
   const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [vitals, setVitals] = useState<Vital[]>([]);
+  const [chartPeriod, setChartPeriod] = useState<VitalsPeriodDays>(7);
+  const [vitalsLoading, setVitalsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadedTypes, setLoadedTypes] = useState<RecommendationCategory[]>([]);
 
+  // Initial load: recommendations and profile
   useEffect(() => {
     let cancelled = false;
 
     Promise.all([
-      authGet<DailyRecommendationResponse>("/recommendations/daily").catch((e) => {
+      getDailyRecommendations().catch((e) => {
         if (e instanceof UnauthorizedError) return null;
         throw e;
       }),
-      authGet<PatientProfile>("/patients/profile").catch((e) => {
+      getProfile().catch((e) => {
         if (e instanceof UnauthorizedError) return null;
         return null;
       }),
-      authGet<Vital[]>("/patients/vitals?days=14&limit=50").catch((e) => {
-        if (e instanceof UnauthorizedError) return [];
-        return [] as Vital[];
-      }),
     ])
-      .then(([rec, prof, vits]) => {
+      .then(([rec, prof]) => {
         if (cancelled) return;
         if (rec) setRecommendations(rec);
         if (prof) setProfile(prof);
-        if (Array.isArray(vits)) setVitals(vits);
         RECOMMENDATION_TYPES.forEach((type, i) => {
           setTimeout(() => {
             if (!cancelled) setLoadedTypes((prev) => [...prev, type]);
@@ -110,6 +111,25 @@ export default function RecommendationsPage() {
       cancelled = true;
     };
   }, [router, basePath]);
+
+  // Fetch vitals for the selected period (runs on mount with 7 and when period changes)
+  useEffect(() => {
+    let cancelled = false;
+    setVitalsLoading(true);
+    getLatestVitalsByPeriod(chartPeriod)
+      .then((vits) => {
+        if (!cancelled) setVitals(Array.isArray(vits) ? vits : []);
+      })
+      .catch((e) => {
+        if (!cancelled && !(e instanceof UnauthorizedError)) setVitals([]);
+      })
+      .finally(() => {
+        if (!cancelled) setVitalsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [chartPeriod]);
 
   if (error) {
     return (
@@ -132,7 +152,7 @@ export default function RecommendationsPage() {
           <UserPanel
             profile={profile}
             vitals={vitals}
-            last7DaysVitals={getLast7DaysVitals(vitals)}
+            dailyVitals={getDailyVitals(vitals, chartPeriod)}
           />
 
           {/* Center: overall score + recommendations and graphs */}
@@ -190,11 +210,28 @@ export default function RecommendationsPage() {
             </section>
 
             <div className="space-y-6">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-light-green-dark-grey">Vitals period:</span>
+                {VITALS_PERIOD_OPTIONS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setChartPeriod(p)}
+                    className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
+                      chartPeriod === p
+                        ? "bg-light-green-primary text-white"
+                        : "bg-light-green-subtle/50 text-light-green-dark-grey hover:bg-light-green-subtle"
+                    }`}
+                  >
+                    {p} days
+                  </button>
+                ))}
+              </div>
               {RECOMMENDATION_TYPES.map((type) => {
                 const isLoaded = loadedTypes.includes(type);
                 const items = recommendations?.recommendations?.[type] ?? [];
-                const last7 = getLast7DaysVitals(vitals);
-                const { labels, series } = buildChartData(last7, type);
+                const periodData = getDailyVitals(vitals, chartPeriod);
+                const { labels, series } = buildChartData(periodData, type);
 
                 return (
                   <section key={type} className="space-y-2">
@@ -221,8 +258,22 @@ export default function RecommendationsPage() {
                             )}
                           </div>
                           <div className="flex shrink-0 flex-col justify-center border-t border-light-green-subtle/40 p-4 sm:border-t-0 sm:border-l sm:border-l-light-green-subtle/40">
-                            <p className="mb-2 text-xs font-medium text-light-green-dark-grey">Last 7 days</p>
-                            <VitalsLineChart labels={labels} series={series} dateKeys={last7.dateKeys} width={220} height={140} />
+                            <p className="mb-2 text-xs font-medium text-light-green-dark-grey">
+                              Last {chartPeriod} days
+                            </p>
+                            {vitalsLoading ? (
+                              <div className="flex h-[140px] w-[220px] items-center justify-center">
+                                <RhombusLoader size={32} />
+                              </div>
+                            ) : (
+                              <VitalsLineChart
+                                labels={labels}
+                                series={series}
+                                dateKeys={periodData.dateKeys}
+                                width={220}
+                                height={140}
+                              />
+                            )}
                           </div>
                         </div>
                       )}

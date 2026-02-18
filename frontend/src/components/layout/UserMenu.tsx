@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
-import { authGet } from "@/lib/api";
+import { getProfile } from "@/services/patients.service";
 import { clearToken } from "@/lib/auth";
 import { clearAuthToken } from "@/lib/pwa/offline-store";
 import type { PatientProfile } from "@/types/profile";
@@ -42,7 +42,7 @@ export default function UserMenu({ variant = "desktop" }: UserMenuProps) {
 
   useEffect(() => {
     let cancelled = false;
-    authGet<PatientProfile>("/patients/profile")
+    getProfile()
       .then((data) => {
         if (!cancelled) setProfile(data);
       })

@@ -133,6 +133,53 @@ export class PatientsService {
     }));
   }
 
+  /**
+   * Get vitals for a user within a period ending on the latest vital date.
+   * Finds the latest vital date, then returns all vitals from (latest date - period) to latest date.
+   * @param userId - User ID
+   * @param periodDays - Period in days (7, 15, or 30)
+   * @returns Array of vitals sorted by date descending (newest first)
+   */
+  async getLatestVitalsByPeriod(userId: string, periodDays: number) {
+    // First, find the latest vital date for this user
+    const latestVital = await this.userVitalModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .sort({ date: -1 })
+      .select('date')
+      .lean()
+      .exec();
+
+    // If no vitals exist, return empty array
+    if (!latestVital || !latestVital.date) {
+      return [];
+    }
+
+    // Calculate the start date (latest date - period days)
+    const latestDate = new Date(latestVital.date);
+    const startDate = new Date(latestDate);
+    startDate.setDate(startDate.getDate() - periodDays);
+    startDate.setHours(0, 0, 0, 0);
+
+    // Set latest date to end of day to include all vitals on that day
+    const endDate = new Date(latestDate);
+    endDate.setHours(23, 59, 59, 999);
+
+    // Query vitals within the period
+    const vitals = await this.userVitalModel
+      .find({
+        userId: new Types.ObjectId(userId),
+        date: { $gte: startDate, $lte: endDate },
+      })
+      .sort({ date: -1 })
+      .lean()
+      .exec();
+
+    return vitals.map((v) => ({
+      ...v,
+      id: (v as { _id: Types.ObjectId })._id?.toString?.(),
+    }));
+  }
+
   async createVital(userId: string, dto: CreateVitalDto) {
     const payload: Partial<UserVital> = {
       userId: new Types.ObjectId(userId),

@@ -57,7 +57,7 @@ function BodySilhouette({ category }: { category: BMICategory }) {
   );
 }
 
-export interface Last7DaysVitals {
+export interface DailyVitals {
   vitalsByDay: (Vital | null)[];
   dateKeys: string[];
 }
@@ -65,13 +65,13 @@ export interface Last7DaysVitals {
 export interface UserPanelProps {
   profile: PatientProfile | null;
   vitals: Vital[];
-  last7DaysVitals: Last7DaysVitals;
+  dailyVitals: DailyVitals;
 }
 
-export default function UserPanel({ profile, vitals, last7DaysVitals }: UserPanelProps) {
+export default function UserPanel({ profile, vitals, dailyVitals }: UserPanelProps) {
   const [mediaTab, setMediaTab] = useState<"photo" | "body">("photo");
 
-  const { vitalsByDay } = last7DaysVitals;
+  const { vitalsByDay } = dailyVitals;
   const latest = vitalsByDay.length > 0 ? vitalsByDay[vitalsByDay.length - 1] : null;
 
   const age = profile ? ageFromDOB(profile.dateOfBirth) : null;

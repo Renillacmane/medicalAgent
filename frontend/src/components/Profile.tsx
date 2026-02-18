@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
-import { authGet, authPatch, UnauthorizedError } from "@/lib/api";
+import { UnauthorizedError } from "@/lib/api";
+import { getProfile, updateProfile } from "@/services/patients.service";
 import { formatDate } from "@/lib/format";
 import type { PatientProfile } from "@/types/profile";
 import { LoadingPulse } from "@/components/design";
@@ -92,7 +93,7 @@ export default function Profile() {
 
   useEffect(() => {
     let cancelled = false;
-    authGet<PatientProfile>("/patients/profile")
+    getProfile()
       .then((data) => {
         if (!cancelled) setProfile(data);
       })
@@ -137,7 +138,7 @@ export default function Profile() {
     setSaveError(null);
     try {
       const payload = editFormToPayload(form);
-      const updated = await authPatch<PatientProfile>("/patients/profile", payload);
+      const updated = await updateProfile(payload);
       setProfile(updated);
       setIsEditing(false);
       setForm(null);

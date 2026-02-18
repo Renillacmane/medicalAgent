@@ -11,7 +11,8 @@
  *   3. AddVitalsForm mount (catch any missed syncs)
  */
 
-import { authPost, UnauthorizedError } from "@/lib/api";
+import { UnauthorizedError } from "@/lib/api";
+import { createVital } from "@/services/patients.service";
 import {
   getPendingVitals,
   removePendingVital,
@@ -43,7 +44,7 @@ export async function syncPendingVitals(): Promise<SyncResult> {
 
     for (const entry of pending) {
       try {
-        await authPost("/patients/vitals", entry.payload);
+        await createVital(entry.payload);
         if (entry.id != null) {
           await removePendingVital(entry.id);
         }

@@ -3,6 +3,11 @@
 import { useState, useCallback, useMemo } from "react";
 import type { ChartSeries } from "@/types/recommendations";
 
+/** Default: when there are more than this many points, day labels are shown only at a periodic interval */
+const DEFAULT_THIN_LABELS_ABOVE = 10;
+/** Default: when thinning, show roughly this many day labels (first, last, and evenly spaced between) */
+const DEFAULT_MAX_VISIBLE_LABELS = 8;
+
 interface VitalsLineChartProps {
   /** X-axis labels (e.g. last 7 days); used when dateKeys not provided */
   labels: string[];
@@ -12,6 +17,10 @@ interface VitalsLineChartProps {
   dateKeys?: string[];
   width?: number;
   height?: number;
+  /** When there are more than this many points, day labels are shown periodically (default 10) */
+  maxLabelsBeforeThin?: number;
+  /** When thinning, show at most this many day labels (default 8) */
+  maxVisibleLabels?: number;
 }
 
 /** Line colors: distinct gradient so each of the 3 series is easy to identify. */
@@ -73,12 +82,32 @@ function formatTooltipDate(dateKey: string | undefined, fallbackLabel: string): 
   }
 }
 
+/** Indices at which to show a day label when there are too many points (keeps axis readable) */
+function getVisibleLabelIndices(
+  count: number,
+  thinAbove: number,
+  maxVisible: number,
+): Set<number> {
+  if (count <= thinAbove) {
+    return new Set(Array.from({ length: count }, (_, i) => i));
+  }
+  const set = new Set<number>();
+  const n = Math.min(maxVisible, count);
+  for (let i = 0; i < n; i++) {
+    const idx = n <= 1 ? 0 : Math.round((i / (n - 1)) * (count - 1));
+    set.add(idx);
+  }
+  return set;
+}
+
 export default function VitalsLineChart({
   labels,
   series,
   dateKeys,
   width = 200,
   height = 120,
+  maxLabelsBeforeThin = DEFAULT_THIN_LABELS_ABOVE,
+  maxVisibleLabels = DEFAULT_MAX_VISIBLE_LABELS,
 }: VitalsLineChartProps) {
   const [tooltip, setTooltip] = useState<{
     date: string;
@@ -223,21 +252,38 @@ export default function VitalsLineChart({
           </div>
         )}
       </div>
-      {/* Dates at bottom of graph (aligned with chart points): day + month in two rows when dateKeys provided */}
+      {/* Dates at bottom: day + month; thinned by config when many points; month only when it changes (among visible labels) */}
       <div
         className="flex justify-between text-[10px] text-slate-500"
         style={{ width, paddingLeft: padding.left, paddingRight: padding.right }}
       >
         {dateKeys && dateKeys.length === labels.length
-          ? dateKeys.map((key, i) => {
-              const { day, month } = formatDayAndMonth(key);
-              return (
-                <span key={i} className="flex shrink-0 flex-col items-center">
-                  <span className="font-medium">{day}</span>
-                  {month && <span className="text-[9px] text-slate-400">{month}</span>}
-                </span>
+          ? (() => {
+              const visible = getVisibleLabelIndices(
+                dateKeys.length,
+                maxLabelsBeforeThin,
+                maxVisibleLabels,
               );
-            })
+              const visibleList = Array.from(visible).sort((a, b) => a - b);
+              const prevVisibleMonth = (idx: number) => {
+                const pos = visibleList.indexOf(idx);
+                return pos <= 0 ? "" : formatDayAndMonth(dateKeys![visibleList[pos - 1]]).month;
+              };
+              return dateKeys.map((key, i) => {
+                const showLabel = visible.has(i);
+                if (!showLabel) {
+                  return <span key={i} className="flex shrink-0 flex-col items-center" aria-hidden />;
+                }
+                const { day, month } = formatDayAndMonth(key);
+                const showMonth = month && month !== prevVisibleMonth(i);
+                return (
+                  <span key={i} className="flex shrink-0 flex-col items-center">
+                    <span className="font-medium">{day}</span>
+                    {showMonth && <span className="text-[9px] text-slate-400">{month}</span>}
+                  </span>
+                );
+              });
+            })()
           : labels.map((label, i) => (
               <span key={i} className="shrink-0">
                 {label}

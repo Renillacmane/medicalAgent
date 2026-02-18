@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
 import { LoadingPulse } from "@/components/design";
-import { authGet, UnauthorizedError } from "@/lib/api";
+import { UnauthorizedError } from "@/lib/api";
+import { getVitals } from "@/services/patients.service";
 import { formatDate } from "@/lib/format";
 import { formatBP } from "@/lib/vital-format";
 import type { Vital } from "@/types/vital";
@@ -22,7 +23,7 @@ export default function Dashboard() {
     let cancelled = false;
     const wasOnline = navigator.onLine;
 
-    authGet<Vital[]>("/patients/vitals?limit=20")
+    getVitals({ limit: 20 })
       .then((data) => {
         if (!cancelled) {
           setVitals(Array.isArray(data) ? data : []);

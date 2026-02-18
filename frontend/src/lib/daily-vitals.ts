@@ -4,13 +4,18 @@ function toDateKey(dateStr: string): string {
   return new Date(dateStr).toISOString().slice(0, 10);
 }
 
-/** Last 7 calendar days ending on the latest vital date. One vital per day (latest entry that day), oldest to newest. */
-export function getLast7DaysVitals(vitals: Vital[]): {
-  vitalsByDay: (Vital | null)[];
-  dateKeys: string[];
-} {
-  const empty = [null, null, null, null, null, null, null] as (Vital | null)[];
-  const emptyLabels = ["—", "—", "—", "—", "—", "—", "—"];
+/** Allowed vitals period lengths (days). Single source of truth for charts and API. */
+export const VITALS_PERIOD_OPTIONS = [7, 15, 30] as const;
+export type VitalsPeriodDays = (typeof VITALS_PERIOD_OPTIONS)[number];
+
+/** Last N calendar days ending on the latest vital date. One vital per day (latest entry that day), oldest to newest. */
+export function getDailyVitals(
+  vitals: Vital[],
+  periodDays: number,
+): { vitalsByDay: (Vital | null)[]; dateKeys: string[] } {
+  const n = Math.max(1, Math.min(periodDays, 90));
+  const empty = Array.from({ length: n }, () => null) as (Vital | null)[];
+  const emptyLabels = Array.from({ length: n }, () => "—");
   if (vitals.length === 0) return { vitalsByDay: empty, dateKeys: emptyLabels };
 
   const sorted = [...vitals].sort(
@@ -19,7 +24,7 @@ export function getLast7DaysVitals(vitals: Vital[]): {
   const latestDate = new Date(sorted[0].date);
   const dayMs = 24 * 60 * 60 * 1000;
   const dateKeys: string[] = [];
-  for (let i = 6; i >= 0; i--) {
+  for (let i = n - 1; i >= 0; i--) {
     const d = new Date(latestDate.getTime() - i * dayMs);
     dateKeys.push(toDateKey(d.toISOString()));
   }
