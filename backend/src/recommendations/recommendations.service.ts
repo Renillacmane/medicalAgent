@@ -62,7 +62,7 @@ export class RecommendationsService {
       vitalsLimit = 30,
       temperature,
     } = options;
-
+    
     this.logger.log(`Generating daily recommendations for user ${userId}`);
 
     try {
@@ -83,9 +83,20 @@ export class RecommendationsService {
       // Step 3: Build prompts
       const { system, prompt } = this.promptBuilder.build(snapshot, ragChunks);
 
-      this.logger.debug(
-        `Built prompt with ${ragChunks.length} RAG chunks`,
-      );
+      // Log RAG chunks retrieved
+      if (ragChunks.length > 0) {
+        this.logger.log(
+          `RAG chunks retrieved (${ragChunks.length}):\n${ragChunks.map((chunk, i) => `  [${i + 1}] ${chunk.source || 'no source'} (score: ${chunk.score?.toFixed(3) ?? 'N/A'}): ${chunk.content.substring(0, 100)}${chunk.content.length > 100 ? '...' : ''}`).join('\n')}`,
+        );
+      } else {
+        this.logger.log('No RAG chunks retrieved');
+      }
+
+      // Log prompts with RAG context
+      this.logger.log(`=== PROMPT SENT TO LLM ===`);
+      this.logger.log(`System Prompt:\n${system}`);
+      this.logger.log(`\nUser Prompt:\n${prompt}`);
+      this.logger.log(`=== END PROMPT ===`);
 
       // Step 4: Call LLM text generator
       const llmResponse = await this.textGenerator.generate({
@@ -93,6 +104,11 @@ export class RecommendationsService {
         system,
         temperature,
       });
+
+      // Log LLM response
+      this.logger.log(`=== LLM RESPONSE ===`);
+      this.logger.log(`${llmResponse.text}`);
+      this.logger.log(`=== END LLM RESPONSE ===`);
 
       // Step 5: Parse and validate response
       const recommendation = this.parseResponse(llmResponse.text);
