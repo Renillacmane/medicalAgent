@@ -69,8 +69,8 @@
   - Currently only a "Download" link exists (`frontend/src/app/(app)/my-health/page.tsx` lines 183-194); spec requires two side-by-side icons: preview (opens in-page viewer) and download
 - [ ] **HEALTH-UI-5** Exams tab PDF column: add **preview icon** (view PDF in-page) alongside the existing download action
   - Same situation as HEALTH-UI-4; only a "Download" link exists (lines 226-237); spec requires preview + download icons side by side
-- [ ] **HEALTH-UI-6** Implement in-page PDF preview viewer (modal, drawer, or inline iframe/embed) triggered by the preview icon
-  - No PDF viewer component exists yet; can use an iframe or embed with the same document URL used for download. Shared by both Prescription and Exams tabs. No backend changes needed (spec says "No requirement to change backend response headers for preview")
+- [x] ~~**HEALTH-UI-6** Implement in-page PDF preview viewer (modal, drawer, or inline iframe/embed) triggered by the preview icon~~
+  - Created `frontend/src/components/health/PdfPreviewModal.tsx` — fullscreen modal with backdrop, iframe for PDF display, close (Escape key + button), and a download link in the header; follows `AboutModal` pattern with z-[60]/z-[61] layering; shared by Prescription and Exams tabs
 - [x] ~~**HEALTH-UI-7** Unauthenticated users redirected to login with return URL~~
 
 ---
