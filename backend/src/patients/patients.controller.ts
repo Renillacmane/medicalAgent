@@ -75,7 +75,11 @@ export class PatientsController {
   @Post('documents/upload')
   async uploadDocument(
     @CurrentUser() user: User,
-    @Req() req: FastifyRequest & { isMultipart: () => boolean; file: () => Promise<any> },
+    @Req()
+    req: FastifyRequest & {
+      isMultipart: () => boolean;
+      file: () => Promise<any>;
+    },
   ) {
     if (!req.isMultipart()) {
       throw new BadRequestException('Request must be multipart');
@@ -86,23 +90,24 @@ export class PatientsController {
       throw new BadRequestException('No file uploaded');
     }
 
-    const documentType = (data.fields?.documentType as any)?.value || 'prescription';
+    const documentType = data.fields?.documentType?.value || 'prescription';
 
     if (data.mimetype !== 'application/pdf') {
       throw new BadRequestException('Only PDF files are supported');
     }
 
-    if (documentType !== 'prescription') {
-      throw new BadRequestException('Only prescription documents are currently supported');
+    const allowedTypes = ['prescription', 'lab_result'];
+    if (!allowedTypes.includes(documentType)) {
+      throw new BadRequestException(
+        `Unsupported document type "${documentType}". Allowed: ${allowedTypes.join(', ')}`,
+      );
     }
 
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
 
-    // Read file buffer
     const buffer = await data.toBuffer();
 
-    // Extract text from PDF
     let pdfText: string;
     try {
       const loadParams: LoadParameters = { data: buffer };
@@ -114,8 +119,13 @@ export class PatientsController {
       throw new BadRequestException('Failed to parse PDF file');
     }
 
-    // Save file to public directory
-    const publicDir = path.join(process.cwd(), '..', 'frontend', 'public', 'documents');
+    const publicDir = path.join(
+      process.cwd(),
+      '..',
+      'frontend',
+      'public',
+      'documents',
+    );
     if (!fs.existsSync(publicDir)) {
       fs.mkdirSync(publicDir, { recursive: true });
     }
@@ -125,18 +135,32 @@ export class PatientsController {
     fs.writeFileSync(filePath, buffer);
     const attachmentId = `/documents/${filename}`;
 
-    // Process document asynchronously
-    const result = await this.documentProcessor.processPrescription(
+    if (documentType === 'prescription') {
+      const result = await this.documentProcessor.processPrescription(
+        userId,
+        data.filename,
+        pdfText,
+        attachmentId,
+      );
+
+      return {
+        id: result.id,
+        status: result.status,
+        message: 'Document uploaded and processing started',
+      };
+    }
+
+    const result = await this.documentProcessor.createDocumentRecord(
       userId,
+      documentType,
       data.filename,
-      pdfText,
       attachmentId,
     );
 
     return {
       id: result.id,
       status: result.status,
-      message: 'Document uploaded and processing started',
+      message: 'Document uploaded successfully',
     };
   }
 
@@ -148,8 +172,12 @@ export class PatientsController {
   ) {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
-    const limitNum = limit != null ? Math.min(parseInt(limit, 10) || 100, 500) : 100;
-    const daysNum = days != null ? Math.min(Math.max(1, parseInt(days, 10) || 7), 365) : undefined;
+    const limitNum =
+      limit != null ? Math.min(parseInt(limit, 10) || 100, 500) : 100;
+    const daysNum =
+      days != null
+        ? Math.min(Math.max(1, parseInt(days, 10) || 7), 365)
+        : undefined;
     return this.patientsService.getVitals(userId, limitNum, daysNum);
   }
 
@@ -160,21 +188,18 @@ export class PatientsController {
   ) {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
-    
+
     // Validate period parameter - must be 7, 15, or 30
     const periodNum = period != null ? parseInt(period, 10) : 7;
     if (![7, 15, 30].includes(periodNum)) {
       throw new BadRequestException('Period must be 7, 15, or 30 days');
     }
-    
+
     return this.patientsService.getLatestVitalsByPeriod(userId, periodNum);
   }
 
   @Post('vitals')
-  async createVital(
-    @CurrentUser() user: User,
-    @Body() dto: CreateVitalDto,
-  ) {
+  async createVital(@CurrentUser() user: User, @Body() dto: CreateVitalDto) {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
     return this.patientsService.createVital(userId, dto);
