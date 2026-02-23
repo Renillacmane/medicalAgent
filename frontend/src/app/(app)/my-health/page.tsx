@@ -13,6 +13,7 @@ import type { Exam } from "@/types/health";
 import type { UserHealthDocument } from "@/types/health";
 import type { PrescriptionExtractedData } from "@/types/health";
 import UserPanel from "@/components/health/UserPanel";
+import PdfPreviewModal from "@/components/health/PdfPreviewModal";
 import RhombusLoader from "@/components/ui/RhombusLoader";
 
 type TabId = "vitals" | "prescription" | "exams";
@@ -25,10 +26,12 @@ export default function MyHealthPage() {
   const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [vitals, setVitals] = useState<Vital[]>([]);
   const [exams, setExams] = useState<Exam[]>([]);
+  const [labResults, setLabResults] = useState<UserHealthDocument[]>([]);
   const [prescriptions, setPrescriptions] = useState<UserHealthDocument[]>([]);
   const [activeTab, setActiveTab] = useState<TabId>("vitals");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -36,17 +39,22 @@ export default function MyHealthPage() {
       getProfile().catch((e) => { if (e instanceof UnauthorizedError) throw e; return null; }),
       getVitals({ limit: 100 }).catch((e) => { if (e instanceof UnauthorizedError) throw e; return []; }),
       getExams().catch((e) => { if (e instanceof UnauthorizedError) throw e; return []; }),
+      getDocuments("lab_result").catch((e) => {
+        if (e instanceof UnauthorizedError) throw e;
+        return [];
+      }),
       getDocuments("prescription").catch((e) => {
         if (e instanceof UnauthorizedError) throw e;
         return [];
       }),
     ])
-      .then(([prof, vits, ex, docs]) => {
+      .then(([prof, vits, ex, labDocs, prescDocs]) => {
         if (cancelled) return;
         if (prof) setProfile(prof);
         if (Array.isArray(vits)) setVitals(vits);
         if (Array.isArray(ex)) setExams(ex);
-        if (Array.isArray(docs)) setPrescriptions(docs);
+        if (Array.isArray(labDocs)) setLabResults(labDocs);
+        if (Array.isArray(prescDocs)) setPrescriptions(prescDocs);
       })
       .catch((e) => {
         if (cancelled) return;
@@ -80,6 +88,19 @@ export default function MyHealthPage() {
   ];
 
   const hasPdfPath = (attachmentId: string) => attachmentId.startsWith("/");
+
+  // Exams tab: legacy UserExam records + lab result documents (from uploads)
+  const examsFromDocs: Exam[] = labResults.map((doc) => ({
+    id: doc.id,
+    name: doc.originalFilename || "Lab results",
+    date: doc.documentDate ?? doc.processedAt ?? "",
+    attachmentId: doc.attachmentId,
+  }));
+  const examsCombined: Exam[] = [...examsFromDocs, ...exams].sort((a, b) => {
+    const dA = new Date(a.date).getTime();
+    const dB = new Date(b.date).getTime();
+    return dB - dA;
+  });
 
   return (
     <div className="min-h-screen bg-light-green-light pb-20">
@@ -182,15 +203,33 @@ export default function MyHealthPage() {
                                 <td className="py-2 pr-4 max-w-xs truncate" title={meds}>{meds}</td>
                                 <td className="py-2">
                                   {pdfUrl ? (
-                                    <a
-                                      href={pdfUrl}
-                                      download
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-light-green-primary hover:underline"
-                                    >
-                                      Download
-                                    </a>
+                                    <span className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => setPreviewUrl(pdfUrl)}
+                                        className="text-light-green-primary hover:text-light-green-dark transition-colors"
+                                        aria-label="Preview PDF"
+                                        title="Preview"
+                                      >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                      </button>
+                                      <a
+                                        href={pdfUrl}
+                                        download
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-light-green-primary hover:text-light-green-dark transition-colors"
+                                        aria-label="Download PDF"
+                                        title="Download"
+                                      >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                                        </svg>
+                                      </a>
+                                    </span>
                                   ) : (
                                     <span className="text-light-green-light-grey">—</span>
                                   )}
@@ -202,7 +241,7 @@ export default function MyHealthPage() {
                       </table>
                     </div>
                   )
-                ) : exams.length === 0 ? (
+                ) : examsCombined.length === 0 ? (
                   <p className="text-sm text-light-green-dark-grey py-4">{NO_DATA_MSG}</p>
                 ) : (
                   <div className="overflow-x-auto">
@@ -215,7 +254,7 @@ export default function MyHealthPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {exams.map((exam) => {
+                        {examsCombined.map((exam) => {
                           const pdfUrl = exam.attachmentId && hasPdfPath(exam.attachmentId)
                             ? `${basePath}${exam.attachmentId}`
                             : null;
@@ -250,6 +289,8 @@ export default function MyHealthPage() {
           </main>
         </div>
       </div>
+
+      <PdfPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />
     </div>
   );
 }

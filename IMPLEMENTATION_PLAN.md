@@ -65,8 +65,8 @@
 - [x] ~~**HEALTH-UI-1** `/my-health` shows title, description, UserPanel, tabs; loading indicator~~
 - [x] ~~**HEALTH-UI-2** Empty-state message when tab has no data~~
 - [x] ~~**HEALTH-UI-3** Vitals tab table with Date, Heart rate, BP, Weight, BMI, Sleep, SpO₂~~
-- [ ] **HEALTH-UI-4** Prescription tab PDF column: add **preview icon** (view PDF in-page) alongside the existing download action
-  - Currently only a "Download" link exists (`frontend/src/app/(app)/my-health/page.tsx` lines 183-194); spec requires two side-by-side icons: preview (opens in-page viewer) and download
+- [x] ~~**HEALTH-UI-4** Prescription tab PDF column: add **preview icon** (view PDF in-page) alongside the existing download action~~
+  - Replaced "Download" text link with two side-by-side SVG icons: eye icon (preview, opens `PdfPreviewModal`) and download icon; added `previewUrl` state and wired `PdfPreviewModal` into the page
 - [ ] **HEALTH-UI-5** Exams tab PDF column: add **preview icon** (view PDF in-page) alongside the existing download action
   - Same situation as HEALTH-UI-4; only a "Download" link exists (lines 226-237); spec requires preview + download icons side by side
 - [x] ~~**HEALTH-UI-6** Implement in-page PDF preview viewer (modal, drawer, or inline iframe/embed) triggered by the preview icon~~
