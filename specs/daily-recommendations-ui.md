@@ -16,6 +16,7 @@ The recommendations page shows the user's daily recommendations (nutrition, exer
 - When the user changes chart period (7 / 15 / 30 days), chart data updates and a loading state is shown until new data is loaded.
 - When an error occurs (e.g. API failure), an error message is shown and the user can retry.
 - Recommendations are displayed in the four categories (nutrition, exercise, lifestyle, alerts); each category shows at least a heading and list of items or empty state.
+- An easier more specific recomendation in the "The little Right Thing" is displayed from the backedn response
 
 ## Out of scope
 
