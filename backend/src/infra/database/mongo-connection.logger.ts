@@ -30,4 +30,3 @@ export class MongoConnectionLogger implements OnApplicationBootstrap {
     });
   }
 }
-

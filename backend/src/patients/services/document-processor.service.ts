@@ -3,10 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import type { TextGenerator } from '../../llm/interfaces/text';
 import { LLM_TEXT_GENERATOR } from '../../llm/interfaces/text';
-import {
-  UserDocument as UserDocumentModel,
-  UserDocumentDocument,
-} from '../schemas/user-document.schema';
+import { UserDocument as UserDocumentModel, UserDocumentDocument } from '../schemas/user-document.schema';
 
 const PRESCRIPTION_PROMPT = `
 You are analyzing a prescription document. Extract medication information.
@@ -92,9 +89,7 @@ export class DocumentProcessorService {
     });
 
     const id = doc._id.toString();
-    this.logger.log(
-      `Created ${documentType} document ${id} for user ${userId}`,
-    );
+    this.logger.log(`Created ${documentType} document ${id} for user ${userId}`);
     return { id, status: 'pending' };
   }
 
@@ -139,11 +134,8 @@ export class DocumentProcessorService {
       this.logger.log(`Processed ${documentType} ${id} for user ${userId}`);
       return { id, status: 'completed' };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(
-        `Failed to process ${documentType} ${doc._id.toString()}: ${errorMessage}`,
-      );
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to process ${documentType} ${doc._id.toString()}: ${errorMessage}`);
 
       await this.userDocumentModel.findByIdAndUpdate(doc._id, {
         status: 'failed',
@@ -222,8 +214,7 @@ export class DocumentProcessorService {
     const prompt = `${PRESCRIPTION_PROMPT}\n\nDocument text:\n${pdfText.substring(0, 4000)}`;
 
     const response = await this.textGenerator.generate({
-      system:
-        'You are a medical document analysis assistant. Extract structured data from prescription documents.',
+      system: 'You are a medical document analysis assistant. Extract structured data from prescription documents.',
       prompt,
     });
 
@@ -242,9 +233,7 @@ export class DocumentProcessorService {
         instructions: parsed.instructions as string | undefined,
       };
     } catch {
-      this.logger.warn(
-        `Failed to parse LLM response as JSON: ${response.text.substring(0, 200)}`,
-      );
+      this.logger.warn(`Failed to parse LLM response as JSON: ${response.text.substring(0, 200)}`);
       return { medications: [] };
     }
   }
@@ -265,8 +254,7 @@ export class DocumentProcessorService {
     const prompt = `${LAB_RESULTS_PROMPT}\n\nDocument text:\n${pdfText.substring(0, 4000)}`;
 
     const response = await this.textGenerator.generate({
-      system:
-        'You are a medical document analysis assistant. Extract structured data from lab result documents.',
+      system: 'You are a medical document analysis assistant. Extract structured data from lab result documents.',
       prompt,
     });
 
@@ -287,9 +275,7 @@ export class DocumentProcessorService {
         notes: parsed.notes as string | undefined,
       };
     } catch {
-      this.logger.warn(
-        `Failed to parse LLM response as JSON: ${response.text.substring(0, 200)}`,
-      );
+      this.logger.warn(`Failed to parse LLM response as JSON: ${response.text.substring(0, 200)}`);
       return { results: [] };
     }
   }
@@ -347,14 +333,10 @@ export class DocumentProcessorService {
     }
 
     if (data.results.length > 0) {
-      const abnormal = data.results.filter(
-        (r) => r.flag && r.flag !== 'normal',
-      );
+      const abnormal = data.results.filter((r) => r.flag && r.flag !== 'normal');
       parts.push(`${data.results.length} test(s)`);
       if (abnormal.length > 0) {
-        const names = abnormal
-          .map((r) => `${r.testName} (${r.flag})`)
-          .join(', ');
+        const names = abnormal.map((r) => `${r.testName} (${r.flag})`).join(', ');
         parts.push(`Flagged: ${names}`);
       }
     }

@@ -15,10 +15,7 @@ export type OpenAIModelVariant = 'gpt-4.1-mini' | 'gpt-4o';
  * Create OpenAI LLM service with the given API key and optional model variant.
  * Model variant selects which text generator is used (no conditionals in runtime logic).
  */
-export function createOpenAILLMService(
-  apiKey: string,
-  modelVariant: OpenAIModelVariant = 'gpt-4o',
-): LLMService {
+export function createOpenAILLMService(apiKey: string, modelVariant: OpenAIModelVariant = 'gpt-4o'): LLMService {
   const client = createOpenAIClient(apiKey);
 
   const generatorByModel: Record<OpenAIModelVariant, LLMService['text']['generator']> = {

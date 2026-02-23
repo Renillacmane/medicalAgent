@@ -20,9 +20,7 @@ export class RecommendationsController {
    * No diagnoses, emergency advice, or medication changes.
    */
   @Get('daily')
-  async getDailyRecommendations(
-    @CurrentUser() user: User,
-  ): Promise<DailyRecommendationDto> {
+  async getDailyRecommendations(@CurrentUser() user: User): Promise<DailyRecommendationDto> {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
 

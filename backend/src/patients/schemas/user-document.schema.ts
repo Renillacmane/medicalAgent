@@ -32,7 +32,10 @@ export class UserDocument {
   @Prop({ required: true, type: Date })
   processedAt: Date;
 
-  @Prop({ required: true, enum: ['pending', 'processing', 'completed', 'failed'] })
+  @Prop({
+    required: true,
+    enum: ['pending', 'processing', 'completed', 'failed'],
+  })
   status: string;
 
   @Prop()

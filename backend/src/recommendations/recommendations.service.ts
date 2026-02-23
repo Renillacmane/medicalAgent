@@ -52,17 +52,9 @@ export class RecommendationsService {
    * @param options - Optional configuration for the recommendation generation
    * @returns DailyRecommendationDto with structured recommendations
    */
-  async getDailyRecommendations(
-    userId: string,
-    options: RecommendationOptions = {},
-  ): Promise<DailyRecommendationDto> {
-    const {
-      includeRag = true,
-      ragQuery,
-      vitalsLimit = 30,
-      temperature,
-    } = options;
-    
+  async getDailyRecommendations(userId: string, options: RecommendationOptions = {}): Promise<DailyRecommendationDto> {
+    const { includeRag = true, ragQuery, vitalsLimit = 30, temperature } = options;
+
     this.logger.log(`Generating daily recommendations for user ${userId}`);
 
     try {
@@ -119,9 +111,7 @@ export class RecommendationsService {
 
       return recommendation;
     } catch (error) {
-      this.logger.error(
-        `Failed to generate recommendations for user ${userId}: ${error}`,
-      );
+      this.logger.error(`Failed to generate recommendations for user ${userId}: ${error}`);
       throw error;
     }
   }
@@ -129,20 +119,14 @@ export class RecommendationsService {
   /**
    * Load patient snapshot from PatientsService
    */
-  private async loadPatientSnapshot(
-    userId: string,
-    vitalsLimit: number,
-  ): Promise<PatientSnapshotDto> {
+  private async loadPatientSnapshot(userId: string, vitalsLimit: number): Promise<PatientSnapshotDto> {
     return this.patientsService.getPatientSnapshotForAgent(userId, vitalsLimit);
   }
 
   /**
    * Retrieve RAG context chunks
    */
-  private async retrieveRagContext(
-    userId: string,
-    query?: string,
-  ): Promise<RagChunk[]> {
+  private async retrieveRagContext(userId: string, query?: string): Promise<RagChunk[]> {
     try {
       const chunks = await this.ragService.retrieve(userId, query, {
         limit: 5,

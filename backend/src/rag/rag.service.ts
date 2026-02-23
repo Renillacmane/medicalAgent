@@ -22,11 +22,7 @@ export class RagService implements IRagService {
     private readonly embeddingService: IEmbeddingService,
   ) {}
 
-  async retrieve(
-    userId: string,
-    query?: string,
-    options?: RagRetrieveOptions,
-  ): Promise<RagChunk[]> {
+  async retrieve(userId: string, query?: string, options?: RagRetrieveOptions): Promise<RagChunk[]> {
     const limit = options?.limit ?? 5;
     const specialty = options?.specialty;
     const minScore = options?.minScore;
@@ -76,12 +72,10 @@ export class RagService implements IRagService {
 
     const results = await this.chunkModel.aggregate(pipeline).exec();
 
-    return results.map(
-      (r: { content: string; source?: string; score?: number }) => ({
-        content: r.content,
-        source: r.source,
-        score: r.score,
-      }),
-    );
+    return results.map((r: { content: string; source?: string; score?: number }) => ({
+      content: r.content,
+      source: r.source,
+      score: r.score,
+    }));
   }
 }

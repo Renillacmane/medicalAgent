@@ -109,10 +109,7 @@ describe('RecommendationsService', () => {
 
       await service.getDailyRecommendations('user-123');
 
-      expect(patientsService.getPatientSnapshotForAgent).toHaveBeenCalledWith(
-        'user-123',
-        30,
-      );
+      expect(patientsService.getPatientSnapshotForAgent).toHaveBeenCalledWith('user-123', 30);
       expect(ragService.retrieve).toHaveBeenCalledWith('user-123', undefined, {
         limit: 5,
       });
@@ -151,9 +148,7 @@ describe('RecommendationsService', () => {
     });
 
     it('should include RAG chunks in prompt when available', async () => {
-      const ragChunks: RagChunk[] = [
-        { content: 'Sleep hygiene tips...', source: 'health-guide.pdf' },
-      ];
+      const ragChunks: RagChunk[] = [{ content: 'Sleep hygiene tips...', source: 'health-guide.pdf' }];
 
       patientsService.getPatientSnapshotForAgent.mockResolvedValue(mockSnapshot);
       ragService.retrieve.mockResolvedValue(ragChunks);
@@ -206,10 +201,7 @@ describe('RecommendationsService', () => {
 
       await service.getDailyRecommendations('user-123', { vitalsLimit: 10 });
 
-      expect(patientsService.getPatientSnapshotForAgent).toHaveBeenCalledWith(
-        'user-123',
-        10,
-      );
+      expect(patientsService.getPatientSnapshotForAgent).toHaveBeenCalledWith('user-123', 10);
     });
 
     it('should pass temperature option to LLM', async () => {
@@ -219,9 +211,7 @@ describe('RecommendationsService', () => {
 
       await service.getDailyRecommendations('user-123', { temperature: 0.5 });
 
-      expect(textGenerator.generate).toHaveBeenCalledWith(
-        expect.objectContaining({ temperature: 0.5 }),
-      );
+      expect(textGenerator.generate).toHaveBeenCalledWith(expect.objectContaining({ temperature: 0.5 }));
     });
   });
 

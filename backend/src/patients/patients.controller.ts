@@ -42,10 +42,7 @@ export class PatientsController {
   }
 
   @Patch('profile')
-  async updateProfile(
-    @CurrentUser() user: User,
-    @Body() dto: UpdateProfileDto,
-  ) {
+  async updateProfile(@CurrentUser() user: User, @Body() dto: UpdateProfileDto) {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
     const profile = await this.patientsService.updateProfile(userId, dto);
@@ -63,10 +60,7 @@ export class PatientsController {
   }
 
   @Get('documents')
-  async getDocuments(
-    @CurrentUser() user: User,
-    @Query('documentType') documentType?: string,
-  ) {
+  async getDocuments(@CurrentUser() user: User, @Query('documentType') documentType?: string) {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
     return this.patientsService.getDocuments(userId, documentType);
@@ -98,9 +92,7 @@ export class PatientsController {
 
     const allowedTypes = ['prescription', 'lab_result'];
     if (!allowedTypes.includes(documentType)) {
-      throw new BadRequestException(
-        `Unsupported document type "${documentType}". Allowed: ${allowedTypes.join(', ')}`,
-      );
+      throw new BadRequestException(`Unsupported document type "${documentType}". Allowed: ${allowedTypes.join(', ')}`);
     }
 
     const doc = user as User & { id?: string; _id?: { toString(): string } };
@@ -119,13 +111,7 @@ export class PatientsController {
       throw new BadRequestException('Failed to parse PDF file');
     }
 
-    const publicDir = path.join(
-      process.cwd(),
-      '..',
-      'frontend',
-      'public',
-      'documents',
-    );
+    const publicDir = path.join(process.cwd(), '..', 'frontend', 'public', 'documents');
     if (!fs.existsSync(publicDir)) {
       fs.mkdirSync(publicDir, { recursive: true });
     }
@@ -136,12 +122,7 @@ export class PatientsController {
     const attachmentId = `/documents/${filename}`;
 
     if (documentType === 'prescription') {
-      const result = await this.documentProcessor.processPrescription(
-        userId,
-        data.filename,
-        pdfText,
-        attachmentId,
-      );
+      const result = await this.documentProcessor.processPrescription(userId, data.filename, pdfText, attachmentId);
 
       return {
         id: result.id,
@@ -150,12 +131,7 @@ export class PatientsController {
       };
     }
 
-    const result = await this.documentProcessor.createDocumentRecord(
-      userId,
-      documentType,
-      data.filename,
-      attachmentId,
-    );
+    const result = await this.documentProcessor.createDocumentRecord(userId, documentType, data.filename, attachmentId);
 
     return {
       id: result.id,
@@ -165,27 +141,16 @@ export class PatientsController {
   }
 
   @Get('vitals')
-  async getVitals(
-    @CurrentUser() user: User,
-    @Query('limit') limit?: string,
-    @Query('days') days?: string,
-  ) {
+  async getVitals(@CurrentUser() user: User, @Query('limit') limit?: string, @Query('days') days?: string) {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
-    const limitNum =
-      limit != null ? Math.min(parseInt(limit, 10) || 100, 500) : 100;
-    const daysNum =
-      days != null
-        ? Math.min(Math.max(1, parseInt(days, 10) || 7), 365)
-        : undefined;
+    const limitNum = limit != null ? Math.min(parseInt(limit, 10) || 100, 500) : 100;
+    const daysNum = days != null ? Math.min(Math.max(1, parseInt(days, 10) || 7), 365) : undefined;
     return this.patientsService.getVitals(userId, limitNum, daysNum);
   }
 
   @Get('vitals/latest-by-period')
-  async getLatestVitalsByPeriod(
-    @CurrentUser() user: User,
-    @Query('period') period?: string,
-  ) {
+  async getLatestVitalsByPeriod(@CurrentUser() user: User, @Query('period') period?: string) {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
 

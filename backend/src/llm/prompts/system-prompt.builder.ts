@@ -36,10 +36,7 @@ export class SystemPromptBuilder {
    * @param ragChunks - Optional RAG context chunks
    * @returns { system, prompt } ready for TextGenerator.generate()
    */
-  build(
-    snapshot: PatientSnapshotDto,
-    ragChunks: RagChunk[] = [],
-  ): PromptBuildResult {
+  build(snapshot: PatientSnapshotDto, ragChunks: RagChunk[] = []): PromptBuildResult {
     const system = this.buildSystemPrompt();
     const prompt = this.buildUserPrompt(snapshot, ragChunks);
 
@@ -56,17 +53,11 @@ export class SystemPromptBuilder {
   /**
    * Build the user prompt with patient context and optional RAG context.
    */
-  private buildUserPrompt(
-    snapshot: PatientSnapshotDto,
-    ragChunks: RagChunk[],
-  ): string {
+  private buildUserPrompt(snapshot: PatientSnapshotDto, ragChunks: RagChunk[]): string {
     const patientContext = formatPatientSnapshotForLlm(snapshot);
     const ragContext = this.formatRagContext(ragChunks);
 
-    return USER_MESSAGE_TEMPLATE.replace('{patientContext}', patientContext).replace(
-      '{ragContext}',
-      ragContext,
-    );
+    return USER_MESSAGE_TEMPLATE.replace('{patientContext}', patientContext).replace('{ragContext}', ragContext);
   }
 
   /**

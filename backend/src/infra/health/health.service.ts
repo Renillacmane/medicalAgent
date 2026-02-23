@@ -4,9 +4,7 @@ import { Connection } from 'mongoose';
 
 @Injectable()
 export class HealthService {
-  constructor(
-    @InjectConnection() private readonly connection: Connection,
-  ) {}
+  constructor(@InjectConnection() private readonly connection: Connection) {}
 
   async checkHealth() {
     const dbStatus = this.connection.readyState;

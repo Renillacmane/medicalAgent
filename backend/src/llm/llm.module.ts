@@ -26,8 +26,7 @@ import { OPENAI_MODELS } from './providers/openai/config';
             ? config.get<string>('OPENAI_API_KEY') || ''
             : config.get<string>('GEMINI_API_KEY') || '';
         const openaiModelRaw = config.get<string>('OPENAI_CHAT_MODEL') || 'gpt-4o';
-        const openaiModel =
-          openaiModelRaw === OPENAI_MODELS.GPT_41_MINI ? 'gpt-4.1-mini' : 'gpt-4o';
+        const openaiModel = openaiModelRaw === OPENAI_MODELS.GPT_41_MINI ? 'gpt-4.1-mini' : 'gpt-4o';
 
         const llmService = createLLMService({
           provider,

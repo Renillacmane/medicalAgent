@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
@@ -30,9 +26,7 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthTokens> {
-    const existing = await this.userModel
-      .findOne({ email: dto.email.toLowerCase() })
-      .exec();
+    const existing = await this.userModel.findOne({ email: dto.email.toLowerCase() }).exec();
     if (existing) {
       throw new ConflictException('User with this email already exists');
     }
@@ -68,17 +62,17 @@ export class AuthService {
   }
 
   async getProfile(userId: string): Promise<User | null> {
-    const user = await this.userModel
-      .findById(userId)
-      .select('-passwordHash')
-      .exec();
+    const user = await this.userModel.findById(userId).select('-passwordHash').exec();
     return user ?? null;
   }
 
   private async issueTokens(user: User | UserDocument): Promise<AuthTokens> {
-    const doc = user as UserDocument & { id?: string; _id?: { toString(): string } };
+    const doc = user as UserDocument & {
+      id?: string;
+      _id?: { toString(): string };
+    };
     const sub = doc.id ?? doc._id?.toString?.();
-    const payload: JwtPayload = { sub: sub!, email: user.email };
+    const payload: JwtPayload = { sub: sub, email: user.email };
     const expiresIn = 3600; // 1 hour in seconds
     const access_token = this.jwtService.sign(payload, { expiresIn });
     return { access_token, expires_in: expiresIn };

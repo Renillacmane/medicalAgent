@@ -37,11 +37,7 @@ export interface IRagService {
    * @param options - Retrieval options (limit, minScore, specialty)
    * @returns Array of relevant context chunks
    */
-  retrieve(
-    userId: string,
-    query?: string,
-    options?: RagRetrieveOptions,
-  ): Promise<RagChunk[]>;
+  retrieve(userId: string, query?: string, options?: RagRetrieveOptions): Promise<RagChunk[]>;
 }
 
 /** Injection token for IRagService */

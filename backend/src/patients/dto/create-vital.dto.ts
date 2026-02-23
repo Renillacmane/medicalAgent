@@ -1,12 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import {
-  IsDateString,
-  IsNumber,
-  IsOptional,
-  Min,
-  Max,
-  ValidateNested,
-} from 'class-validator';
+import { IsDateString, IsNumber, IsOptional, Min, Max, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class BloodPressureDto {

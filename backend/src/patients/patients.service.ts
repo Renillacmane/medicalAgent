@@ -6,11 +6,7 @@ import { UserVital, UserVitalDocument } from './schemas/user-vital.schema';
 import { UserExam, UserExamDocument } from './schemas/user-exam.schema';
 import { UserDocument as UserDocumentModel, UserDocumentDocument } from './schemas/user-document.schema';
 import { CreateVitalDto, UpdateProfileDto } from './dto';
-import {
-  PatientSnapshotDto,
-  PatientProfile,
-  PatientVital,
-} from './dto/patient-snapshot.dto';
+import { PatientSnapshotDto, PatientProfile, PatientVital } from './dto/patient-snapshot.dto';
 
 function computeBmi(weightKg: number, heightCm: number): number {
   if (!heightCm || heightCm <= 0) return 0;
@@ -22,17 +18,15 @@ function computeBmi(weightKg: number, heightCm: number): number {
 export class PatientsService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    @InjectModel(UserVital.name) private userVitalModel: Model<UserVitalDocument>,
+    @InjectModel(UserVital.name)
+    private userVitalModel: Model<UserVitalDocument>,
     @InjectModel(UserExam.name) private userExamModel: Model<UserExamDocument>,
-    @InjectModel(UserDocumentModel.name) private userDocumentModel: Model<UserDocumentDocument>,
+    @InjectModel(UserDocumentModel.name)
+    private userDocumentModel: Model<UserDocumentDocument>,
   ) {}
 
   async getProfile(userId: string) {
-    const user = await this.userModel
-      .findById(userId)
-      .select('-passwordHash')
-      .lean()
-      .exec();
+    const user = await this.userModel.findById(userId).select('-passwordHash').lean().exec();
     if (!user) return null;
     const id = (user as { _id: Types.ObjectId })._id?.toString?.();
     return { id, ...user };
@@ -121,12 +115,7 @@ export class PatientsService {
       from.setHours(0, 0, 0, 0);
       filter.date = { $gte: from };
     }
-    const vitals = await this.userVitalModel
-      .find(filter)
-      .sort({ date: -1 })
-      .limit(limit)
-      .lean()
-      .exec();
+    const vitals = await this.userVitalModel.find(filter).sort({ date: -1 }).limit(limit).lean().exec();
     return vitals.map((v) => ({
       ...v,
       id: (v as { _id: Types.ObjectId })._id?.toString?.(),
@@ -196,11 +185,7 @@ export class PatientsService {
     if (dto.weight != null) {
       let heightCm = dto.height;
       if (heightCm == null) {
-        const user = await this.userModel
-          .findById(userId)
-          .select('height')
-          .lean()
-          .exec();
+        const user = await this.userModel.findById(userId).select('height').lean().exec();
         heightCm = user?.height;
       }
       if (heightCm != null && heightCm > 0) {
@@ -223,15 +208,9 @@ export class PatientsService {
    * @param vitalsLimit - Max number of vitals to include (default: 30)
    * @returns PatientSnapshotDto with profile and vitals
    */
-  async getPatientSnapshotForAgent(
-    userId: string,
-    vitalsLimit = 30,
-  ): Promise<PatientSnapshotDto> {
+  async getPatientSnapshotForAgent(userId: string, vitalsLimit = 30): Promise<PatientSnapshotDto> {
     // Fetch profile and vitals in parallel
-    const [profileData, vitalsData] = await Promise.all([
-      this.getProfile(userId),
-      this.getVitals(userId, vitalsLimit),
-    ]);
+    const [profileData, vitalsData] = await Promise.all([this.getProfile(userId), this.getVitals(userId, vitalsLimit)]);
 
     // Map profile to PatientProfile type
     const profile: PatientProfile | null = profileData

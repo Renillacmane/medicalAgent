@@ -5,7 +5,10 @@
  */
 
 export interface GeminiClientLike {
-  generateContent(prompt: string, options?: { systemInstruction?: string; temperature?: number }): Promise<{ text: () => string }>;
+  generateContent(
+    prompt: string,
+    options?: { systemInstruction?: string; temperature?: number },
+  ): Promise<{ text: () => string }>;
 }
 
 export function createGeminiClient(_apiKey: string): GeminiClientLike {
