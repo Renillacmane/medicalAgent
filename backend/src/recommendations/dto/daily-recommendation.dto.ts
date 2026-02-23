@@ -31,6 +31,15 @@ export interface RecommendationCategories {
   alerts?: string[];
 }
 
+export interface LittleThingRight {
+  /** 1-2 small, actionable nudges based on frontier metric analysis */
+  nudges: string[];
+  /** The metric near a health boundary (e.g. "BMI", "Blood Pressure") */
+  metric?: string;
+  /** Whether the metric is improving, worsening, or stable */
+  trend?: string;
+}
+
 export interface DailyRecommendationDto {
   /**
    * Brief summary of the day's recommendations.
@@ -44,6 +53,12 @@ export interface DailyRecommendationDto {
    * if not relevant to the patient's current data.
    */
   recommendations: RecommendationCategories;
+
+  /**
+   * Small actionable nudges when a vital is near a health-category boundary.
+   * Omitted when no frontier metrics are detected.
+   */
+  littleThingRight?: LittleThingRight;
 
   /**
    * Timestamp when recommendations were generated
@@ -65,6 +80,16 @@ export function createEmptyRecommendation(): DailyRecommendationDto {
 /**
  * Validate that a recommendation DTO has the expected structure
  */
+export function isValidLittleThingRight(obj: unknown): obj is LittleThingRight {
+  if (!obj || typeof obj !== 'object') return false;
+  const ltr = obj as Record<string, unknown>;
+  if (!Array.isArray(ltr.nudges)) return false;
+  if (!ltr.nudges.every((n) => typeof n === 'string')) return false;
+  if (ltr.metric !== undefined && typeof ltr.metric !== 'string') return false;
+  if (ltr.trend !== undefined && typeof ltr.trend !== 'string') return false;
+  return true;
+}
+
 export function isValidRecommendation(obj: unknown): obj is DailyRecommendationDto {
   if (!obj || typeof obj !== 'object') return false;
   const rec = obj as Record<string, unknown>;
@@ -82,6 +107,10 @@ export function isValidRecommendation(obj: unknown): obj is DailyRecommendationD
     if (Array.isArray(value) && !value.every((v) => typeof v === 'string')) {
       return false;
     }
+  }
+
+  if (rec.littleThingRight !== undefined && !isValidLittleThingRight(rec.littleThingRight)) {
+    return false;
   }
 
   return true;

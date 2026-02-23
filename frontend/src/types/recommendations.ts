@@ -1,6 +1,12 @@
 /** Recommendation categories from GET /recommendations/daily */
 export type RecommendationCategory = "nutrition" | "exercise" | "lifestyle" | "alerts";
 
+export interface LittleThingRight {
+  nudges: string[];
+  metric?: string;
+  trend?: string;
+}
+
 export interface DailyRecommendationResponse {
   summary: string;
   recommendations: {
@@ -9,6 +15,7 @@ export interface DailyRecommendationResponse {
     lifestyle?: string[];
     alerts?: string[];
   };
+  littleThingRight?: LittleThingRight;
   generatedAt: string;
 }
 

@@ -56,6 +56,11 @@ Respond ONLY with a valid JSON object in this exact format:
     "exercise": ["suggestion 1", "suggestion 2"],
     "lifestyle": ["suggestion 1", "suggestion 2"],
     "alerts": ["non-critical observation 1"]
+  },
+  "littleThingRight": {
+    "nudges": ["one small actionable suggestion", "another tiny change"],
+    "metric": "the metric near a health boundary (e.g. BMI, Blood Pressure)",
+    "trend": "improving | worsening | stable"
   }
 }
 
@@ -64,6 +69,7 @@ Guidelines for each category:
 - exercise: 2-3 activity suggestions appropriate for the user
 - lifestyle: 2-3 suggestions for sleep, stress, or daily habits
 - alerts: 0-2 gentle, non-critical observations (omit if none relevant)
+- littleThingRight: 1-2 very small, low-effort actionable nudges when the patient has a vital near a health-category boundary (see VITALS NEAR HEALTH-CATEGORY BOUNDARIES section if present). The goal is to encourage tiny changes that could tip the metric into a healthier category. Examples: "Add 2 extra minutes to your daily walk", "Replace one sugary snack with a piece of fruit". If the trend is improving, use an encouraging tone ("You're so close! Just keep it up…"). If not improving, use a gentle low-barrier tone ("One small thing you could try…"). Omit littleThingRight entirely if no frontier metrics are provided.
 
 Omit any category that isn't relevant. Keep suggestions concise (1-2 sentences each).
 Do NOT include any text outside the JSON object.

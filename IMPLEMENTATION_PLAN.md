@@ -38,16 +38,13 @@
 - [x] ~~**REC-API-2** Unauthenticated → 401~~
 - [x] ~~**REC-API-3** LLM + patient snapshot; no diagnosis or critical advice~~
 - [x] ~~**REC-API-4** RAG-enabled: chunks retrieved, injected, valid JSON response~~
-- [ ] **REC-API-5** Implement "The Little Right Thing" recommendation: analyze vitals trends near health-limit boundaries, generate 1-2 small actionable nudges
-  - Commented-out sketch in `recommendations.service.ts` (`getSmallStepBigJumpRecommendation` lines 49-61) has prompt ideas for dual tone (already-trying vs not-trying)
-  - **Sub-steps**:
-    1. Define health-limit boundary constants (BMI categories, BP categories, weight thresholds) — can live in `backend/src/common/utils/` or in the recommendations module
-    2. Write vitals trend analysis function: given recent vitals, detect which metrics are approaching a category boundary (e.g. BMI 25.1 → 24.9 trend, weight approaching a round number that changes BMI category)
-    3. Create dual-tone LLM prompts (Prompt 1: already-trying, encouraging; Prompt 2: not-trying, gentle low-barrier) as described in the commented-out code
-    4. Implement `getSmallStepBigJumpRecommendation()` — call trend analysis, pick tone, call LLM, return 1-2 nudges
-    5. **Update `DailyRecommendationDto`** to include a new field (e.g. `littleThingRight?: { nudges: string[]; metric?: string; trend?: string }`) — currently no field exists for this data
-    6. Wire the nudge into the `getDailyRecommendations()` flow so it's included in the API response
-  - Frontend type `DailyRecommendationResponse` in `frontend/src/types/recommendations.ts` must also be updated (see REC-UI-5)
+- [x] ~~**REC-API-5** Implement "The Little Right Thing" recommendation: analyze vitals trends near health-limit boundaries, generate 1-2 small actionable nudges~~
+  - Added `backend/src/common/utils/health-boundaries.ts` with BMI, BP, HR, SpO₂ category constants and frontier threshold config
+  - Added `backend/src/recommendations/vitals-trend.analysis.ts` with `analyzeVitalsTrends()` (linear trend slope, frontier detection) and `formatFrontierMetricsForPrompt()` for LLM context injection
+  - Updated `DailyRecommendationDto` with `LittleThingRight` interface (`nudges: string[]`, optional `metric`, `trend`); added `isValidLittleThingRight()` validator
+  - Extended `OUTPUT_FORMAT` prompt to request `littleThingRight` field with dual-tone instructions (encouraging if improving, gentle low-barrier if not)
+  - Wired trend analysis into `getDailyRecommendations()`: frontier metrics appended to user prompt so LLM generates contextual nudges
+  - Updated frontend `DailyRecommendationResponse` type in `frontend/src/types/recommendations.ts` with matching `LittleThingRight` interface
 - [x] ~~**REC-API-6** Unit tests cover happy path, no-profile, RAG failure, malformed JSON, options passthrough~~
 
 ## Spec: Daily Recommendations — UI (`specs/daily-recommendations-ui.md`)

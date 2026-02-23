@@ -1,6 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { PatientsService } from '../patients/patients.service';
-import type { TextGenerator, TextGenerationResult } from '../llm/interfaces/text';
+import type { TextGenerator } from '../llm/interfaces/text';
 import { LLM_TEXT_GENERATOR } from '../llm/interfaces/text';
 import type { IRagService, RagChunk } from '../rag/rag.interface';
 import { RAG_SERVICE } from '../rag/rag.interface';
@@ -11,6 +11,7 @@ import {
   isValidRecommendation,
 } from './dto/daily-recommendation.dto';
 import { PatientSnapshotDto } from '../patients/dto/patient-snapshot.dto';
+import { analyzeVitalsTrends, formatFrontierMetricsForPrompt } from './vitals-trend.analysis';
 
 export interface RecommendationOptions {
   /** Whether to include RAG context (default: true) */
@@ -72,8 +73,19 @@ export class RecommendationsService {
         ragChunks = await this.retrieveRagContext(userId, ragQuery);
       }
 
+      // Step 2b: Analyze vitals for frontier metrics (The Little Thing Right)
+      const trendAnalysis = analyzeVitalsTrends(snapshot.vitals);
+      const frontierContext = formatFrontierMetricsForPrompt(trendAnalysis);
+
+      if (trendAnalysis.frontierMetrics.length > 0) {
+        this.logger.log(
+          `Frontier metrics detected: ${trendAnalysis.frontierMetrics.map((m) => `${m.metric} (${m.currentValue}, ${m.trend})`).join(', ')}`,
+        );
+      }
+
       // Step 3: Build prompts
-      const { system, prompt } = this.promptBuilder.build(snapshot, ragChunks);
+      const { system, prompt: basePrompt } = this.promptBuilder.build(snapshot, ragChunks);
+      const prompt = frontierContext ? `${basePrompt}\n\n${frontierContext}` : basePrompt;
 
       // Log RAG chunks retrieved
       if (ragChunks.length > 0) {
