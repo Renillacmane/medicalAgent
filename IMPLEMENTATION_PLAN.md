@@ -67,8 +67,8 @@
 - [x] ~~**HEALTH-UI-3** Vitals tab table with Date, Heart rate, BP, Weight, BMI, Sleep, SpO₂~~
 - [x] ~~**HEALTH-UI-4** Prescription tab PDF column: add **preview icon** (view PDF in-page) alongside the existing download action~~
   - Replaced "Download" text link with two side-by-side SVG icons: eye icon (preview, opens `PdfPreviewModal`) and download icon; added `previewUrl` state and wired `PdfPreviewModal` into the page
-- [ ] **HEALTH-UI-5** Exams tab PDF column: add **preview icon** (view PDF in-page) alongside the existing download action
-  - Same situation as HEALTH-UI-4; only a "Download" link exists (lines 226-237); spec requires preview + download icons side by side
+- [x] ~~**HEALTH-UI-5** Exams tab PDF column: add **preview icon** (view PDF in-page) alongside the existing download action~~
+  - Replaced "Download" text link with two side-by-side SVG icons: eye icon (preview, opens `PdfPreviewModal`) and download icon; matches the Prescription tab pattern exactly
 - [x] ~~**HEALTH-UI-6** Implement in-page PDF preview viewer (modal, drawer, or inline iframe/embed) triggered by the preview icon~~
   - Created `frontend/src/components/health/PdfPreviewModal.tsx` — fullscreen modal with backdrop, iframe for PDF display, close (Escape key + button), and a download link in the header; follows `AboutModal` pattern with z-[60]/z-[61] layering; shared by Prescription and Exams tabs
 - [x] ~~**HEALTH-UI-7** Unauthenticated users redirected to login with return URL~~
