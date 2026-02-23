@@ -72,6 +72,16 @@ export default function RecommendationsPage() {
   const [vitalsLoading, setVitalsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadedTypes, setLoadedTypes] = useState<RecommendationCategory[]>([]);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const handleRetry = () => {
+    setError(null);
+    setRecommendations(null);
+    setProfile(null);
+    setVitals([]);
+    setLoadedTypes([]);
+    setRetryCount((c) => c + 1);
+  };
 
   // Initial load: recommendations and profile
   useEffect(() => {
@@ -110,7 +120,7 @@ export default function RecommendationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [router, basePath]);
+  }, [router, basePath, retryCount]);
 
   // Fetch vitals for the selected period (runs on mount with 7 and when period changes)
   useEffect(() => {
@@ -129,12 +139,19 @@ export default function RecommendationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [chartPeriod]);
+  }, [chartPeriod, retryCount]);
 
   if (error) {
     return (
-      <div className="p-4">
+      <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 p-4">
         <p className="text-sm text-red-600">{error}</p>
+        <button
+          type="button"
+          onClick={handleRetry}
+          className="rounded-lg bg-light-green-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-light-green-dark"
+        >
+          Retry
+        </button>
       </div>
     );
   }

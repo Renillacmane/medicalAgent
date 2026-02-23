@@ -54,8 +54,8 @@
 
 - [x] ~~**REC-UI-1** Loading indicator shown while recommendations load~~
 - [x] ~~**REC-UI-2** Chart period selector (7 / 15 / 30 days) with loading state~~
-- [ ] **REC-UI-3** Error state includes a retry button so the user can refetch
-  - Current error block in `frontend/src/app/(app)/recommendations/page.tsx` (lines 134-139) shows the error message but has no retry/refetch action; needs a button that clears the error and re-triggers the data fetch (both recommendations and vitals)
+- [x] ~~**REC-UI-3** Error state includes a retry button so the user can refetch~~
+  - Added `retryCount` state + `handleRetry()` that clears error, resets all data, and increments counter; both `useEffect` hooks depend on `retryCount` so retry re-fetches recommendations, profile, and vitals; styled retry button centered below the error message
 - [x] ~~**REC-UI-4** Four categories displayed with headings, item lists, and empty state~~
 - [ ] **REC-UI-5** Wire "The Little Thing Right" card to real API data (currently hardcoded placeholder)
   - `frontend/src/app/(app)/recommendations/page.tsx` lines 196-210 render a static card with hardcoded text; update `DailyRecommendationResponse` type in `frontend/src/types/recommendations.ts` to include the new `littleThingRight` field; render real nudges from the API response, with a fallback/empty state when no nudge is available
