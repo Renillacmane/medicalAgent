@@ -17,8 +17,8 @@
   - Replaced with allowlist validation (`prescription`, `lab_result`); added `createDocumentRecord()` to `DocumentProcessorService` for types without a processor yet; lab_result uploads create a `pending` document record
 - [x] ~~**API-8** Add `processLabResults()` to `DocumentProcessorService` following the prescription pattern (LLM extraction prompt, structured output, summary)~~
   - Refactored into shared `processDocument()` pipeline used by both `processPrescription()` and `processLabResults()`; added `LAB_RESULTS_PROMPT`, `extractLabResultsData()`, `generateLabResultsSummary()`; extracted shared `parseLlmJson()` and `parseDate()` helpers
-- [ ] **API-9** Wire the upload controller to dispatch to `processLabResults()` when `documentType === 'lab_result'`
-  - After API-7 and API-8; add a branch in `uploadDocument` (or refactor into a strategy/switch)
+- [x] ~~**API-9** Wire the upload controller to dispatch to `processLabResults()` when `documentType === 'lab_result'`~~
+  - Refactored dispatch into a `processors` lookup table; `lab_result` now routes to `processLabResults()` with full LLM extraction, matching the prescription flow
 
 ## Spec: Add Vitals & Lab Results — UI (`specs/add-vitals-lab-results-ui.md`)
 

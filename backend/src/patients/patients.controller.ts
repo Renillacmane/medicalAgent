@@ -121,9 +121,14 @@ export class PatientsController {
     fs.writeFileSync(filePath, buffer);
     const attachmentId = `/documents/${filename}`;
 
-    if (documentType === 'prescription') {
-      const result = await this.documentProcessor.processPrescription(userId, data.filename, pdfText, attachmentId);
+    const processors: Record<string, () => Promise<{ id: string; status: string }>> = {
+      prescription: () => this.documentProcessor.processPrescription(userId, data.filename, pdfText, attachmentId),
+      lab_result: () => this.documentProcessor.processLabResults(userId, data.filename, pdfText, attachmentId),
+    };
 
+    const processFn = processors[documentType as string];
+    if (processFn) {
+      const result = await processFn();
       return {
         id: result.id,
         status: result.status,
@@ -132,7 +137,6 @@ export class PatientsController {
     }
 
     const result = await this.documentProcessor.createDocumentRecord(userId, documentType, data.filename, attachmentId);
-
     return {
       id: result.id,
       status: result.status,
