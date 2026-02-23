@@ -27,10 +27,10 @@
 - [x] ~~**UI-ADD-3** Prescription form fully implemented~~
 - [x] ~~**UI-ADD-4** Create `AddExamsForm` component for lab-results PDF upload; reuse the same upload UX as prescriptions, passing `documentType: "lab_result"`~~
   - Created `frontend/src/components/add/AddExamsForm.tsx` following the same pattern as `AddPrescriptionForm.tsx`; uses `documentType: "lab_result"`, includes loading, error (with retry), success states, and Back button
-- [ ] **UI-ADD-5** Enable the Exams option in the type selector (`available: true`) and wire it to `AddExamsForm`
-  - `frontend/src/components/Add.tsx` line 36: `available: false` → `true`; add `import AddExamsForm` and rendering branch for `selected === "exams"`
-- [ ] **UI-ADD-6** Exams form: loading, error (with retry), and success states; Back returns to type selector
-  - Part of UI-ADD-4 implementation; ensure parity with prescription form UX (loading spinner, error with retry, success toast, Back button)
+- [x] ~~**UI-ADD-5** Enable the Exams option in the type selector (`available: true`) and wire it to `AddExamsForm`~~
+  - Set `available: true` in `ADD_OPTIONS`; imported `AddExamsForm`; added rendering branch for `selected === "exams"` with heading, description, and form wrapper matching vitals/prescriptions pattern
+- [x] ~~**UI-ADD-6** Exams form: loading, error (with retry), and success states; Back returns to type selector~~
+  - Already satisfied by UI-ADD-4 implementation: `AddExamsForm` includes `LoadingPulse`, error with retry button, success message, and Back button via `onBack` prop — full parity with prescription form
 
 ## Spec: Daily Recommendations — API (`specs/daily-recommendations-api.md`)
 
