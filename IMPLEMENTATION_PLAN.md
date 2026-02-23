@@ -25,8 +25,8 @@
 - [x] ~~**UI-ADD-1** `/add` page type selector with Vitals, Prescriptions, Exams~~
 - [x] ~~**UI-ADD-2** Vitals form fully implemented with offline support~~
 - [x] ~~**UI-ADD-3** Prescription form fully implemented~~
-- [ ] **UI-ADD-4** Create `AddExamsForm` component for lab-results PDF upload; reuse the same upload UX as prescriptions, passing `documentType: "lab_result"`
-  - No exams form exists yet in `frontend/src/components/add/`; can largely copy/adapt `AddPrescriptionForm.tsx` with different label and documentType
+- [x] ~~**UI-ADD-4** Create `AddExamsForm` component for lab-results PDF upload; reuse the same upload UX as prescriptions, passing `documentType: "lab_result"`~~
+  - Created `frontend/src/components/add/AddExamsForm.tsx` following the same pattern as `AddPrescriptionForm.tsx`; uses `documentType: "lab_result"`, includes loading, error (with retry), success states, and Back button
 - [ ] **UI-ADD-5** Enable the Exams option in the type selector (`available: true`) and wire it to `AddExamsForm`
   - `frontend/src/components/Add.tsx` line 36: `available: false` → `true`; add `import AddExamsForm` and rendering branch for `selected === "exams"`
 - [ ] **UI-ADD-6** Exams form: loading, error (with retry), and success states; Back returns to type selector
