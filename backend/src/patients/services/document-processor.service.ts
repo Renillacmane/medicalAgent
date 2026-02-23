@@ -32,7 +32,33 @@ Return ONLY valid JSON in this format:
 }
 `;
 
-// TODO might be reusable for other document types
+const LAB_RESULTS_PROMPT = `
+You are analyzing a lab results document. Extract all test results and metadata.
+
+Extract:
+1. Date the lab tests were performed
+2. Laboratory or facility name (if available)
+3. Ordering doctor name (if available)
+4. List of test results with: test name, value, unit, reference range, and flag (normal, high, or low)
+5. Any notes or comments from the lab
+
+Return ONLY valid JSON in this format:
+{
+  "labDate": "YYYY-MM-DD",
+  "labName": "Laboratory Name",
+  "doctorName": "Dr. Smith",
+  "results": [
+    {
+      "testName": "Hemoglobin",
+      "value": "14.5",
+      "unit": "g/dL",
+      "referenceRange": "12.0-17.5",
+      "flag": "normal"
+    }
+  ],
+  "notes": "Any additional notes or comments"
+}
+`;
 
 @Injectable()
 export class DocumentProcessorService {
@@ -73,18 +99,22 @@ export class DocumentProcessorService {
   }
 
   /**
-   * Process a prescription document: extract text, analyze with LLM, and save.
+   * Shared pipeline: create a processing record, run type-specific extraction,
+   * update with results, and handle errors.
    */
-  async processPrescription(
+  private async processDocument<T extends Record<string, unknown>>(
     userId: string,
+    documentType: string,
     filename: string,
     pdfText: string,
     attachmentId: string,
+    extract: (text: string) => Promise<T>,
+    summarize: (data: T) => string,
+    parseDateField: (data: T) => Date | undefined,
   ): Promise<{ id: string; status: string }> {
-    // Create document with pending status
     const doc = await this.userDocumentModel.create({
       userId: new Types.ObjectId(userId),
-      documentType: 'prescription',
+      documentType,
       originalFilename: filename,
       attachmentId,
       extractedData: {},
@@ -94,22 +124,10 @@ export class DocumentProcessorService {
     });
 
     try {
-      // Extract structured data using LLM
-      const extractedData = await this.extractPrescriptionData(pdfText);
+      const extractedData = await extract(pdfText);
+      const summary = summarize(extractedData);
+      const documentDate = parseDateField(extractedData);
 
-      // Generate summary
-      const summary = this.generateSummary(extractedData);
-
-      // Parse prescription date
-      let documentDate: Date | undefined;
-      if (extractedData.prescriptionDate) {
-        const parsed = new Date(extractedData.prescriptionDate);
-        if (!isNaN(parsed.getTime())) {
-          documentDate = parsed;
-        }
-      }
-
-      // Update document with extracted data
       await this.userDocumentModel.findByIdAndUpdate(doc._id, {
         extractedData,
         analysisSummary: summary,
@@ -118,13 +136,13 @@ export class DocumentProcessorService {
       });
 
       const id = doc._id.toString();
-      this.logger.log(`Processed prescription ${id} for user ${userId}`);
+      this.logger.log(`Processed ${documentType} ${id} for user ${userId}`);
       return { id, status: 'completed' };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(
-        `Failed to process prescription ${doc._id}: ${errorMessage}`,
+        `Failed to process ${documentType} ${doc._id.toString()}: ${errorMessage}`,
       );
 
       await this.userDocumentModel.findByIdAndUpdate(doc._id, {
@@ -136,9 +154,60 @@ export class DocumentProcessorService {
     }
   }
 
+  async processPrescription(
+    userId: string,
+    filename: string,
+    pdfText: string,
+    attachmentId: string,
+  ): Promise<{ id: string; status: string }> {
+    return this.processDocument(
+      userId,
+      'prescription',
+      filename,
+      pdfText,
+      attachmentId,
+      (text) => this.extractPrescriptionData(text),
+      (data) => this.generatePrescriptionSummary(data),
+      (data) => this.parseDate(data.prescriptionDate),
+    );
+  }
+
+  async processLabResults(
+    userId: string,
+    filename: string,
+    pdfText: string,
+    attachmentId: string,
+  ): Promise<{ id: string; status: string }> {
+    return this.processDocument(
+      userId,
+      'lab_result',
+      filename,
+      pdfText,
+      attachmentId,
+      (text) => this.extractLabResultsData(text),
+      (data) => this.generateLabResultsSummary(data),
+      (data) => this.parseDate(data.labDate),
+    );
+  }
+
+  private parseDate(dateStr: string | undefined): Date | undefined {
+    if (!dateStr) return undefined;
+    const parsed = new Date(dateStr);
+    return isNaN(parsed.getTime()) ? undefined : parsed;
+  }
+
   /**
-   * Extract structured data from prescription text using LLM.
+   * Parse JSON from an LLM response that may be wrapped in markdown code fences.
    */
+  private parseLlmJson(responseText: string): Record<string, unknown> {
+    let jsonText = responseText.trim();
+    const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[1];
+    }
+    return JSON.parse(jsonText) as Record<string, unknown>;
+  }
+
   private async extractPrescriptionData(pdfText: string): Promise<{
     prescriptionDate?: string;
     doctorName?: string;
@@ -158,37 +227,74 @@ export class DocumentProcessorService {
       prompt,
     });
 
-    // Parse JSON from response
     try {
-      // Try to extract JSON from the response (might have markdown code blocks)
-      let jsonText = response.text.trim();
-      const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-      if (jsonMatch) {
-        jsonText = jsonMatch[1];
-      }
-
-      const parsed = JSON.parse(jsonText);
+      const parsed = this.parseLlmJson(response.text);
       return {
-        prescriptionDate: parsed.prescriptionDate,
-        doctorName: parsed.doctorName,
-        medications: parsed.medications || [],
-        instructions: parsed.instructions,
+        prescriptionDate: parsed.prescriptionDate as string | undefined,
+        doctorName: parsed.doctorName as string | undefined,
+        medications:
+          (parsed.medications as Array<{
+            name: string;
+            dosage: string;
+            frequency: string;
+            duration?: string;
+          }>) || [],
+        instructions: parsed.instructions as string | undefined,
       };
-    } catch (parseError) {
+    } catch {
       this.logger.warn(
         `Failed to parse LLM response as JSON: ${response.text.substring(0, 200)}`,
       );
-      // Return minimal structure if parsing fails
-      return {
-        medications: [],
-      };
+      return { medications: [] };
     }
   }
 
-  /**
-   * Generate a human-readable summary from extracted data.
-   */
-  private generateSummary(data: {
+  private async extractLabResultsData(pdfText: string): Promise<{
+    labDate?: string;
+    labName?: string;
+    doctorName?: string;
+    results: Array<{
+      testName: string;
+      value: string;
+      unit?: string;
+      referenceRange?: string;
+      flag?: string;
+    }>;
+    notes?: string;
+  }> {
+    const prompt = `${LAB_RESULTS_PROMPT}\n\nDocument text:\n${pdfText.substring(0, 4000)}`;
+
+    const response = await this.textGenerator.generate({
+      system:
+        'You are a medical document analysis assistant. Extract structured data from lab result documents.',
+      prompt,
+    });
+
+    try {
+      const parsed = this.parseLlmJson(response.text);
+      return {
+        labDate: parsed.labDate as string | undefined,
+        labName: parsed.labName as string | undefined,
+        doctorName: parsed.doctorName as string | undefined,
+        results:
+          (parsed.results as Array<{
+            testName: string;
+            value: string;
+            unit?: string;
+            referenceRange?: string;
+            flag?: string;
+          }>) || [],
+        notes: parsed.notes as string | undefined,
+      };
+    } catch {
+      this.logger.warn(
+        `Failed to parse LLM response as JSON: ${response.text.substring(0, 200)}`,
+      );
+      return { results: [] };
+    }
+  }
+
+  private generatePrescriptionSummary(data: {
     prescriptionDate?: string;
     doctorName?: string;
     medications?: Array<{
@@ -215,5 +321,44 @@ export class DocumentProcessorService {
     }
 
     return parts.join('. ') || 'Prescription document processed.';
+  }
+
+  private generateLabResultsSummary(data: {
+    labDate?: string;
+    labName?: string;
+    doctorName?: string;
+    results: Array<{
+      testName: string;
+      value: string;
+      unit?: string;
+      referenceRange?: string;
+      flag?: string;
+    }>;
+    notes?: string;
+  }): string {
+    const parts: string[] = [];
+
+    if (data.labName) {
+      parts.push(`Lab: ${data.labName}`);
+    }
+
+    if (data.labDate) {
+      parts.push(`Date: ${data.labDate}`);
+    }
+
+    if (data.results.length > 0) {
+      const abnormal = data.results.filter(
+        (r) => r.flag && r.flag !== 'normal',
+      );
+      parts.push(`${data.results.length} test(s)`);
+      if (abnormal.length > 0) {
+        const names = abnormal
+          .map((r) => `${r.testName} (${r.flag})`)
+          .join(', ');
+        parts.push(`Flagged: ${names}`);
+      }
+    }
+
+    return parts.join('. ') || 'Lab results document processed.';
   }
 }
