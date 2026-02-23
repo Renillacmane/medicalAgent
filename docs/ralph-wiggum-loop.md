@@ -173,13 +173,168 @@ Ralph runs these (or the "Full validation" pair) after each implementation step.
 
 ## 6. Loop script and agent choice
 
+**Implementation: Cursor CLI (`cursor-agent`)**
+
+We're using **Cursor's CLI** (`cursor-agent`) for this project, which provides programmatic agent invocation similar to Claude CLI but integrated with Cursor's capabilities.
+
 **loop.sh** (in `ralph/`):
 
 - Parse argument: `plan` vs build; optional `max_iterations`.
-- Loop: `cat PROMPT_plan.md` or `cat PROMPT_build.md` into the agent (e.g. `claude -p --dangerously-skip-permissions` for Claude CLI), or equivalent for Cursor/other CLI.
+- Loop: `cat PROMPT_plan.md` or `cat PROMPT_build.md` | `cursor-agent --print --mode agent`
 - After each run: optionally `git push`; increment iteration; stop if `max_iterations` reached.
 
-Agent must run **non-interactively** (headless), with permission to run shell commands (so it can execute npm scripts). If using Cursor, the loop can be "run Cursor agent with this prompt file" instead of piping to `claude`. No code changes needed in backend/frontend for the loop itself.
+**Cursor CLI setup:**
+
+1. Install Cursor CLI: `curl https://cursor.com/install -fsS | bash`
+2. Authenticate: Set `CURSOR_API_KEY` environment variable or use `--api-key` flag
+3. CLI flags for automation:
+   - `--print` or `-p`: Non-interactive mode (required for scripts)
+   - `--mode agent`: Use agent mode (can also use `plan` or `ask`)
+   - `--output-format stream-json`: Structured output for monitoring/logging
+   - `--force`: Allow file modifications without confirmation (similar to `--dangerously-skip-permissions`)
+
+**Example loop.sh snippet:**
+
+```bash
+cat "$PROMPT_FILE" | cursor-agent --print \
+  --mode agent \
+  --output-format stream-json \
+  --force
+```
+
+The agent runs **non-interactively** (headless) with full access to tools including file writing and bash commands (so it can execute npm scripts). No code changes needed in backend/frontend for the loop itself.
+
+---
+
+## 6.1. Alternative implementations (for future analysis)
+
+While we're using **Cursor CLI** for this project, here are alternative implementations that could be considered:
+
+### Option 1: Claude CLI (Original Ralph)
+
+**What it is**: Geoffrey Huntley's original implementation uses Claude CLI (`claude` command).
+
+**Pros**:
+- Battle-tested by the creator
+- Direct access to Claude models
+- `--dangerously-skip-permissions` flag for full automation
+- Well-documented in the Ralph playbook
+
+**Cons**:
+- Requires separate Claude CLI installation
+- Not integrated with Cursor IDE
+- May require separate API key management
+
+**Implementation**:
+```bash
+cat "$PROMPT_FILE" | claude -p --dangerously-skip-permissions
+```
+
+**When to consider**: If you want the exact original Ralph implementation or prefer Claude models directly.
+
+---
+
+### Option 2: Cursor Agent (Current Choice)
+
+**What it is**: Cursor's CLI (`cursor-agent`) for programmatic agent invocation.
+
+**Pros**:
+- Integrated with Cursor IDE ecosystem
+- Uses Cursor's agent capabilities
+- Supports structured output (`--output-format stream-json`)
+- Can leverage Cursor's context and tooling
+
+**Cons**:
+- Requires Cursor CLI installation
+- May have different behavior than Claude CLI
+- Less documented than original Ralph
+
+**Implementation**:
+```bash
+cat "$PROMPT_FILE" | cursor-agent --print --mode agent --force
+```
+
+**When to consider**: When you're already using Cursor IDE and want integration with its tooling.
+
+---
+
+### Option 3: Hybrid/Manual Approach
+
+**What it is**: Keep the loop structure and prompts, but run each iteration manually in Cursor IDE.
+
+**Pros**:
+- Full control over each iteration
+- Can review and approve before proceeding
+- No CLI setup required
+- Works with any Cursor IDE user
+
+**Cons**:
+- Not fully autonomous (requires human trigger)
+- Slower iteration cycle
+- Loses the "let Ralph Ralph" benefit
+- More prone to interruption
+
+**Implementation**:
+1. Open `PROMPT_plan.md` or `PROMPT_build.md` in Cursor
+2. Manually trigger agent with the prompt content
+3. Review output, commit if satisfied
+4. Repeat for next iteration
+
+**When to consider**: For learning Ralph patterns, debugging issues, or when you want maximum control.
+
+---
+
+### Option 4: Custom Wrapper Script
+
+**What it is**: Create a Node.js/Python script that wraps Cursor API or uses Cursor CLI programmatically.
+
+**Pros**:
+- Full customization of loop behavior
+- Can add custom logging, monitoring, or error handling
+- Can integrate with other tools (CI/CD, monitoring, etc.)
+- Can implement custom retry logic or safeguards
+
+**Cons**:
+- Requires development effort
+- Must maintain custom code
+- May break if Cursor API changes
+- More complex than simple bash loop
+
+**Implementation example** (Node.js):
+```javascript
+const { exec } = require('child_process');
+const fs = require('fs');
+
+async function runRalphIteration(mode, maxIterations) {
+  const promptFile = mode === 'plan' ? 'PROMPT_plan.md' : 'PROMPT_build.md';
+  const prompt = fs.readFileSync(`ralph/${promptFile}`, 'utf8');
+  
+  // Custom logic: logging, error handling, etc.
+  return new Promise((resolve, reject) => {
+    const proc = exec(`echo "${prompt}" | cursor-agent --print --mode agent`, 
+      (error, stdout, stderr) => {
+        if (error) reject(error);
+        else resolve(stdout);
+      }
+    );
+  });
+}
+```
+
+**When to consider**: When you need custom behavior, integration with other systems, or advanced error handling.
+
+---
+
+### Comparison Matrix
+
+| Option | Autonomy | Setup Complexity | Integration | Customization |
+|-------|----------|------------------|-------------|---------------|
+| Claude CLI | Full | Medium | Low | Low |
+| Cursor CLI | Full | Low | High | Medium |
+| Hybrid/Manual | None | None | High | High |
+| Custom Wrapper | Full | High | Medium | Very High |
+
+**Recommendation**: Start with **Cursor CLI** (current choice) for autonomous operation with good Cursor integration. Consider **Hybrid/Manual** for learning or debugging, and **Custom Wrapper** if you need advanced features.
 
 ---
 
