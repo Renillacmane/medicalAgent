@@ -211,20 +211,28 @@ export default function RecommendationsPage() {
             </div>
 
             {/* Bottom: The Little Thing Right card */}
-            {/* 
-              The Little Thing Right card - This will be informed by AI analysis in the future.
-              Based on AI analysis, it will suggest little changes in categories that are close to changing,
-              keeping the user motivated without extreme changes to their current lifestyle.
-            */}
-            <section className="rounded-lg border border-light-green-subtle/40 bg-light-green-light/30 p-6">
-              <div className="mb-3 flex items-center gap-2">
-                <InfoIcon iconSize="large" className="mb-0" />
-                <TextHeading2 className="mb-0">The Little Thing Right</TextHeading2>
-              </div>
-              <TextBody>
-                If you add 2 minutes to your walk and if you reduce the hidrocarbonates by 100 gms you might go down one weight category.
-              </TextBody>
-            </section>
+            {recommendations?.littleThingRight &&
+              recommendations.littleThingRight.nudges.length > 0 && (
+              <section className="rounded-lg border border-light-green-subtle/40 bg-light-green-light/30 p-6">
+                <div className="mb-3 flex items-center gap-2">
+                  <InfoIcon iconSize="large" className="mb-0" />
+                  <TextHeading2 className="mb-0">The Little Thing Right</TextHeading2>
+                </div>
+                {recommendations.littleThingRight.nudges.map((nudge, i) => (
+                  <TextBody key={i} className={i > 0 ? "mt-2" : undefined}>
+                    {nudge}
+                  </TextBody>
+                ))}
+                {(recommendations.littleThingRight.metric ||
+                  recommendations.littleThingRight.trend) && (
+                  <p className="mt-3 text-xs text-light-green-light-grey">
+                    {[recommendations.littleThingRight.metric, recommendations.littleThingRight.trend]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                )}
+              </section>
+            )}
 
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-2">
