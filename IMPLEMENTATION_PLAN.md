@@ -156,7 +156,7 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
 - [x] **NOTIF-FE-8** Schedule daily local notification for "daily recommendations" when enabled (8:00 AM default)
   - Spec AC: "When enabled and the scheduled time arrives, a local notification fires: 'Your daily recommendations are ready'."
 
-- [ ] **NOTIF-FE-9** Schedule daily local notification for "add vitals reminder" when enabled (9:00 AM default)
+- [x] **NOTIF-FE-9** Schedule daily local notification for "add vitals reminder" when enabled (9:00 AM default)
   - Spec AC: "When enabled and the scheduled time arrives, a local notification fires: 'Time to log your vitals'."
 
 ### Phase 2: Device registration + push notifications (Capacitor native)
