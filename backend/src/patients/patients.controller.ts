@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -168,6 +169,17 @@ export class PatientsController {
       throw new NotFoundException('Medication not found');
     }
     return medication;
+  }
+
+  @Delete('medications/:id')
+  async deleteMedication(@CurrentUser() user: User, @Param('id') id: string) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    const deleted = await this.patientsService.deleteMedication(userId, id);
+    if (!deleted) {
+      throw new NotFoundException('Medication not found');
+    }
+    return { success: true };
   }
 
   @Get('vitals')

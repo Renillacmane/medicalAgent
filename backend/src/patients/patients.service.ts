@@ -124,6 +124,13 @@ export class PatientsService {
     }));
   }
 
+  async deleteMedication(userId: string, medicationId: string): Promise<boolean> {
+    const result = await this.userMedicationModel
+      .deleteOne({ _id: new Types.ObjectId(medicationId), userId: new Types.ObjectId(userId) })
+      .exec();
+    return result.deletedCount > 0;
+  }
+
   async updateMedication(userId: string, medicationId: string, dto: UpdateMedicationDto) {
     const medication = await this.userMedicationModel
       .findOne({ _id: new Types.ObjectId(medicationId), userId: new Types.ObjectId(userId) })

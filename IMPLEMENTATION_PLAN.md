@@ -40,9 +40,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "User can tap a medication to edit its reminder settings."
   - Created `UpdateMedicationDto` (all fields optional, same validation as create); added `updateMedication()` to `PatientsService` with ownership check (userId match); added `@Patch('medications/:id')` to `PatientsController` returning 404 if not found.
 
-- [ ] **MED-API-4** `DELETE /patients/medications/:id` — soft-delete or hard-delete a medication
+- [x] **MED-API-4** `DELETE /patients/medications/:id` — hard-delete a medication
   - Spec AC: "DELETE /patients/medications/:id — remove medication."
-  - Add `deleteMedication()` to service and controller with ownership check.
+  - Added `deleteMedication()` to `PatientsService` with ownership check (userId match via `deleteOne`); added `@Delete('medications/:id')` to `PatientsController` returning 404 if not found, `{ success: true }` on success.
 
 ### Frontend — Dashboard medications table
 
