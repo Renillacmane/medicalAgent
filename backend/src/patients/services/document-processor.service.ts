@@ -106,7 +106,7 @@ export class DocumentProcessorService {
     extract: (text: string) => Promise<T>,
     summarize: (data: T) => string,
     parseDateField: (data: T) => Date | undefined,
-  ): Promise<{ id: string; status: string }> {
+  ): Promise<{ id: string; status: string; extractedData?: T }> {
     const doc = await this.userDocumentModel.create({
       userId: new Types.ObjectId(userId),
       documentType,
@@ -132,7 +132,7 @@ export class DocumentProcessorService {
 
       const id = doc._id.toString();
       this.logger.log(`Processed ${documentType} ${id} for user ${userId}`);
-      return { id, status: 'completed' };
+      return { id, status: 'completed', extractedData };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Failed to process ${documentType} ${doc._id.toString()}: ${errorMessage}`);
@@ -151,7 +151,16 @@ export class DocumentProcessorService {
     filename: string,
     pdfText: string,
     attachmentId: string,
-  ): Promise<{ id: string; status: string }> {
+  ): Promise<{
+    id: string;
+    status: string;
+    extractedData?: {
+      prescriptionDate?: string;
+      doctorName?: string;
+      medications?: Array<{ name: string; dosage: string; frequency: string; duration?: string }>;
+      instructions?: string;
+    };
+  }> {
     return this.processDocument(
       userId,
       'prescription',

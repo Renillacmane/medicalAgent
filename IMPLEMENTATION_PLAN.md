@@ -117,11 +117,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "When the user clicks 'Cancel', the dialog closes without saving."
   - Implemented: Cancel button calls `onClose`; backdrop click and Escape key also close without saving; no medications created/updated; document remains.
 
-- [ ] **RX-DIALOG-UI-8** Wire `AddPrescriptionForm` to open `MedicationReviewDialog` on successful upload
-  - Currently `AddPrescriptionForm` shows a success message and resets after 2 seconds. Needs to receive extracted medication data and open the dialog.
-  - **Recommended approach**: Modify `DocumentProcessorService.processDocument()` (or just `processPrescription`) to return `extractedData` alongside `{ id, status }`. Then update `PatientsController.uploadDocument` to include `extractedData` in the response body. The `processPrescription` call is synchronous — `extractedData` is already in the DB by the time the response returns. This avoids an extra network round-trip.
-  - `PrescriptionExtractedData` type in `frontend/src/types/health.ts` already has a `medications` array with `name`, `dosage`, `frequency`, `duration` fields — extend or reuse.
-  - **Alternative**: Fetch the document via `GET /patients/documents` filtering by the returned `id` to obtain `extractedData.medications`.
+- [x] **RX-DIALOG-UI-8** Wire `AddPrescriptionForm` to open `MedicationReviewDialog` on successful upload
+  - Backend: `DocumentProcessorService.processDocument()` now returns `extractedData` on success; `processPrescription` return type includes it. `PatientsController.uploadDocument` includes `extractedData` in the response for prescription uploads.
+  - Frontend: `uploadDocument` return type includes optional `extractedData`. On successful prescription upload with `extractedData`, `AddPrescriptionForm` opens `MedicationReviewDialog` with document id/name and initial medications built via `inferMedicationSchedule`. On dialog save success, shows success message and calls `onSuccess`. If no `extractedData`, keeps previous behavior (success message + reset after 2s).
 
 ---
 

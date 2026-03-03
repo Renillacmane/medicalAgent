@@ -9,6 +9,7 @@ import type {
   UpdateMedicationPayload,
   BatchCreateMedicationsPayload,
   BatchCreateMedicationsResponse,
+  PrescriptionExtractedData,
 } from "@/types/health";
 
 export type VitalsPeriodDays = 7 | 15 | 30;
@@ -61,6 +62,7 @@ export async function uploadDocument(formData: FormData): Promise<{
   id: string;
   status: string;
   message: string;
+  extractedData?: PrescriptionExtractedData;
 }> {
   return authPostFormData("/patients/documents/upload", formData);
 }

@@ -129,7 +129,19 @@ export class PatientsController {
     fs.writeFileSync(filePath, buffer);
     const attachmentId = `/documents/${filename}`;
 
-    const processors: Record<string, () => Promise<{ id: string; status: string }>> = {
+    const processors: Record<
+      string,
+      () => Promise<
+        { id: string; status: string } & {
+          extractedData?: {
+            prescriptionDate?: string;
+            doctorName?: string;
+            medications?: Array<{ name: string; dosage: string; frequency: string; duration?: string }>;
+            instructions?: string;
+          };
+        }
+      >
+    > = {
       prescription: () => this.documentProcessor.processPrescription(userId, data.filename, pdfText, attachmentId),
       lab_result: () => this.documentProcessor.processLabResults(userId, data.filename, pdfText, attachmentId),
     };
@@ -137,11 +149,20 @@ export class PatientsController {
     const processFn = processors[documentType as string];
     if (processFn) {
       const result = await processFn();
-      return {
+      const response: {
+        id: string;
+        status: string;
+        message: string;
+        extractedData?: (typeof result)['extractedData'];
+      } = {
         id: result.id,
         status: result.status,
         message: 'Document uploaded and processing started',
       };
+      if (documentType === 'prescription' && 'extractedData' in result && result.extractedData) {
+        response.extractedData = result.extractedData;
+      }
+      return response;
     }
 
     const result = await this.documentProcessor.createDocumentRecord(userId, documentType, data.filename, attachmentId);

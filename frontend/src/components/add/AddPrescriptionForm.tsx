@@ -1,13 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
 import { UnauthorizedError } from "@/lib/api";
 import { uploadDocument } from "@/services/patients.service";
 import LoadingPulse from "@/components/design/loading/LoadingPulse";
+import MedicationReviewDialog from "@/components/medications/MedicationReviewDialog";
+import { inferMedicationSchedule } from "@/lib/medication-schedule";
+import type { PrescriptionExtractedData } from "@/types/health";
 
 type Props = { onSuccess?: () => void; onBack?: () => void };
+
+type MedicationFormItem = {
+  id: string;
+  name: string;
+  dosage?: string;
+  frequency?: string;
+  timesPerDay?: number;
+  reminderTimes?: string[];
+  startDate?: string;
+  endDate?: string | null;
+};
+
+function buildInitialMedications(extracted: PrescriptionExtractedData["medications"]): MedicationFormItem[] {
+  const today = new Date().toISOString().slice(0, 10);
+  const meds = extracted ?? [];
+  if (meds.length === 0) return [];
+  return meds.map((m) => {
+    const schedule = inferMedicationSchedule({
+      frequency: m.frequency,
+      startDate: today,
+      durationText: m.duration,
+    });
+    return {
+      id: crypto.randomUUID(),
+      name: m.name ?? "",
+      dosage: m.dosage ?? "",
+      frequency: m.frequency ?? "once daily",
+      timesPerDay: schedule.timesPerDay,
+      reminderTimes: schedule.reminderTimes,
+      startDate: today,
+      endDate: schedule.endDate,
+    };
+  });
+}
 
 const inputClass =
   "mt-1 block w-full rounded-lg border border-light-green-subtle/80 bg-white px-3 py-2 text-light-green-dark shadow-sm transition-colors focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30";
@@ -19,6 +56,17 @@ export default function AddPrescriptionForm({ onSuccess, onBack }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [reviewDialog, setReviewDialog] = useState<{
+    documentId: string;
+    documentName: string;
+    initialMedications: MedicationFormItem[];
+  } | null>(null);
+
+  const handleDialogSaveSuccess = useCallback(() => {
+    setSuccess(true);
+    onSuccess?.();
+    setTimeout(() => setSuccess(false), 2000);
+  }, [onSuccess]);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = e.target.files?.[0];
@@ -51,16 +99,22 @@ export default function AddPrescriptionForm({ onSuccess, onBack }: Props) {
       formData.append("file", file);
       formData.append("documentType", "prescription");
 
-      await uploadDocument(formData);
-
-      setSuccess(true);
+      const result = await uploadDocument(formData);
+      const documentName = file.name;
       setFile(null);
-      onSuccess?.();
 
-      // Reset form after 2 seconds
-      setTimeout(() => {
-        setSuccess(false);
-      }, 2000);
+      if (result.extractedData) {
+        const medications = result.extractedData.medications ?? [];
+        setReviewDialog({
+          documentId: result.id,
+          documentName,
+          initialMedications: buildInitialMedications(medications),
+        });
+      } else {
+        setSuccess(true);
+        onSuccess?.();
+        setTimeout(() => setSuccess(false), 2000);
+      }
     } catch (err) {
       if (err instanceof UnauthorizedError) {
         router.replace(`${basePath}/login?redirect=${encodeURIComponent(basePath + "/add")}`);
@@ -108,6 +162,17 @@ export default function AddPrescriptionForm({ onSuccess, onBack }: Props) {
         <div className="rounded-lg bg-green-50 border border-green-200 p-3">
           <p className="text-sm text-green-600">Prescription uploaded successfully! Processing...</p>
         </div>
+      )}
+
+      {reviewDialog && (
+        <MedicationReviewDialog
+          isOpen={true}
+          onClose={() => setReviewDialog(null)}
+          documentName={reviewDialog.documentName}
+          initialMedications={reviewDialog.initialMedications}
+          sourceDocumentId={reviewDialog.documentId}
+          onSaveSuccess={handleDialogSaveSuccess}
+        />
       )}
 
       <div className="flex gap-3">
