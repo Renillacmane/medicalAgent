@@ -108,9 +108,10 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "When there are more than 3-4 medications, the list is scrollable within the dialog."
   - Dialog uses `max-h-[calc(100vh-2rem)]` and flex column; list area is `flex-1 min-h-0 overflow-y-auto` so it scrolls within the dialog without exceeding viewport.
 
-- [ ] **RX-DIALOG-UI-6** Save action — call batch endpoint, show success, close dialog
+- [x] **RX-DIALOG-UI-6** Save action — call batch endpoint, show success, close dialog
   - Spec AC: "When the user clicks 'Save', all medications are persisted to the backend. After save, the dialog closes and the user sees a success message."
   - Validation: name required; startDate required; reminderTimes valid HH:mm.
+  - Implemented: `handleSave` validates (name, startDate, HH:mm); calls `batchCreateMedications`; on success invokes `onSaveSuccess` then `onClose`. Dialog accepts `sourceDocumentId` and `onSaveSuccess` props. Per-card validation errors and save-error message displayed.
 
 - [ ] **RX-DIALOG-UI-7** Cancel action — close dialog without saving; uploaded document remains
   - Spec AC: "When the user clicks 'Cancel', the dialog closes without saving."

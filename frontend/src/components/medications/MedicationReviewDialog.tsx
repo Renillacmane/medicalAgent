@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { suggestReminderTimes } from "@/lib/medication-schedule";
+import { batchCreateMedications } from "@/services/patients.service";
+import type { BatchMedicationItem } from "@/types/health";
+
+const HHMM_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 type MedicationFormItem = {
   id: string;
@@ -19,15 +23,40 @@ type MedicationReviewDialogProps = {
   onClose: () => void;
   documentName: string;
   initialMedications: MedicationFormItem[];
+  sourceDocumentId?: string;
+  onSaveSuccess?: () => void;
 };
+
+function validateReminderTimes(times: string[]): boolean {
+  if (times.length === 0) return true;
+  return times.every((t) => HHMM_REGEX.test(t.trim()));
+}
+
+function validateItems(items: MedicationFormItem[]): Record<string, string[]> {
+  const errors: Record<string, string[]> = {};
+  for (const item of items) {
+    const itemErrors: string[] = [];
+    if (!item.name?.trim()) itemErrors.push("Name is required.");
+    if (!item.startDate) itemErrors.push("Start date is required.");
+    const times = item.reminderTimes ?? [];
+    if (!validateReminderTimes(times)) itemErrors.push("Reminder times must be in HH:mm format.");
+    if (itemErrors.length > 0) errors[item.id] = itemErrors;
+  }
+  return errors;
+}
 
 export default function MedicationReviewDialog({
   isOpen,
   onClose,
   documentName,
   initialMedications,
+  sourceDocumentId,
+  onSaveSuccess,
 }: MedicationReviewDialogProps) {
   const [items, setItems] = useState<MedicationFormItem[]>(initialMedications);
+  const [saving, setSaving] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleAddMedication = useCallback(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -46,6 +75,45 @@ export default function MedicationReviewDialog({
       },
     ]);
   }, []);
+
+  const handleSave = useCallback(async () => {
+    setSaveError(null);
+    setValidationErrors({});
+
+    if (items.length === 0) {
+      setSaveError("Add at least one medication to save.");
+      return;
+    }
+
+    const errors = validateItems(items);
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const medications: BatchMedicationItem[] = items.map((item) => ({
+        name: item.name.trim(),
+        dosage: item.dosage?.trim() || undefined,
+        frequency: item.frequency?.trim() || undefined,
+        timesPerDay: item.timesPerDay ?? 1,
+        reminderTimes: (item.reminderTimes ?? []).length > 0 ? item.reminderTimes : undefined,
+        startDate: item.startDate,
+        endDate: item.endDate ?? undefined,
+      }));
+      await batchCreateMedications({
+        sourceDocumentId: sourceDocumentId || undefined,
+        medications,
+      });
+      onSaveSuccess?.();
+      onClose();
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Failed to save medications.");
+    } finally {
+      setSaving(false);
+    }
+  }, [items, sourceDocumentId, onSaveSuccess, onClose]);
 
   useEffect(() => {
     setItems(initialMedications);
@@ -125,8 +193,19 @@ export default function MedicationReviewDialog({
                 return (
                   <article
                     key={item.id}
-                    className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 shadow-sm"
+                    className={`rounded-xl border p-4 shadow-sm ${
+                      validationErrors[item.id]
+                        ? "border-amber-300 bg-amber-50/60"
+                        : "border-slate-200 bg-slate-50/60"
+                    }`}
                   >
+                    {validationErrors[item.id] && (
+                      <ul className="mb-2 list-inside list-disc text-xs text-amber-800">
+                        {validationErrors[item.id].map((msg, i) => (
+                          <li key={i}>{msg}</li>
+                        ))}
+                      </ul>
+                    )}
                     <div className="grid gap-3 sm:grid-cols-3">
                       <div className="sm:col-span-1">
                         <label className="block text-xs font-medium uppercase tracking-wide text-slate-600">
@@ -289,25 +368,34 @@ export default function MedicationReviewDialog({
           )}
         </div>
 
-        <div className="flex shrink-0 items-center justify-between border-t border-slate-200 px-5 py-3">
-          <p className="text-xs text-slate-500">
-            You can fine-tune these medications before saving them.
-          </p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white opacity-60"
-            >
-              Save
-            </button>
+        <div className="flex shrink-0 flex-col gap-2 border-t border-slate-200 px-5 py-3">
+          {saveError && (
+            <p className="text-sm text-red-600" role="alert">
+              {saveError}
+            </p>
+          )}
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-slate-500">
+              You can fine-tune these medications before saving them.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={saving}
+                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={saving || !hasMedications}
+                onClick={handleSave}
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+              >
+                {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
