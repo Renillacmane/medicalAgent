@@ -51,9 +51,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Added `Medication`, `CreateMedicationPayload`, `UpdateMedicationPayload`, `BatchMedicationItem`, `BatchCreateMedicationsPayload`, `BatchCreateMedicationsResponse` types to `frontend/src/types/health.ts`.
   - Added `getMedications`, `createMedication`, `updateMedication`, `deleteMedication`, `batchCreateMedications` to `patients.service.ts`.
 
-- [ ] **MED-UI-2** Add "Current Medications" section to `Dashboard.tsx` — table with name, dosage, frequency, status
+- [x] **MED-UI-2** Add "Current Medications" section to `Dashboard.tsx` — table with name, dosage, frequency, status
   - Spec AC: "When the user views the dashboard, a 'Current Medications' section displays active medications. Each row shows: medication name, dosage, frequency, and status (active/inactive)."
-  - Dashboard currently shows only a vitals table; no medications section.
+  - Added "Current Medications" section with table (name, dosage, frequency, status); fetches via `getMedications()`; loading/empty/error states consistent with vitals section.
 
 - [ ] **MED-UI-3** Medication row tap opens edit view for reminder settings (inline or modal)
   - Spec AC: "User can tap a medication to edit its reminder settings."
