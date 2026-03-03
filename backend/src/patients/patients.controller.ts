@@ -23,6 +23,7 @@ import {
   CreateMedicationDto,
   UpdateMedicationDto,
   UpdateProfileDto,
+  UpdateSettingsDto,
   BatchCreateMedicationsDto,
 } from './dto';
 import { PDFParse } from 'pdf-parse';
@@ -65,6 +66,17 @@ export class PatientsController {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
     const settings = await this.patientsService.getSettings(userId);
+    if (!settings) {
+      throw new NotFoundException('User not found');
+    }
+    return settings;
+  }
+
+  @Patch('settings')
+  async updateSettings(@CurrentUser() user: User, @Body() dto: UpdateSettingsDto) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    const settings = await this.patientsService.updateSettings(userId, dto);
     if (!settings) {
       throw new NotFoundException('User not found');
     }

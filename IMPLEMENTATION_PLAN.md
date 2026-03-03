@@ -137,9 +137,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Added `GET /patients/settings` in `PatientsController`; added `getSettings(userId)` in `PatientsService` returning `{ notificationSettings }` with schema defaults applied.
   - Note: spec says `GET /users/settings` but existing API convention is `/patients/`; use `/patients/settings`.
 
-- [ ] **NOTIF-API-4** `PATCH /patients/settings` — update notification preferences
+- [x] **NOTIF-API-4** `PATCH /patients/settings` — update notification preferences
   - Spec AC: "When the user toggles a notification type, the setting is persisted to the backend."
-  - Add `UpdateSettingsDto` with optional boolean fields; add `updateSettings()` to `PatientsService` and corresponding controller method.
+  - Added `UpdateSettingsDto` (nested `notificationSettings` with optional `dailyRecommendations`, `vitalsReminder`, `medicationReminder`); added `updateSettings()` to `PatientsService` (merge with current + defaults); added `@Patch('settings')` to `PatientsController`.
 
 - [ ] **NOTIF-FE-1** Install `@capacitor/push-notifications` and `@capacitor/local-notifications`; run `npx cap sync`
   - Spec: "Install @capacitor/push-notifications and @capacitor/local-notifications."

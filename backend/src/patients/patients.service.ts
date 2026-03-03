@@ -11,6 +11,7 @@ import {
   CreateMedicationDto,
   UpdateMedicationDto,
   UpdateProfileDto,
+  UpdateSettingsDto,
   BatchCreateMedicationsDto,
 } from './dto';
 import { PatientSnapshotDto, PatientProfile, PatientVital, PatientMedication } from './dto/patient-snapshot.dto';
@@ -57,6 +58,39 @@ export class PatientsService {
       notificationSettings: {
         ...defaults,
         ...(user.notificationSettings || {}),
+      },
+    };
+  }
+
+  /**
+   * Update notification settings for a user.
+   * Merges incoming values with existing; only provided fields are updated.
+   */
+  async updateSettings(userId: string, dto: UpdateSettingsDto) {
+    const user = await this.userModel.findById(userId).select('notificationSettings').lean().exec();
+    if (!user) return null;
+    const defaults = {
+      dailyRecommendations: false,
+      vitalsReminder: true,
+      medicationReminder: false,
+    };
+    const current = { ...defaults, ...(user.notificationSettings || {}) };
+    const incoming = dto.notificationSettings || {};
+    const notificationSettings = {
+      dailyRecommendations: incoming.dailyRecommendations ?? current.dailyRecommendations,
+      vitalsReminder: incoming.vitalsReminder ?? current.vitalsReminder,
+      medicationReminder: incoming.medicationReminder ?? current.medicationReminder,
+    };
+    const updated = await this.userModel
+      .findByIdAndUpdate(userId, { $set: { notificationSettings } }, { new: true })
+      .select('notificationSettings')
+      .lean()
+      .exec();
+    if (!updated) return null;
+    return {
+      notificationSettings: {
+        ...defaults,
+        ...(updated.notificationSettings || {}),
       },
     };
   }
