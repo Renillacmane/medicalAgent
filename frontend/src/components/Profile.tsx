@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
 import { UnauthorizedError } from "@/lib/api";
-import { getProfile, updateProfile } from "@/services/patients.service";
+import { getProfile, updateProfile, getSettings, updateSettings } from "@/services/patients.service";
 import { formatDate } from "@/lib/format";
-import type { PatientProfile } from "@/types/profile";
+import type { PatientProfile, NotificationSettings } from "@/types/profile";
 import { LoadingPulse } from "@/components/design";
 import Field from "@/components/ui/Field";
 
@@ -77,6 +77,12 @@ function editFormToPayload(form: EditForm): Record<string, unknown> {
   return payload;
 }
 
+const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
+  dailyRecommendations: false,
+  vitalsReminder: true,
+  medicationReminder: false,
+};
+
 const inputClass =
   "mt-1 block w-full rounded-lg border border-light-green-subtle/80 bg-white px-3 py-2 text-light-green-dark shadow-sm transition-colors focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30";
 
@@ -84,18 +90,26 @@ export default function Profile() {
   const router = useRouter();
   const basePath = useBasePath();
   const [profile, setProfile] = useState<PatientProfile | null>(null);
+  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<EditForm | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [settingsToggling, setSettingsToggling] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    getProfile()
-      .then((data) => {
-        if (!cancelled) setProfile(data);
+    Promise.all([getProfile(), getSettings()])
+      .then(([profileData, settingsData]) => {
+        if (!cancelled) {
+          setProfile(profileData);
+          setSettings({
+            ...DEFAULT_NOTIFICATION_SETTINGS,
+            ...settingsData?.notificationSettings,
+          });
+        }
       })
       .catch((e) => {
         if (!cancelled) {
@@ -146,6 +160,23 @@ export default function Profile() {
       setSaveError(e instanceof Error ? e.message : "Failed to save profile");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleNotificationToggle = async (
+    key: keyof NotificationSettings,
+    value: boolean
+  ) => {
+    const next = { ...settings, [key]: value };
+    setSettingsToggling(key);
+    try {
+      const updated = await updateSettings({ notificationSettings: next });
+      setSettings({
+        ...DEFAULT_NOTIFICATION_SETTINGS,
+        ...updated.notificationSettings,
+      });
+    } finally {
+      setSettingsToggling(null);
     }
   };
 
@@ -403,6 +434,78 @@ export default function Profile() {
                 value={objectives?.mind?.length ? objectives.mind.join(", ") : undefined}
               />
             </dl>
+          </section>
+          {/* Notification settings */}
+          <section className="rounded-xl border border-light-green-subtle/60 bg-white p-6 shadow-card transition-all hover:shadow-card-hover">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-light-green-dark-grey">Notifications</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <label htmlFor="notif-daily-rec" className="text-sm text-light-green-dark">
+                  Daily recommendations
+                </label>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={settings.dailyRecommendations ?? false}
+                  id="notif-daily-rec"
+                  disabled={settingsToggling === "dailyRecommendations"}
+                  onClick={() => handleNotificationToggle("dailyRecommendations", !(settings.dailyRecommendations ?? false))}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-light-green-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    settings.dailyRecommendations ? "bg-light-green-primary" : "bg-light-green-subtle"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
+                      settings.dailyRecommendations ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <label htmlFor="notif-vitals" className="text-sm text-light-green-dark">
+                  Add vitals reminder
+                </label>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={settings.vitalsReminder ?? true}
+                  id="notif-vitals"
+                  disabled={settingsToggling === "vitalsReminder"}
+                  onClick={() => handleNotificationToggle("vitalsReminder", !(settings.vitalsReminder ?? true))}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-light-green-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    settings.vitalsReminder ? "bg-light-green-primary" : "bg-light-green-subtle"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
+                      settings.vitalsReminder ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <label htmlFor="notif-medication" className="text-sm text-light-green-dark">
+                  Medication reminder
+                </label>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={settings.medicationReminder ?? false}
+                  id="notif-medication"
+                  disabled={settingsToggling === "medicationReminder"}
+                  onClick={() => handleNotificationToggle("medicationReminder", !(settings.medicationReminder ?? false))}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-light-green-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    settings.medicationReminder ? "bg-light-green-primary" : "bg-light-green-subtle"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
+                      settings.medicationReminder ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
           </section>
         </div>
       )}

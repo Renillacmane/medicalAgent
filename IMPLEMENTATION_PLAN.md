@@ -145,10 +145,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec: "Install @capacitor/push-notifications and @capacitor/local-notifications."
   - Added both plugins to `frontend/package.json` (^7.0.1); ran `npm install` and `npx cap sync`; Android and iOS native projects updated.
 
-- [ ] **NOTIF-UI-1** Add notification settings section to Profile/Settings page with toggles for each type
+- [x] **NOTIF-UI-1** Add notification settings section to Profile/Settings page with toggles for each type
   - Spec AC: "When the user opens Settings, they see toggles for: Daily recommendations (off by default), Add vitals reminder (on by default), Medication reminder (off by default)."
-  - `Profile.tsx` has Account and Vitals sections but no notification settings section.
-  - **Prerequisite**: Add `notificationSettings` to `PatientProfile` type in `frontend/src/types/profile.ts` (currently missing). Add `getSettings()` / `updateSettings()` to `patients.service.ts`.
+  - Added `NotificationSettings` type and `notificationSettings` to `PatientProfile` in `frontend/src/types/profile.ts`. Added `getSettings()` and `updateSettings()` to `patients.service.ts`. Profile page loads settings via `getSettings()`; added "Notifications" section with three toggles (Daily recommendations, Add vitals reminder, Medication reminder). Toggle changes call `PATCH /patients/settings` and update local state.
 
 - [ ] **NOTIF-UI-2** Toggle changes call `PATCH /patients/settings` and update local state; reschedule local notifications accordingly
   - Spec AC: "When the user toggles a notification type, the setting is persisted to the backend and local notifications are rescheduled accordingly."

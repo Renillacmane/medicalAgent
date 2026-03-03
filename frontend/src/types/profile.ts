@@ -2,6 +2,12 @@ export type DietaryPreference = { type?: string; restrictions?: string[] };
 
 export type Objectives = { body?: string[]; health?: string[]; mind?: string[] };
 
+export type NotificationSettings = {
+  dailyRecommendations?: boolean;
+  vitalsReminder?: boolean;
+  medicationReminder?: boolean;
+};
+
 export type PatientProfile = {
   id: string;
   firstName: string;
@@ -13,6 +19,7 @@ export type PatientProfile = {
   weight?: number;
   dietaryPreference?: DietaryPreference;
   objectives?: Objectives;
+  notificationSettings?: NotificationSettings;
   createdAt?: string;
   updatedAt?: string;
 };

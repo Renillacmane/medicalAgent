@@ -1,5 +1,5 @@
 import { authGet, authPatch, authPost, authDelete, authPostFormData } from "@/lib/api";
-import type { PatientProfile } from "@/types/profile";
+import type { PatientProfile, NotificationSettings } from "@/types/profile";
 import type { Vital, CreateVitalPayload } from "@/types/vital";
 import type {
   Exam,
@@ -90,4 +90,16 @@ export async function deleteMedication(id: string): Promise<{ success: boolean }
 /** POST /patients/medications/batch */
 export async function batchCreateMedications(payload: BatchCreateMedicationsPayload): Promise<BatchCreateMedicationsResponse> {
   return authPost<BatchCreateMedicationsResponse>("/patients/medications/batch", payload);
+}
+
+export type SettingsResponse = { notificationSettings: NotificationSettings };
+
+/** GET /patients/settings */
+export async function getSettings(): Promise<SettingsResponse> {
+  return authGet<SettingsResponse>("/patients/settings");
+}
+
+/** PATCH /patients/settings */
+export async function updateSettings(payload: { notificationSettings?: Partial<NotificationSettings> }): Promise<SettingsResponse> {
+  return authPatch<SettingsResponse>("/patients/settings", payload);
 }
