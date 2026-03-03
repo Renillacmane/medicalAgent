@@ -6,7 +6,7 @@ import { UserVital, UserVitalDocument } from './schemas/user-vital.schema';
 import { UserExam, UserExamDocument } from './schemas/user-exam.schema';
 import { UserDocument as UserDocumentModel, UserDocumentDocument } from './schemas/user-document.schema';
 import { UserMedication, UserMedicationDocument } from './schemas/user-medication.schema';
-import { CreateVitalDto, CreateMedicationDto, UpdateProfileDto } from './dto';
+import { CreateVitalDto, CreateMedicationDto, UpdateMedicationDto, UpdateProfileDto } from './dto';
 import { PatientSnapshotDto, PatientProfile, PatientVital, PatientMedication } from './dto/patient-snapshot.dto';
 
 function computeBmi(weightKg: number, heightCm: number): number {
@@ -122,6 +122,46 @@ export class PatientsService {
       isActive: m.isActive,
       sourceDocumentId: m.sourceDocumentId?.toString(),
     }));
+  }
+
+  async updateMedication(userId: string, medicationId: string, dto: UpdateMedicationDto) {
+    const medication = await this.userMedicationModel
+      .findOne({ _id: new Types.ObjectId(medicationId), userId: new Types.ObjectId(userId) })
+      .exec();
+    if (!medication) return null;
+
+    const update: Record<string, unknown> = {};
+    if (dto.name != null) update.name = dto.name.trim();
+    if (dto.dosage != null) update.dosage = dto.dosage.trim();
+    if (dto.frequency != null) update.frequency = dto.frequency.trim();
+    if (dto.timesPerDay != null) update.timesPerDay = dto.timesPerDay;
+    if (dto.reminderTimes != null) update.reminderTimes = dto.reminderTimes;
+    if (dto.activeSubstance != null) update.activeSubstance = dto.activeSubstance.trim();
+    if (dto.purpose != null) update.purpose = dto.purpose.trim();
+    if (dto.startDate != null) update.startDate = new Date(dto.startDate);
+    if (dto.endDate != null) update.endDate = new Date(dto.endDate);
+    if (dto.isActive != null) update.isActive = dto.isActive;
+
+    const updated = await this.userMedicationModel
+      .findByIdAndUpdate(medicationId, { $set: update }, { new: true })
+      .lean()
+      .exec();
+    if (!updated) return null;
+
+    return {
+      id: (updated as { _id: Types.ObjectId })._id?.toString?.(),
+      name: updated.name,
+      dosage: updated.dosage,
+      frequency: updated.frequency,
+      timesPerDay: updated.timesPerDay,
+      reminderTimes: updated.reminderTimes,
+      activeSubstance: updated.activeSubstance,
+      purpose: updated.purpose,
+      startDate: updated.startDate,
+      endDate: updated.endDate,
+      isActive: updated.isActive,
+      sourceDocumentId: updated.sourceDocumentId?.toString(),
+    };
   }
 
   async createMedication(userId: string, dto: CreateMedicationDto) {

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -16,7 +17,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../auth/schemas/user.schema';
 import { PatientsService } from './patients.service';
 import { DocumentProcessorService } from './services/document-processor.service';
-import { CreateVitalDto, CreateMedicationDto, UpdateProfileDto } from './dto';
+import { CreateVitalDto, CreateMedicationDto, UpdateMedicationDto, UpdateProfileDto } from './dto';
 import { PDFParse } from 'pdf-parse';
 import type { LoadParameters } from 'pdf-parse';
 import * as path from 'path';
@@ -156,6 +157,17 @@ export class PatientsController {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
     return this.patientsService.createMedication(userId, dto);
+  }
+
+  @Patch('medications/:id')
+  async updateMedication(@CurrentUser() user: User, @Param('id') id: string, @Body() dto: UpdateMedicationDto) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    const medication = await this.patientsService.updateMedication(userId, id, dto);
+    if (!medication) {
+      throw new NotFoundException('Medication not found');
+    }
+    return medication;
   }
 
   @Get('vitals')

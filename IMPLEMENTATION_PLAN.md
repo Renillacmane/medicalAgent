@@ -36,9 +36,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "When a medication is created (manually or from prescription), it includes timesPerDay and reminderTimes fields."
   - Created `CreateMedicationDto` with validation (name required, reminderTimes HH:mm format via regex, timesPerDay 1-10, optional sourceDocumentId as MongoId); added `createMedication()` to `PatientsService` and `@Post('medications')` to `PatientsController`.
 
-- [ ] **MED-API-3** `PATCH /patients/medications/:id` — update a medication (including reminder times, active status)
+- [x] **MED-API-3** `PATCH /patients/medications/:id` — update a medication (including reminder times, active status)
   - Spec AC: "User can tap a medication to edit its reminder settings."
-  - Create `UpdateMedicationDto`; add `updateMedication()` to service and controller with ownership check (userId match).
+  - Created `UpdateMedicationDto` (all fields optional, same validation as create); added `updateMedication()` to `PatientsService` with ownership check (userId match); added `@Patch('medications/:id')` to `PatientsController` returning 404 if not found.
 
 - [ ] **MED-API-4** `DELETE /patients/medications/:id` — soft-delete or hard-delete a medication
   - Spec AC: "DELETE /patients/medications/:id — remove medication."
