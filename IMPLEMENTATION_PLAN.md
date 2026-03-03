@@ -161,11 +161,10 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
 
 ### Phase 2: Device registration + push notifications (Capacitor native)
 
-- [ ] **NOTIF-API-1** `POST /notifications/register` — authenticated user submits device token or web push subscription; store in user document or separate collection
-  - No notifications module, controller, or service exists in backend (`backend/src/notifications/` does not exist).
-  - `AppModule` imports: Auth, Database, Patients, Health, Recommendations — no Notifications.
-  - Create `NotificationsModule`, `NotificationsController`, `NotificationsService`.
-  - User schema will need a field for device tokens / push subscriptions (not currently present).
+- [x] **NOTIF-API-1** `POST /notifications/register` — authenticated user submits device token or web push subscription; store in user document or separate collection
+  - `NotificationsModule`, `NotificationsController`, and `NotificationsService` exist under `backend/src/notifications/`.
+  - `AppModule` imports `NotificationsModule`.
+  - `User` schema extended with `notificationDevices` array to store device tokens and web push subscriptions per user.
 
 - [ ] **NOTIF-API-2** `DELETE /notifications/register` — remove device token/subscription for the authenticated user
   - Spec AC: "When the user logs out, the device token is unregistered from the backend."

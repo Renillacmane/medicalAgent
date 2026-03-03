@@ -20,6 +20,14 @@ export class NotificationSettings {
   medicationReminder?: boolean;
 }
 
+export class NotificationDevice {
+  platform?: 'ios' | 'android' | 'web';
+  deviceToken?: string;
+  webPushSubscription?: Record<string, unknown>;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
   @Prop({ required: true, trim: true })
@@ -57,6 +65,9 @@ export class User {
     default: { dailyRecommendations: false, vitalsReminder: true, medicationReminder: false },
   })
   notificationSettings?: NotificationSettings;
+
+  @Prop({ type: [Object], default: [] })
+  notificationDevices?: NotificationDevice[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
