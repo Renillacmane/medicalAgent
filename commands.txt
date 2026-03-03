@@ -14,3 +14,7 @@
  1051  npm run dev
  1052  npm run build && npx cap sync
  1053  npm run dev
+
+
+// try pdf extract text only
+https://github.com/ocrmypdf/OCRmyPDF

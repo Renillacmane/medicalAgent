@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test:e2e": "playwright test --config testes/playwright/playwright.config.ts",
+    "test:e2e:ui": "playwright test --config testes/playwright/playwright.config.ts --ui",
     "cap:sync": "cap sync",
     "cap:ios": "cap open ios",
     "cap:android": "cap open android",
@@ -32,6 +34,7 @@
     "eslint-config-next": "^14.2.18",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "@playwright/test": "^1.42.0"
   }
 }

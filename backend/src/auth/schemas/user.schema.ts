@@ -14,6 +14,12 @@ export class UserDietaryPreference {
   restrictions?: string[];
 }
 
+export class NotificationSettings {
+  dailyRecommendations?: boolean;
+  vitalsReminder?: boolean;
+  medicationReminder?: boolean;
+}
+
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
   @Prop({ required: true, trim: true })
@@ -45,6 +51,12 @@ export class User {
 
   @Prop({ type: Object })
   objectives?: UserObjectives;
+
+  @Prop({
+    type: Object,
+    default: { dailyRecommendations: false, vitalsReminder: true, medicationReminder: false },
+  })
+  notificationSettings?: NotificationSettings;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
