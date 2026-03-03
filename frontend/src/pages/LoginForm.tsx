@@ -35,7 +35,10 @@ export default function LoginForm({ onSuccess }: Props) {
       }
       onSuccess?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Network error");
+      const msg = err instanceof Error ? err.message : "Network error";
+      setError(
+        `Cannot reach server at ${apiUrl}. Check that the backend is running and API_URL matches the backend port (default 3911).`
+      );
     } finally {
       setLoading(false);
     }

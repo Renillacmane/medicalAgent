@@ -70,7 +70,7 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "When the user updates reminderTimes, existing notifications are cancelled and new ones are scheduled."
   - Implemented: after saving changes in `MedicationEditModal`, Dashboard refetches medications and settings, then calls `scheduleMedicationReminders` so existing medication notifications are cancelled and new ones are scheduled based on updated reminderTimes.
 
-- [ ] **MED-UI-6** When user disables medication reminders in settings, cancel all medication notifications
+- [x] **MED-UI-6** When user disables medication reminders in settings, cancel all medication notifications
   - Spec AC: "When the user disables medication reminders in settings, all medication notifications are cancelled."
 
 ---
