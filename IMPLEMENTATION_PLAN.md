@@ -113,8 +113,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Validation: name required; startDate required; reminderTimes valid HH:mm.
   - Implemented: `handleSave` validates (name, startDate, HH:mm); calls `batchCreateMedications`; on success invokes `onSaveSuccess` then `onClose`. Dialog accepts `sourceDocumentId` and `onSaveSuccess` props. Per-card validation errors and save-error message displayed.
 
-- [ ] **RX-DIALOG-UI-7** Cancel action — close dialog without saving; uploaded document remains
+- [x] **RX-DIALOG-UI-7** Cancel action — close dialog without saving; uploaded document remains
   - Spec AC: "When the user clicks 'Cancel', the dialog closes without saving."
+  - Implemented: Cancel button calls `onClose`; backdrop click and Escape key also close without saving; no medications created/updated; document remains.
 
 - [ ] **RX-DIALOG-UI-8** Wire `AddPrescriptionForm` to open `MedicationReviewDialog` on successful upload
   - Currently `AddPrescriptionForm` shows a success message and resets after 2 seconds. Needs to receive extracted medication data and open the dialog.
