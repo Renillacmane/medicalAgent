@@ -9,6 +9,7 @@ import { UnauthorizedError } from "@/lib/api";
 import { getVitals, getMedications } from "@/services/patients.service";
 import { formatDate } from "@/lib/format";
 import { formatBP } from "@/lib/vital-format";
+import MedicationEditModal from "@/components/medications/MedicationEditModal";
 import type { Vital } from "@/types/vital";
 import type { Medication } from "@/types/health";
 
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [medicationsError, setMedicationsError] = useState<string | null>(null);
   const [fromCache, setFromCache] = useState(false);
+  const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -191,7 +193,19 @@ export default function Dashboard() {
                 </thead>
                 <tbody className="divide-y divide-light-green-subtle/40">
                   {medications.map((m) => (
-                    <tr key={m.id} className="transition-colors hover:bg-light-green-light/40">
+                    <tr
+                      key={m.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setEditingMedication(m)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setEditingMedication(m);
+                        }
+                      }}
+                      className="cursor-pointer transition-colors hover:bg-light-green-light/40 focus:bg-light-green-light/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-light-green-primary/50"
+                    >
                       <td className="whitespace-nowrap px-4 py-3 font-medium text-light-green-dark">{m.name}</td>
                       <td className="px-4 py-3 text-light-green-dark-grey">{m.dosage ?? "—"}</td>
                       <td className="px-4 py-3 text-light-green-dark-grey">{m.frequency ?? "—"}</td>
@@ -203,6 +217,17 @@ export default function Dashboard() {
             </div>
           )}
         </section>
+
+        <MedicationEditModal
+          medication={editingMedication}
+          onClose={() => setEditingMedication(null)}
+          onSaved={() => {
+            setEditingMedication(null);
+            getMedications()
+              .then((data) => setMedications(Array.isArray(data) ? data : []))
+              .catch(() => {});
+          }}
+        />
       </div>
     </div>
   );

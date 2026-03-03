@@ -55,9 +55,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "When the user views the dashboard, a 'Current Medications' section displays active medications. Each row shows: medication name, dosage, frequency, and status (active/inactive)."
   - Added "Current Medications" section with table (name, dosage, frequency, status); fetches via `getMedications()`; loading/empty/error states consistent with vitals section.
 
-- [ ] **MED-UI-3** Medication row tap opens edit view for reminder settings (inline or modal)
+- [x] **MED-UI-3** Medication row tap opens edit view for reminder settings (inline or modal)
   - Spec AC: "User can tap a medication to edit its reminder settings."
-  - No medication editing UI exists.
+  - Implemented: tap/click on medication row opens `MedicationEditModal` with editable reminder times, timesPerDay, start/end date, isActive; Save calls PATCH and refetches list; Cancel closes without saving.
 
 ### Frontend — Local notification scheduling
 
