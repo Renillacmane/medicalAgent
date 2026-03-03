@@ -132,9 +132,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
 
 ### Phase 1: Settings API + local notifications
 
-- [ ] **NOTIF-API-3** `GET /patients/settings` — return notification preferences from user document
+- [x] **NOTIF-API-3** `GET /patients/settings` — return notification preferences from user document
   - `notificationSettings` field already exists on User schema with correct shape and defaults (`{ dailyRecommendations: false, vitalsReminder: true, medicationReminder: false }`).
-  - No settings endpoint exists in `PatientsController`. Add `GET /patients/settings`.
+  - Added `GET /patients/settings` in `PatientsController`; added `getSettings(userId)` in `PatientsService` returning `{ notificationSettings }` with schema defaults applied.
   - Note: spec says `GET /users/settings` but existing API convention is `/patients/`; use `/patients/settings`.
 
 - [ ] **NOTIF-API-4** `PATCH /patients/settings` — update notification preferences

@@ -60,6 +60,17 @@ export class PatientsController {
     return profile;
   }
 
+  @Get('settings')
+  async getSettings(@CurrentUser() user: User) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    const settings = await this.patientsService.getSettings(userId);
+    if (!settings) {
+      throw new NotFoundException('User not found');
+    }
+    return settings;
+  }
+
   @Get('exams')
   async getExams(@CurrentUser() user: User) {
     const doc = user as User & { id?: string; _id?: { toString(): string } };

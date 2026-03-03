@@ -41,6 +41,26 @@ export class PatientsService {
     return { id, ...user };
   }
 
+  /**
+   * Get notification settings for a user (for Settings/Profile page).
+   * Returns defaults from schema if not explicitly set.
+   */
+  async getSettings(userId: string) {
+    const user = await this.userModel.findById(userId).select('notificationSettings').lean().exec();
+    if (!user) return null;
+    const defaults = {
+      dailyRecommendations: false,
+      vitalsReminder: true,
+      medicationReminder: false,
+    };
+    return {
+      notificationSettings: {
+        ...defaults,
+        ...(user.notificationSettings || {}),
+      },
+    };
+  }
+
   async updateProfile(userId: string, dto: UpdateProfileDto) {
     const update: Record<string, unknown> = {};
     if (dto.firstName != null) update.firstName = dto.firstName.trim();
