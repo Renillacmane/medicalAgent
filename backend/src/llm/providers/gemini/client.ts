@@ -11,7 +11,8 @@ export interface GeminiClientLike {
   ): Promise<{ text: () => string }>;
 }
 
-export function createGeminiClient(_apiKey: string): GeminiClientLike {
+export function createGeminiClient(_apiKey?: string): GeminiClientLike {
+  void _apiKey;
   // TODO: when @google/generative-ai is added:
   // import { GoogleGenerativeAI } from '@google/generative-ai';
   // return new GoogleGenerativeAI(apiKey);

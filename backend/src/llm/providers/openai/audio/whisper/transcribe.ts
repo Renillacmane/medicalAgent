@@ -10,7 +10,8 @@ export class WhisperTranscriber implements AudioTranscriber {
   constructor(private readonly client: OpenAI) {}
 
   async transcribe(_input: AudioTranscriptionInput): Promise<string> {
+    void _input;
     // TODO: call client.audio.transcriptions.create when needed
-    throw new Error('Whisper transcription not yet implemented');
+    return Promise.reject(new Error('Whisper transcription not yet implemented'));
   }
 }

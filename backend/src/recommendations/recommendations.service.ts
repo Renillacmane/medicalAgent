@@ -122,8 +122,8 @@ export class RecommendationsService {
       );
 
       return recommendation;
-    } catch (error) {
-      this.logger.error(`Failed to generate recommendations for user ${userId}: ${error}`);
+    } catch (error: unknown) {
+      this.logger.error(`Failed to generate recommendations for user ${userId}: ${String(error)}`);
       throw error;
     }
   }
@@ -145,8 +145,8 @@ export class RecommendationsService {
       });
       this.logger.debug(`Retrieved ${chunks.length} RAG chunks for user ${userId}`);
       return chunks;
-    } catch (error) {
-      this.logger.warn(`RAG retrieval failed, continuing without context: ${error}`);
+    } catch (error: unknown) {
+      this.logger.warn(`RAG retrieval failed, continuing without context: ${String(error)}`);
       return [];
     }
   }
@@ -164,7 +164,7 @@ export class RecommendationsService {
     }
 
     try {
-      const parsed = JSON.parse(jsonMatch[0]);
+      const parsed: unknown = JSON.parse(jsonMatch[0]);
 
       if (isValidRecommendation(parsed)) {
         return {

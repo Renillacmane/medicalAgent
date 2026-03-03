@@ -24,15 +24,16 @@ export interface CreateLLMOptions {
  * Dispatch is by provider only; no model conditionals inside providers.
  */
 export function createLLMService(options: CreateLLMOptions): LLMService {
-  const { provider, apiKey, openaiModel = 'gpt-4o' } = options;
+  const { provider, apiKey } = options;
 
   if (provider === 'openai') {
+    const openaiModel: OpenAIModelVariant = options.openaiModel ?? 'gpt-4o';
     return createOpenAILLMService(apiKey, openaiModel);
   }
   if (provider === 'gemini') {
     return createGeminiLLMService(apiKey);
   }
-  throw new Error(`Unknown LLM provider: ${provider}`);
+  throw new Error(`Unknown LLM provider: ${String(provider)}`);
 }
 
 // Re-export for direct usage (e.g. llm.openai.text.generator.generate(...))

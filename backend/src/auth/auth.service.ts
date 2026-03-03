@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
@@ -53,12 +53,13 @@ export class AuthService {
     const match = await bcrypt.compare(password, user.passwordHash);
     if (!match) return null;
 
-    const { passwordHash: _, ...result } = user.toObject();
+    const { passwordHash, ...result } = user.toObject();
+    void passwordHash;
     return result as unknown as User;
   }
 
-  async login(user: User): Promise<AuthTokens> {
-    return this.issueTokens(user);
+  login(user: User): Promise<AuthTokens> {
+    return Promise.resolve(this.issueTokens(user));
   }
 
   async getProfile(userId: string): Promise<User | null> {
@@ -66,7 +67,7 @@ export class AuthService {
     return user ?? null;
   }
 
-  private async issueTokens(user: User | UserDocument): Promise<AuthTokens> {
+  private issueTokens(user: User | UserDocument): AuthTokens {
     const doc = user as UserDocument & {
       id?: string;
       _id?: { toString(): string };

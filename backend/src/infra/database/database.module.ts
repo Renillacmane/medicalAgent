@@ -1,5 +1,5 @@
 import { Logger, Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MongoConnectionLogger } from './mongo-connection.logger';
 

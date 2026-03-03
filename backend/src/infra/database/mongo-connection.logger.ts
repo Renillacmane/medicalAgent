@@ -13,7 +13,7 @@ export class MongoConnectionLogger implements OnApplicationBootstrap {
 
   onApplicationBootstrap() {
     // If it connected before this hook runs, still print a confirmation once.
-    if (this.connection.readyState === 1) {
+    if (Number(this.connection.readyState) === 1) {
       this.logger.log('MongoDB connected');
     }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { RecommendationsService } from './recommendations.service';
 import { PatientsService } from '../patients/patients.service';
@@ -12,8 +13,6 @@ describe('RecommendationsService', () => {
   let patientsService: jest.Mocked<PatientsService>;
   let textGenerator: jest.Mocked<TextGenerator>;
   let ragService: jest.Mocked<IRagService>;
-  let promptBuilder: SystemPromptBuilder;
-
   const mockSnapshot: PatientSnapshotDto = {
     profile: {
       id: 'user-123',
@@ -53,7 +52,7 @@ describe('RecommendationsService', () => {
   };
 
   beforeEach(async () => {
-    const mockPatientsService = {
+    const mockPatientsService: Partial<jest.Mocked<PatientsService>> = {
       getPatientSnapshotForAgent: jest.fn(),
     };
 

@@ -81,4 +81,43 @@ export class NotificationsService {
 
     return { success: true };
   }
+
+  async unregister(userId: string, dto: RegisterNotificationDto): Promise<{ success: boolean }> {
+    const user = await this.userModel.findById(userId).select('notificationDevices').exec();
+    if (!user) {
+      return { success: false };
+    }
+
+    const devices: NotificationDevice[] = Array.isArray(user.notificationDevices) ? [...user.notificationDevices] : [];
+
+    const hasDeviceToken = !!dto.deviceToken;
+    const hasSubscription = !!dto.webPushSubscription;
+
+    if (!hasDeviceToken && !hasSubscription) {
+      return { success: false };
+    }
+
+    let updatedDevices = devices;
+
+    if (hasDeviceToken) {
+      updatedDevices = updatedDevices.filter((d) => d.deviceToken !== dto.deviceToken);
+    } else if (hasSubscription) {
+      const endpoint = (dto.webPushSubscription as { endpoint?: string })?.endpoint;
+      if (!endpoint) {
+        return { success: false };
+      }
+      updatedDevices = updatedDevices.filter(
+        (d) => (d.webPushSubscription as { endpoint?: string })?.endpoint !== endpoint,
+      );
+    }
+
+    if (updatedDevices.length === devices.length) {
+      return { success: false };
+    }
+
+    user.notificationDevices = updatedDevices;
+    await user.save();
+
+    return { success: true };
+  }
 }

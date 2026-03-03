@@ -16,7 +16,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, adapter);
 
   // Register multipart plugin for file uploads
-  await app.register(require('@fastify/multipart'));
+  const multipart = await import('@fastify/multipart');
+  await app.register((multipart.default ?? multipart) as any);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -30,4 +31,4 @@ async function bootstrap() {
   const port = Number(process.env.PORT) || 3911;
   await app.listen({ port, host: '0.0.0.0' });
 }
-bootstrap();
+void bootstrap();

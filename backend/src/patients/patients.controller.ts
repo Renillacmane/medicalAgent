@@ -115,7 +115,9 @@ export class PatientsController {
       throw new BadRequestException('No file uploaded');
     }
 
-    const documentType = data.fields?.documentType?.value || 'prescription';
+    const fields = data.fields as Record<string, { value?: unknown }> | undefined;
+    const documentTypeValue = fields?.documentType?.value;
+    const documentType = (typeof documentTypeValue === 'string' ? documentTypeValue : undefined) || 'prescription';
 
     if (data.mimetype !== 'application/pdf') {
       throw new BadRequestException('Only PDF files are supported');
@@ -138,7 +140,7 @@ export class PatientsController {
       const textResult = await parser.getText();
       pdfText = textResult.text;
       await parser.destroy();
-    } catch (error) {
+    } catch {
       throw new BadRequestException('Failed to parse PDF file');
     }
 
@@ -147,7 +149,7 @@ export class PatientsController {
       fs.mkdirSync(publicDir, { recursive: true });
     }
 
-    const filename = `${Date.now()}_${data.filename}`;
+    const filename = `${Date.now()}_${String(data.filename)}`;
     const filePath = path.join(publicDir, filename);
     fs.writeFileSync(filePath, buffer);
     const attachmentId = `/documents/${filename}`;
@@ -169,7 +171,7 @@ export class PatientsController {
       lab_result: () => this.documentProcessor.processLabResults(userId, data.filename, pdfText, attachmentId),
     };
 
-    const processFn = processors[documentType as string];
+    const processFn = processors[documentType];
     if (processFn) {
       const result = await processFn();
       const response: {

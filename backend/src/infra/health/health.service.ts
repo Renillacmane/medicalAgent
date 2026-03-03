@@ -7,7 +7,7 @@ export class HealthService {
   constructor(@InjectConnection() private readonly connection: Connection) {}
 
   async checkHealth() {
-    const dbStatus = this.connection.readyState;
+    const dbStatus = Number(this.connection.readyState);
     const isConnected = dbStatus === 1; // 1 = connected, 0 = disconnected, 2 = connecting, 3 = disconnecting
 
     let dbPing: boolean;
@@ -18,7 +18,7 @@ export class HealthService {
       } else {
         dbPing = false;
       }
-    } catch (error) {
+    } catch {
       dbPing = false;
     }
 

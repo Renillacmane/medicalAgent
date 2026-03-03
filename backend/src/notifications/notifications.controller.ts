@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../auth/schemas/user.schema';
@@ -15,5 +15,12 @@ export class NotificationsController {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
     return this.notificationsService.register(userId, dto);
+  }
+
+  @Delete('register')
+  async unregister(@CurrentUser() user: User, @Body() dto: RegisterNotificationDto): Promise<{ success: boolean }> {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    return this.notificationsService.unregister(userId, dto);
   }
 }

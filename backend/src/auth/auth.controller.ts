@@ -26,14 +26,14 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  async profile(@CurrentUser() user: User): Promise<{
+  profile(@CurrentUser() user: User): {
     id: string;
     firstName: string;
     lastName: string;
     dateOfBirth: Date;
     email: string;
     isActive: boolean;
-  }> {
+  } {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const id = doc.id ?? doc._id?.toString?.() ?? '';
     return {
