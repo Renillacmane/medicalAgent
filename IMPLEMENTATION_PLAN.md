@@ -172,7 +172,7 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Added `unregister()` method to `NotificationsService` that removes a matching device by `deviceToken` or web push `endpoint` from `notificationDevices` for the authenticated user and returns `{ success: boolean }`.
   - Backend validation: backend `npm run lint`, `npm run test`, and `npm run build` all pass.
 
-- [ ] **NOTIF-FE-2** On app launch (authenticated + native), request notification permission and register device token with backend
+- [x] **NOTIF-FE-2** On app launch (authenticated + native), request notification permission and register device token with backend
   - Spec AC: "When the user opens the app on iOS/Android and is authenticated, the app requests notification permission; if granted, it registers the device token with the backend."
   - No push notification initialization code exists. Add to app layout or a dedicated hook.
 

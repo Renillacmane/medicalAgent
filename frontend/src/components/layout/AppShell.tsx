@@ -6,6 +6,7 @@ import { hasValidToken } from "@/lib/auth";
 import { useBasePath } from "@/lib/base-path";
 import { useWidgetMode } from "@/lib/widget-mode";
 import { useIsNativeCapacitor } from "@/lib/capacitor/use-is-native-capacitor";
+import { initNativePushNotifications } from "@/lib/push-notifications";
 import { usePWAInstall, PWAInstallProvider } from "@/lib/pwa/install-context";
 import { useMobileBrowser } from "@/lib/use-mobile-browser";
 import { useIsSmallViewport } from "@/lib/use-viewport-size";
@@ -65,6 +66,13 @@ function AppShellInner({ children }: AppShellProps) {
     }
     setAuthChecked(true);
   }, [router, pathname, basePath]);
+
+  useEffect(() => {
+    if (!authChecked || isNative !== true) return;
+    initNativePushNotifications().catch(() => {
+      // Best-effort: failures should not block the app shell.
+    });
+  }, [authChecked, isNative]);
 
   if (!authChecked) {
     return (
