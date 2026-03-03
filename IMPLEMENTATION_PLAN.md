@@ -61,11 +61,10 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
 
 ### Frontend — Local notification scheduling
 
-- [ ] **MED-UI-4** Schedule local notifications for each active medication based on `reminderTimes` (when medication reminders are enabled in settings)
+- [x] **MED-UI-4** Schedule local notifications for each active medication based on `reminderTimes` (when medication reminders are enabled in settings)
   - Spec AC: "When medication reminders are enabled in settings and a medication has reminderTimes configured, local notifications are scheduled."
   - Also: "When endDate is reached, reminders for that medication stop." — scheduling logic must respect `isActive`, `startDate`/`endDate`, and `notificationSettings.medicationReminder`.
-  - Depends on: NOTIF-FE-1 (Capacitor local notifications setup) and NOTIF-API-3 (settings API).
-  - No local notification scheduling code exists.
+  - Implemented: `scheduleMedicationReminders(medications, settings)` in `local-notifications.ts` filters by isActive, non-empty reminderTimes, and date within startDate/endDate; cancels existing medication IDs (≥1000) then schedules daily notifications with body "Time to take [name] ([dosage])". Dashboard fetches medications + settings and calls it when medicationReminder is enabled.
 
 - [ ] **MED-UI-5** When user updates `reminderTimes`, cancel existing notifications and reschedule
   - Spec AC: "When the user updates reminderTimes, existing notifications are cancelled and new ones are scheduled."

@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
 import { LoadingPulse } from "@/components/design";
 import { UnauthorizedError } from "@/lib/api";
-import { getVitals, getMedications } from "@/services/patients.service";
+import { getVitals, getMedications, getSettings } from "@/services/patients.service";
+import { scheduleMedicationReminders } from "@/lib/local-notifications";
 import { formatDate } from "@/lib/format";
 import { formatBP } from "@/lib/vital-format";
 import MedicationEditModal from "@/components/medications/MedicationEditModal";
@@ -55,9 +56,16 @@ export default function Dashboard() {
 
   useEffect(() => {
     let cancelled = false;
-    getMedications()
-      .then((data) => {
-        if (!cancelled) setMedications(Array.isArray(data) ? data : []);
+    Promise.all([getMedications(), getSettings()])
+      .then(([medsData, settingsData]) => {
+        if (!cancelled) {
+          const list = Array.isArray(medsData) ? medsData : [];
+          setMedications(list);
+          const settings = settingsData?.notificationSettings;
+          if (settings?.medicationReminder) {
+            scheduleMedicationReminders(list, settings).catch(() => {});
+          }
+        }
       })
       .catch((e) => {
         if (!cancelled) {
