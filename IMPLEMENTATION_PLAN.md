@@ -78,10 +78,10 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
 
 ### Backend — batch endpoint
 
-- [ ] **RX-DIALOG-API-1** `POST /patients/medications/batch` — create/update multiple medications in one call, linked to a source document
+- [x] **RX-DIALOG-API-1** `POST /patients/medications/batch` — create/update multiple medications in one call, linked to a source document
   - Spec: Request body `{ sourceDocumentId, medications: [...] }`; response `{ created, updated, medications }`.
   - Upsert logic: if medication with same name exists for user, update it; otherwise create.
-  - No batch endpoint exists. Builds on the single-create pattern from MED-API-2.
+  - Created `BatchCreateMedicationsDto` (with nested `BatchMedicationItemDto` validated via `ValidateNested`); added `batchCreateMedications()` to `PatientsService` with case-insensitive name matching for upsert; added `@Post('medications/batch')` to `PatientsController`. Also handles duplicate names within the same batch (second occurrence updates the first).
 
 ### Frontend — dialog component
 

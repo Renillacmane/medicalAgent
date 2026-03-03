@@ -6,7 +6,13 @@ import { UserVital, UserVitalDocument } from './schemas/user-vital.schema';
 import { UserExam, UserExamDocument } from './schemas/user-exam.schema';
 import { UserDocument as UserDocumentModel, UserDocumentDocument } from './schemas/user-document.schema';
 import { UserMedication, UserMedicationDocument } from './schemas/user-medication.schema';
-import { CreateVitalDto, CreateMedicationDto, UpdateMedicationDto, UpdateProfileDto } from './dto';
+import {
+  CreateVitalDto,
+  CreateMedicationDto,
+  UpdateMedicationDto,
+  UpdateProfileDto,
+  BatchCreateMedicationsDto,
+} from './dto';
 import { PatientSnapshotDto, PatientProfile, PatientVital, PatientMedication } from './dto/patient-snapshot.dto';
 
 function computeBmi(weightKg: number, heightCm: number): number {
@@ -204,6 +210,100 @@ export class PatientsService {
       isActive: doc.isActive,
       sourceDocumentId: doc.sourceDocumentId?.toString(),
     };
+  }
+
+  async batchCreateMedications(userId: string, dto: BatchCreateMedicationsDto) {
+    const userObjectId = new Types.ObjectId(userId);
+    const sourceDocumentId = dto.sourceDocumentId ? new Types.ObjectId(dto.sourceDocumentId) : undefined;
+
+    const existing = await this.userMedicationModel.find({ userId: userObjectId }).lean().exec();
+
+    const existingIdByName = new Map<string, string>(
+      existing.map((m) => [m.name.toLowerCase(), (m as { _id: Types.ObjectId })._id.toString()]),
+    );
+
+    let createdCount = 0;
+    let updatedCount = 0;
+    const results: Array<Record<string, unknown>> = [];
+
+    for (const item of dto.medications) {
+      const nameLower = item.name.trim().toLowerCase();
+      const matchId = existingIdByName.get(nameLower);
+
+      if (matchId) {
+        const update: Record<string, unknown> = {};
+        if (item.dosage != null) update.dosage = item.dosage.trim();
+        if (item.frequency != null) update.frequency = item.frequency.trim();
+        if (item.timesPerDay != null) update.timesPerDay = item.timesPerDay;
+        if (item.reminderTimes != null) update.reminderTimes = item.reminderTimes;
+        if (item.activeSubstance != null) update.activeSubstance = item.activeSubstance.trim();
+        if (item.purpose != null) update.purpose = item.purpose.trim();
+        if (item.startDate != null) update.startDate = new Date(item.startDate);
+        if (item.endDate != null) update.endDate = new Date(item.endDate);
+        if (item.isActive != null) update.isActive = item.isActive;
+        if (sourceDocumentId) update.sourceDocumentId = sourceDocumentId;
+
+        const updated = await this.userMedicationModel
+          .findByIdAndUpdate(matchId, { $set: update }, { new: true })
+          .lean()
+          .exec();
+
+        if (updated) {
+          updatedCount++;
+          results.push({
+            id: (updated as { _id: Types.ObjectId })._id?.toString?.(),
+            name: updated.name,
+            dosage: updated.dosage,
+            frequency: updated.frequency,
+            timesPerDay: updated.timesPerDay,
+            reminderTimes: updated.reminderTimes,
+            activeSubstance: updated.activeSubstance,
+            purpose: updated.purpose,
+            startDate: updated.startDate,
+            endDate: updated.endDate,
+            isActive: updated.isActive,
+            sourceDocumentId: updated.sourceDocumentId?.toString(),
+          });
+        }
+      } else {
+        const payload: Partial<UserMedication> = {
+          userId: userObjectId,
+          name: item.name.trim(),
+          dosage: item.dosage?.trim(),
+          frequency: item.frequency?.trim(),
+          timesPerDay: item.timesPerDay ?? 1,
+          reminderTimes: item.reminderTimes ?? [],
+          activeSubstance: item.activeSubstance?.trim(),
+          purpose: item.purpose?.trim(),
+          startDate: item.startDate ? new Date(item.startDate) : new Date(),
+          endDate: item.endDate ? new Date(item.endDate) : null,
+          isActive: item.isActive ?? true,
+          sourceDocumentId,
+        };
+
+        const created = await this.userMedicationModel.create(payload);
+        const doc = created.toObject();
+        createdCount++;
+        results.push({
+          id: (doc as { _id: Types.ObjectId })._id?.toString?.(),
+          name: doc.name,
+          dosage: doc.dosage,
+          frequency: doc.frequency,
+          timesPerDay: doc.timesPerDay,
+          reminderTimes: doc.reminderTimes,
+          activeSubstance: doc.activeSubstance,
+          purpose: doc.purpose,
+          startDate: doc.startDate,
+          endDate: doc.endDate,
+          isActive: doc.isActive,
+          sourceDocumentId: doc.sourceDocumentId?.toString(),
+        });
+
+        existingIdByName.set(nameLower, (doc as { _id: Types.ObjectId })._id.toString());
+      }
+    }
+
+    return { created: createdCount, updated: updatedCount, medications: results };
   }
 
   /**

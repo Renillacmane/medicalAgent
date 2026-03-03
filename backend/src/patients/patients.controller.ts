@@ -18,7 +18,13 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../auth/schemas/user.schema';
 import { PatientsService } from './patients.service';
 import { DocumentProcessorService } from './services/document-processor.service';
-import { CreateVitalDto, CreateMedicationDto, UpdateMedicationDto, UpdateProfileDto } from './dto';
+import {
+  CreateVitalDto,
+  CreateMedicationDto,
+  UpdateMedicationDto,
+  UpdateProfileDto,
+  BatchCreateMedicationsDto,
+} from './dto';
 import { PDFParse } from 'pdf-parse';
 import type { LoadParameters } from 'pdf-parse';
 import * as path from 'path';
@@ -158,6 +164,13 @@ export class PatientsController {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
     return this.patientsService.createMedication(userId, dto);
+  }
+
+  @Post('medications/batch')
+  async batchCreateMedications(@CurrentUser() user: User, @Body() dto: BatchCreateMedicationsDto) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    return this.patientsService.batchCreateMedications(userId, dto);
   }
 
   @Patch('medications/:id')
