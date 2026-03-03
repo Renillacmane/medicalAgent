@@ -48,9 +48,21 @@ export interface PatientVital {
   bloodGlucose?: number; // mg/dL or mmol/L
 }
 
+export interface PatientMedication {
+  id: string;
+  name: string;
+  dosage?: string;
+  frequency?: string;
+  timesPerDay?: number;
+  reminderTimes?: string[];
+  startDate?: Date;
+  endDate?: Date | null;
+  isActive: boolean;
+}
+
 /**
  * Patient snapshot for agent flows.
- * Contains profile and recent vitals as returned by getPatientSnapshotForAgent().
+ * Contains profile, recent vitals, and active medications as returned by getPatientSnapshotForAgent().
  */
 export interface PatientSnapshotDto {
   /** Patient profile (demographics, preferences, objectives) */
@@ -58,4 +70,7 @@ export interface PatientSnapshotDto {
 
   /** Recent vitals (sorted by date descending) */
   vitals: PatientVital[];
+
+  /** Active medications */
+  medications?: PatientMedication[];
 }

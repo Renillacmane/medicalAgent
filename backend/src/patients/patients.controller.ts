@@ -144,6 +144,13 @@ export class PatientsController {
     };
   }
 
+  @Get('medications')
+  async getMedications(@CurrentUser() user: User) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    return this.patientsService.getMedications(userId);
+  }
+
   @Get('vitals')
   async getVitals(@CurrentUser() user: User, @Query('limit') limit?: string, @Query('days') days?: string) {
     const doc = user as User & { id?: string; _id?: { toString(): string } };

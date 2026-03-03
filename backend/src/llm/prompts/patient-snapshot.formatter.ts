@@ -68,5 +68,16 @@ export function formatPatientSnapshotForLlm(snapshot: PatientSnapshotDto): strin
     }
   }
 
+  if (snapshot.medications?.length) {
+    lines.push('');
+    lines.push('Current medications:');
+    for (const m of snapshot.medications) {
+      const parts: string[] = [m.name];
+      if (m.dosage) parts.push(m.dosage);
+      if (m.frequency) parts.push(`(${m.frequency})`);
+      lines.push(`  - ${parts.join(' ')}`);
+    }
+  }
+
   return lines.join('\n');
 }

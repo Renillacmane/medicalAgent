@@ -28,11 +28,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
 
 ### Backend CRUD
 
-- [ ] **MED-API-1** `GET /patients/medications` — return authenticated user's medications (sorted by name or createdAt)
-  - Spec AC: "When the user views the dashboard, a 'Current Medications' section displays active medications."
-  - `PatientsService` has no `getMedications()` method and does not inject the `UserMedication` model. `PatientsController` has no medications endpoint.
-  - Inject `UserMedication` model in `PatientsService`; add `getMedications(userId)` method; add `@Get('medications')` to `PatientsController`.
-  - Follow-up: once this exists, uncomment the `getMedications` call in `getPatientSnapshotForAgent` so the AI recommendation prompt includes medication context.
+- [x] **MED-API-1** `GET /patients/medications` — return authenticated user's medications (sorted by name)
+  - Injected `UserMedication` model in `PatientsService`; added `getMedications(userId)` method; added `@Get('medications')` to `PatientsController`.
+  - Uncommented `getMedications` call in `getPatientSnapshotForAgent`; added `PatientMedication` interface to `PatientSnapshotDto` (optional field); updated `patient-snapshot.formatter.ts` to include medication context in LLM prompts.
 
 - [ ] **MED-API-2** `POST /patients/medications` — create a single medication for the authenticated user
   - Spec AC: "When a medication is created (manually or from prescription), it includes timesPerDay and reminderTimes fields."

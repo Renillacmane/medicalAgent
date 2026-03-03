@@ -5,8 +5,9 @@ import { User, UserDocument } from '../auth/schemas/user.schema';
 import { UserVital, UserVitalDocument } from './schemas/user-vital.schema';
 import { UserExam, UserExamDocument } from './schemas/user-exam.schema';
 import { UserDocument as UserDocumentModel, UserDocumentDocument } from './schemas/user-document.schema';
+import { UserMedication, UserMedicationDocument } from './schemas/user-medication.schema';
 import { CreateVitalDto, UpdateProfileDto } from './dto';
-import { PatientSnapshotDto, PatientProfile, PatientVital } from './dto/patient-snapshot.dto';
+import { PatientSnapshotDto, PatientProfile, PatientVital, PatientMedication } from './dto/patient-snapshot.dto';
 
 function computeBmi(weightKg: number, heightCm: number): number {
   if (!heightCm || heightCm <= 0) return 0;
@@ -23,6 +24,8 @@ export class PatientsService {
     @InjectModel(UserExam.name) private userExamModel: Model<UserExamDocument>,
     @InjectModel(UserDocumentModel.name)
     private userDocumentModel: Model<UserDocumentDocument>,
+    @InjectModel(UserMedication.name)
+    private userMedicationModel: Model<UserMedicationDocument>,
   ) {}
 
   async getProfile(userId: string) {
@@ -96,6 +99,28 @@ export class PatientsService {
       documentDate: d.documentDate,
       processedAt: d.processedAt,
       status: d.status,
+    }));
+  }
+
+  async getMedications(userId: string) {
+    const medications = await this.userMedicationModel
+      .find({ userId: new Types.ObjectId(userId) })
+      .sort({ name: 1 })
+      .lean()
+      .exec();
+    return medications.map((m) => ({
+      id: (m as { _id: Types.ObjectId })._id?.toString?.(),
+      name: m.name,
+      dosage: m.dosage,
+      frequency: m.frequency,
+      timesPerDay: m.timesPerDay,
+      reminderTimes: m.reminderTimes,
+      activeSubstance: m.activeSubstance,
+      purpose: m.purpose,
+      startDate: m.startDate,
+      endDate: m.endDate,
+      isActive: m.isActive,
+      sourceDocumentId: m.sourceDocumentId?.toString(),
     }));
   }
 
@@ -209,8 +234,11 @@ export class PatientsService {
    * @returns PatientSnapshotDto with profile and vitals
    */
   async getPatientSnapshotForAgent(userId: string, vitalsLimit = 30): Promise<PatientSnapshotDto> {
-    // Fetch profile and vitals in parallel
-    const [profileData, vitalsData] = await Promise.all([this.getProfile(userId), this.getVitals(userId, vitalsLimit)]);
+    const [profileData, vitalsData, medicationsData] = await Promise.all([
+      this.getProfile(userId),
+      this.getVitals(userId, vitalsLimit),
+      this.getMedications(userId),
+    ]);
 
     // Map profile to PatientProfile type
     const profile: PatientProfile | null = profileData
@@ -242,11 +270,25 @@ export class PatientsService {
       bloodGlucose: v.bloodGlucose,
     }));
 
+    const medications: PatientMedication[] = medicationsData
+      .filter((m) => m.isActive)
+      .map((m) => ({
+        id: m.id,
+        name: m.name,
+        dosage: m.dosage,
+        frequency: m.frequency,
+        timesPerDay: m.timesPerDay,
+        reminderTimes: m.reminderTimes,
+        startDate: m.startDate,
+        endDate: m.endDate,
+        isActive: m.isActive,
+      }));
+
     return {
       profile,
       vitals,
+      medications,
       // Phase 2+:
-      // medications: await this.getMedications(userId),
       // exams: await this.getExams(userId),
     };
   }
