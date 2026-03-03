@@ -97,6 +97,16 @@ export async function authPatch<T>(path: string, body: unknown): Promise<T> {
   return data as T;
 }
 
+export async function authDelete<T>(path: string): Promise<T> {
+  const res = await authFetch(path, { method: "DELETE" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (res.status === 401) throw new UnauthorizedError();
+    throw new Error((data as { message?: string }).message ?? "Request failed");
+  }
+  return data as T;
+}
+
 export async function authPostFormData<T>(path: string, formData: FormData): Promise<T> {
   const res = await authFetch(path, { method: "POST", body: formData });
   const data = await res.json().catch(() => ({}));

@@ -1,7 +1,15 @@
-import { authGet, authPatch, authPost, authPostFormData } from "@/lib/api";
+import { authGet, authPatch, authPost, authDelete, authPostFormData } from "@/lib/api";
 import type { PatientProfile } from "@/types/profile";
 import type { Vital, CreateVitalPayload } from "@/types/vital";
-import type { Exam, UserHealthDocument } from "@/types/health";
+import type {
+  Exam,
+  UserHealthDocument,
+  Medication,
+  CreateMedicationPayload,
+  UpdateMedicationPayload,
+  BatchCreateMedicationsPayload,
+  BatchCreateMedicationsResponse,
+} from "@/types/health";
 
 export type VitalsPeriodDays = 7 | 15 | 30;
 
@@ -55,4 +63,29 @@ export async function uploadDocument(formData: FormData): Promise<{
   message: string;
 }> {
   return authPostFormData("/patients/documents/upload", formData);
+}
+
+/** GET /patients/medications */
+export async function getMedications(): Promise<Medication[]> {
+  return authGet<Medication[]>("/patients/medications");
+}
+
+/** POST /patients/medications */
+export async function createMedication(payload: CreateMedicationPayload): Promise<Medication> {
+  return authPost<Medication>("/patients/medications", payload);
+}
+
+/** PATCH /patients/medications/:id */
+export async function updateMedication(id: string, payload: UpdateMedicationPayload): Promise<Medication> {
+  return authPatch<Medication>(`/patients/medications/${id}`, payload);
+}
+
+/** DELETE /patients/medications/:id */
+export async function deleteMedication(id: string): Promise<{ success: boolean }> {
+  return authDelete<{ success: boolean }>(`/patients/medications/${id}`);
+}
+
+/** POST /patients/medications/batch */
+export async function batchCreateMedications(payload: BatchCreateMedicationsPayload): Promise<BatchCreateMedicationsResponse> {
+  return authPost<BatchCreateMedicationsResponse>("/patients/medications/batch", payload);
 }
