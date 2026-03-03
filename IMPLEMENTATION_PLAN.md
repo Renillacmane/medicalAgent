@@ -104,8 +104,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "When the user clicks '+', a new empty medication card is added to the list."
   - Default values: empty name, "once daily", today as start date.
 
-- [ ] **RX-DIALOG-UI-5** Scrollable medication list; dialog does not exceed viewport height
+- [x] **RX-DIALOG-UI-5** Scrollable medication list; dialog does not exceed viewport height
   - Spec AC: "When there are more than 3-4 medications, the list is scrollable within the dialog."
+  - Dialog uses `max-h-[calc(100vh-2rem)]` and flex column; list area is `flex-1 min-h-0 overflow-y-auto` so it scrolls within the dialog without exceeding viewport.
 
 - [ ] **RX-DIALOG-UI-6** Save action — call batch endpoint, show success, close dialog
   - Spec AC: "When the user clicks 'Save', all medications are persisted to the backend. After save, the dialog closes and the user sees a success message."
