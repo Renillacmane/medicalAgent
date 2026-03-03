@@ -149,8 +149,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "When the user opens Settings, they see toggles for: Daily recommendations (off by default), Add vitals reminder (on by default), Medication reminder (off by default)."
   - Added `NotificationSettings` type and `notificationSettings` to `PatientProfile` in `frontend/src/types/profile.ts`. Added `getSettings()` and `updateSettings()` to `patients.service.ts`. Profile page loads settings via `getSettings()`; added "Notifications" section with three toggles (Daily recommendations, Add vitals reminder, Medication reminder). Toggle changes call `PATCH /patients/settings` and update local state.
 
-- [ ] **NOTIF-UI-2** Toggle changes call `PATCH /patients/settings` and update local state; reschedule local notifications accordingly
+- [x] **NOTIF-UI-2** Toggle changes call `PATCH /patients/settings` and update local state; reschedule local notifications accordingly
   - Spec AC: "When the user toggles a notification type, the setting is persisted to the backend and local notifications are rescheduled accordingly."
+  - After PATCH success, Profile calls `rescheduleFromSettings()` from `frontend/src/lib/local-notifications.ts`. On native only: daily at 8:00, vitals at 9:00; when medication reminder off, cancels all medication notification IDs (≥1000).
 
 - [ ] **NOTIF-FE-8** Schedule daily local notification for "daily recommendations" when enabled (8:00 AM default)
   - Spec AC: "When enabled and the scheduled time arrives, a local notification fires: 'Your daily recommendations are ready'."

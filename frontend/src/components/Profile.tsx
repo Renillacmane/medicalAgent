@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
 import { UnauthorizedError } from "@/lib/api";
 import { getProfile, updateProfile, getSettings, updateSettings } from "@/services/patients.service";
+import { rescheduleFromSettings } from "@/lib/local-notifications";
 import { formatDate } from "@/lib/format";
 import type { PatientProfile, NotificationSettings } from "@/types/profile";
 import { LoadingPulse } from "@/components/design";
@@ -174,6 +175,9 @@ export default function Profile() {
       setSettings({
         ...DEFAULT_NOTIFICATION_SETTINGS,
         ...updated.notificationSettings,
+      });
+      rescheduleFromSettings(updated.notificationSettings ?? next).catch(() => {
+        // Rescheduling is best-effort (e.g. not on native); don't block UX
       });
     } finally {
       setSettingsToggling(null);
