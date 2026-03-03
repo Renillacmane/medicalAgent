@@ -100,7 +100,7 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Reminder times are displayed as a comma-separated HH:mm list and kept in component state as a string array.
   - When the user changes timesPerDay, reminderTimes are re-suggested using `suggestReminderTimes` (user can still manually override the reminder times text field).
 
-- [ ] **RX-DIALOG-UI-4** "+" button to manually add a medication card with defaults
+- [x] **RX-DIALOG-UI-4** "+" button to manually add a medication card with defaults
   - Spec AC: "When the user clicks '+', a new empty medication card is added to the list."
   - Default values: empty name, "once daily", today as start date.
 
