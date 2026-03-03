@@ -4,12 +4,18 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Output: "text" = human-readable agent output; "stream-json" = NDJSON (default, for tooling)
-# Set RALPH_OUTPUT_FORMAT=text for readable output, or leave unset for stream-json
+# Output: "text" = human-readable agent output; "stream-json" = NDJSON (default, for tooling).
+# Set RALPH_OUTPUT_FORMAT=text for readable output, or leave unset for stream-json.
 RALPH_OUTPUT_FORMAT="${RALPH_OUTPUT_FORMAT:-stream-json}"
-# Set RALPH_SHOW_FILES=1 to print changed files after each iteration (from last commit)
+
+# LLM model: if set, passed to cursor-agent via --model.
+# Example: RALPH_MODEL=claude-3-7-sonnet ./ralph/loop.sh plan
+RALPH_MODEL="${RALPH_MODEL:-}"
+
+# Set RALPH_SHOW_FILES=1 to print changed files after each iteration (from last commit).
 RALPH_SHOW_FILES="${RALPH_SHOW_FILES:-0}"
-# Set RALPH_RUN_TESTS_AFTER=1 to run backend tests after each build iteration and print output (failures will be visible)
+
+# Set RALPH_RUN_TESTS_AFTER=1 to run backend tests after each build iteration and print output (failures will be visible).
 RALPH_RUN_TESTS_AFTER="${RALPH_RUN_TESTS_AFTER:-0}"
 
 MODE="${1:-}"
@@ -32,6 +38,7 @@ if [[ "$MODE" != "plan" && "$MODE" != "build" ]]; then
   echo ""
   echo "Environment (optional):"
   echo "  RALPH_OUTPUT_FORMAT — Agent output: stream-json (default) or text (readable)"
+  echo "  RALPH_MODEL         — LLM model id to pass to cursor-agent via --model (optional; defaults to Cursor CLI's model)"
   echo "  RALPH_SHOW_FILES    — Set to 1 to print changed files after each iteration"
   echo "  RALPH_RUN_TESTS_AFTER — Set to 1 to run backend tests after each build; failures appear in output"
   exit 1
@@ -55,6 +62,7 @@ echo "  MODE              = $MODE"
 echo "  PROMPT_FILE       = $PROMPT_FILE"
 echo "  MAX_ITERATIONS    = ${MAX_ITERATIONS:-unlimited}"
 echo "  RALPH_OUTPUT_FORMAT = $RALPH_OUTPUT_FORMAT"
+echo "  RALPH_MODEL         = ${RALPH_MODEL:-\"(default from cursor-agent)\"}"
 echo "  RALPH_SHOW_FILES     = $RALPH_SHOW_FILES"
 echo "  RALPH_RUN_TESTS_AFTER = $RALPH_RUN_TESTS_AFTER"
 if [[ -n "${CURSOR_API_KEY:-}" ]]; then
@@ -64,6 +72,11 @@ else
 fi
 echo "[ralph] Starting loop."
 echo ""
+
+MODEL_ARGS=()
+if [[ -n "$RALPH_MODEL" ]]; then
+  MODEL_ARGS=(--model "$RALPH_MODEL")
+fi
 
 ITERATION=0
 
@@ -89,11 +102,13 @@ while true; do
     cat "$PROMPT_FILE" | cursor-agent --print \
       --mode plan \
       --output-format "$RALPH_OUTPUT_FORMAT" \
+      "${MODEL_ARGS[@]}" \
       --force
   else
     # Building mode: full agent capabilities (default, no --mode needed)
     cat "$PROMPT_FILE" | cursor-agent --print \
       --output-format "$RALPH_OUTPUT_FORMAT" \
+      "${MODEL_ARGS[@]}" \
       --force
   fi
 

@@ -86,10 +86,10 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
 
 ### Frontend — dialog component
 
-- [ ] **RX-DIALOG-UI-1** Create `MedicationReviewDialog` component — modal that displays extracted medications as editable cards
+- [x] **RX-DIALOG-UI-1** Create `MedicationReviewDialog` component — modal that displays extracted medications as editable cards
   - Spec AC: "When a prescription is uploaded and processed successfully, the medication dialog opens automatically. The dialog displays all medications extracted from the PDF as editable cards."
   - Header: "Review Medications" with prescription filename.
-  - No dialog component exists; `AddPrescriptionForm` shows a simple success message after upload.
+  - Implemented `MedicationReviewDialog` shell component in `frontend/src/components/medications/MedicationReviewDialog.tsx`; wiring from `AddPrescriptionForm` will be handled in RX-DIALOG-UI-8.
 
 - [x] **RX-DIALOG-UI-2** Implement frequency-to-schedule inference logic (frontend utility)
   - Spec: "once daily" → 1 / ["08:00"]; "twice daily"/"BID" → 2 / ["08:00","20:00"]; "TID" → 3; "QID" → 4; default → 1.
