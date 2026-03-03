@@ -157,7 +157,7 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "When enabled and the scheduled time arrives, a local notification fires: 'Your daily recommendations are ready'."
 
 - [x] **NOTIF-FE-9** Schedule daily local notification for "add vitals reminder" when enabled (9:00 AM default)
-  - Spec AC: "When enabled and the scheduled time arrives, a local notification fires: 'Time to log your vitals'."
+  - Implemented via `rescheduleFromSettings` in `frontend/src/lib/local-notifications.ts`: when `notificationSettings.vitalsReminder` is enabled, schedules a daily Capacitor local notification at 9:00 with body "Time to log your vitals"; when disabled, the notification is cancelled.
 
 ### Phase 2: Device registration + push notifications (Capacitor native)
 
