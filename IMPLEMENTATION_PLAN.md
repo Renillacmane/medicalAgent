@@ -141,9 +141,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "When the user toggles a notification type, the setting is persisted to the backend."
   - Added `UpdateSettingsDto` (nested `notificationSettings` with optional `dailyRecommendations`, `vitalsReminder`, `medicationReminder`); added `updateSettings()` to `PatientsService` (merge with current + defaults); added `@Patch('settings')` to `PatientsController`.
 
-- [ ] **NOTIF-FE-1** Install `@capacitor/push-notifications` and `@capacitor/local-notifications`; run `npx cap sync`
+- [x] **NOTIF-FE-1** Install `@capacitor/push-notifications` and `@capacitor/local-notifications`; run `npx cap sync`
   - Spec: "Install @capacitor/push-notifications and @capacitor/local-notifications."
-  - Not installed; only `@capacitor/core`, `@capacitor/cli`, `@capacitor/android`, `@capacitor/ios` in `package.json`.
+  - Added both plugins to `frontend/package.json` (^7.0.1); ran `npm install` and `npx cap sync`; Android and iOS native projects updated.
 
 - [ ] **NOTIF-UI-1** Add notification settings section to Profile/Settings page with toggles for each type
   - Spec AC: "When the user opens Settings, they see toggles for: Daily recommendations (off by default), Add vitals reminder (on by default), Medication reminder (off by default)."
