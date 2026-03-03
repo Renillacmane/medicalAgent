@@ -16,7 +16,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../auth/schemas/user.schema';
 import { PatientsService } from './patients.service';
 import { DocumentProcessorService } from './services/document-processor.service';
-import { CreateVitalDto, UpdateProfileDto } from './dto';
+import { CreateVitalDto, CreateMedicationDto, UpdateProfileDto } from './dto';
 import { PDFParse } from 'pdf-parse';
 import type { LoadParameters } from 'pdf-parse';
 import * as path from 'path';
@@ -149,6 +149,13 @@ export class PatientsController {
     const doc = user as User & { id?: string; _id?: { toString(): string } };
     const userId = doc.id ?? doc._id?.toString?.() ?? '';
     return this.patientsService.getMedications(userId);
+  }
+
+  @Post('medications')
+  async createMedication(@CurrentUser() user: User, @Body() dto: CreateMedicationDto) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    return this.patientsService.createMedication(userId, dto);
   }
 
   @Get('vitals')

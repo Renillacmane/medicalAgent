@@ -32,9 +32,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Injected `UserMedication` model in `PatientsService`; added `getMedications(userId)` method; added `@Get('medications')` to `PatientsController`.
   - Uncommented `getMedications` call in `getPatientSnapshotForAgent`; added `PatientMedication` interface to `PatientSnapshotDto` (optional field); updated `patient-snapshot.formatter.ts` to include medication context in LLM prompts.
 
-- [ ] **MED-API-2** `POST /patients/medications` — create a single medication for the authenticated user
+- [x] **MED-API-2** `POST /patients/medications` — create a single medication for the authenticated user
   - Spec AC: "When a medication is created (manually or from prescription), it includes timesPerDay and reminderTimes fields."
-  - Create `CreateMedicationDto` with validation (name required, reminderTimes HH:mm format); add `createMedication()` to service and controller.
+  - Created `CreateMedicationDto` with validation (name required, reminderTimes HH:mm format via regex, timesPerDay 1-10, optional sourceDocumentId as MongoId); added `createMedication()` to `PatientsService` and `@Post('medications')` to `PatientsController`.
 
 - [ ] **MED-API-3** `PATCH /patients/medications/:id` — update a medication (including reminder times, active status)
   - Spec AC: "User can tap a medication to edit its reminder settings."

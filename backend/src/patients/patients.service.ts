@@ -6,7 +6,7 @@ import { UserVital, UserVitalDocument } from './schemas/user-vital.schema';
 import { UserExam, UserExamDocument } from './schemas/user-exam.schema';
 import { UserDocument as UserDocumentModel, UserDocumentDocument } from './schemas/user-document.schema';
 import { UserMedication, UserMedicationDocument } from './schemas/user-medication.schema';
-import { CreateVitalDto, UpdateProfileDto } from './dto';
+import { CreateVitalDto, CreateMedicationDto, UpdateProfileDto } from './dto';
 import { PatientSnapshotDto, PatientProfile, PatientVital, PatientMedication } from './dto/patient-snapshot.dto';
 
 function computeBmi(weightKg: number, heightCm: number): number {
@@ -122,6 +122,41 @@ export class PatientsService {
       isActive: m.isActive,
       sourceDocumentId: m.sourceDocumentId?.toString(),
     }));
+  }
+
+  async createMedication(userId: string, dto: CreateMedicationDto) {
+    const payload: Partial<UserMedication> = {
+      userId: new Types.ObjectId(userId),
+      name: dto.name.trim(),
+      dosage: dto.dosage?.trim(),
+      frequency: dto.frequency?.trim(),
+      timesPerDay: dto.timesPerDay ?? 1,
+      reminderTimes: dto.reminderTimes ?? [],
+      activeSubstance: dto.activeSubstance?.trim(),
+      purpose: dto.purpose?.trim(),
+      startDate: dto.startDate ? new Date(dto.startDate) : new Date(),
+      endDate: dto.endDate ? new Date(dto.endDate) : null,
+      isActive: dto.isActive ?? true,
+      sourceDocumentId: dto.sourceDocumentId ? new Types.ObjectId(dto.sourceDocumentId) : undefined,
+    };
+
+    const created = await this.userMedicationModel.create(payload);
+    const doc = created.toObject();
+    const id = (doc as { _id: Types.ObjectId })._id?.toString?.();
+    return {
+      id,
+      name: doc.name,
+      dosage: doc.dosage,
+      frequency: doc.frequency,
+      timesPerDay: doc.timesPerDay,
+      reminderTimes: doc.reminderTimes,
+      activeSubstance: doc.activeSubstance,
+      purpose: doc.purpose,
+      startDate: doc.startDate,
+      endDate: doc.endDate,
+      isActive: doc.isActive,
+      sourceDocumentId: doc.sourceDocumentId?.toString(),
+    };
   }
 
   /**
