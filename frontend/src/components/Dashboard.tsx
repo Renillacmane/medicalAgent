@@ -231,9 +231,18 @@ export default function Dashboard() {
           onClose={() => setEditingMedication(null)}
           onSaved={() => {
             setEditingMedication(null);
-            getMedications()
-              .then((data) => setMedications(Array.isArray(data) ? data : []))
-              .catch(() => {});
+            Promise.all([getMedications(), getSettings()])
+              .then(([medsData, settingsData]) => {
+                const list = Array.isArray(medsData) ? medsData : [];
+                setMedications(list);
+                const settings = settingsData?.notificationSettings;
+                if (settings?.medicationReminder) {
+                  scheduleMedicationReminders(list, settings).catch(() => {});
+                }
+              })
+              .catch(() => {
+                // Best-effort: UI already reflects saved change; notifications can be rescheduled on next dashboard load
+              });
           }}
         />
       </div>

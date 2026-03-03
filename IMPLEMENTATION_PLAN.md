@@ -66,8 +66,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Also: "When endDate is reached, reminders for that medication stop." — scheduling logic must respect `isActive`, `startDate`/`endDate`, and `notificationSettings.medicationReminder`.
   - Implemented: `scheduleMedicationReminders(medications, settings)` in `local-notifications.ts` filters by isActive, non-empty reminderTimes, and date within startDate/endDate; cancels existing medication IDs (≥1000) then schedules daily notifications with body "Time to take [name] ([dosage])". Dashboard fetches medications + settings and calls it when medicationReminder is enabled.
 
-- [ ] **MED-UI-5** When user updates `reminderTimes`, cancel existing notifications and reschedule
+- [x] **MED-UI-5** When user updates `reminderTimes`, cancel existing notifications and reschedule
   - Spec AC: "When the user updates reminderTimes, existing notifications are cancelled and new ones are scheduled."
+  - Implemented: after saving changes in `MedicationEditModal`, Dashboard refetches medications and settings, then calls `scheduleMedicationReminders` so existing medication notifications are cancelled and new ones are scheduled based on updated reminderTimes.
 
 - [ ] **MED-UI-6** When user disables medication reminders in settings, cancel all medication notifications
   - Spec AC: "When the user disables medication reminders in settings, all medication notifications are cancelled."
