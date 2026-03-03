@@ -95,9 +95,10 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec: "once daily" → 1 / ["08:00"]; "twice daily"/"BID" → 2 / ["08:00","20:00"]; "TID" → 3; "QID" → 4; default → 1.
   - Implemented `inferTimesPerDay`, `suggestReminderTimes`, and `inferMedicationSchedule` in `frontend/src/lib/medication-schedule.ts`, including basic duration parsing for day/week-based strings to infer `endDate`.
 
-- [ ] **RX-DIALOG-UI-3** Medication card fields: name, dosage, frequency, timesPerDay, reminderTimes, startDate, endDate — all editable
-  - Spec AC: "Each card shows: name, dosage, frequency, times per day, reminder times, start date, end date."
-  - When user changes timesPerDay, re-suggest reminderTimes (but allow override).
+- [x] **RX-DIALOG-UI-3** Medication card fields: name, dosage, frequency, timesPerDay, reminderTimes, startDate, endDate — all editable
+  - Implemented editable fields for name, dosage, frequency, timesPerDay, reminderTimes, startDate, and endDate on each medication card in `MedicationReviewDialog.tsx`.
+  - Reminder times are displayed as a comma-separated HH:mm list and kept in component state as a string array.
+  - When the user changes timesPerDay, reminderTimes are re-suggested using `suggestReminderTimes` (user can still manually override the reminder times text field).
 
 - [ ] **RX-DIALOG-UI-4** "+" button to manually add a medication card with defaults
   - Spec AC: "When the user clicks '+', a new empty medication card is added to the list."

@@ -1,12 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { suggestReminderTimes } from "@/lib/medication-schedule";
 
 type MedicationFormItem = {
   id: string;
   name: string;
   dosage?: string;
   frequency?: string;
+  timesPerDay?: number;
+  reminderTimes?: string[];
+  startDate?: string;
+  endDate?: string | null;
 };
 
 type MedicationReviewDialogProps = {
@@ -85,68 +90,173 @@ export default function MedicationReviewDialog({
 
           {hasMedications && (
             <div className="space-y-4">
-              {items.map((item) => (
-                <article
-                  key={item.id}
-                  className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 shadow-sm"
-                >
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="sm:col-span-1">
-                      <label className="block text-xs font-medium uppercase tracking-wide text-slate-600">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        value={item.name}
-                        onChange={(event) =>
-                          setItems((current) =>
-                            current.map((m) =>
-                              m.id === item.id ? { ...m, name: event.target.value } : m,
-                            ),
-                          )
-                        }
-                        className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30"
-                      />
+              {items.map((item) => {
+                const timesPerDay = item.timesPerDay ?? 1;
+                const reminderTimesDisplay = (item.reminderTimes ?? []).join(", ");
+
+                return (
+                  <article
+                    key={item.id}
+                    className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 shadow-sm"
+                  >
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="sm:col-span-1">
+                        <label className="block text-xs font-medium uppercase tracking-wide text-slate-600">
+                          Name
+                        </label>
+                        <input
+                          type="text"
+                          value={item.name}
+                          onChange={(event) =>
+                            setItems((current) =>
+                              current.map((m) =>
+                                m.id === item.id ? { ...m, name: event.target.value } : m,
+                              ),
+                            )
+                          }
+                          className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-1">
+                        <label className="block text-xs font-medium uppercase tracking-wide text-slate-600">
+                          Dosage
+                        </label>
+                        <input
+                          type="text"
+                          value={item.dosage ?? ""}
+                          onChange={(event) =>
+                            setItems((current) =>
+                              current.map((m) =>
+                                m.id === item.id ? { ...m, dosage: event.target.value } : m,
+                              ),
+                            )
+                          }
+                          className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-1">
+                        <label className="block text-xs font-medium uppercase tracking-wide text-slate-600">
+                          Frequency
+                        </label>
+                        <input
+                          type="text"
+                          value={item.frequency ?? ""}
+                          onChange={(event) =>
+                            setItems((current) =>
+                              current.map((m) =>
+                                m.id === item.id
+                                  ? { ...m, frequency: event.target.value }
+                                  : m,
+                              ),
+                            )
+                          }
+                          className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30"
+                        />
+                      </div>
                     </div>
 
-                    <div className="sm:col-span-1">
-                      <label className="block text-xs font-medium uppercase tracking-wide text-slate-600">
-                        Dosage
-                      </label>
-                      <input
-                        type="text"
-                        value={item.dosage ?? ""}
-                        onChange={(event) =>
-                          setItems((current) =>
-                            current.map((m) =>
-                              m.id === item.id ? { ...m, dosage: event.target.value } : m,
-                            ),
-                          )
-                        }
-                        className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30"
-                      />
+                    <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                      <div className="sm:col-span-1">
+                        <label className="block text-xs font-medium uppercase tracking-wide text-slate-600">
+                          Times per day
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={4}
+                          value={timesPerDay}
+                          onChange={(event) => {
+                            const nextTimesPerDay = Number.parseInt(event.target.value || "1", 10);
+                            const safeTimesPerDay = Number.isNaN(nextTimesPerDay)
+                              ? 1
+                              : Math.max(1, Math.min(nextTimesPerDay, 4));
+                            setItems((current) =>
+                              current.map((m) =>
+                                m.id === item.id
+                                  ? {
+                                      ...m,
+                                      timesPerDay: safeTimesPerDay,
+                                      reminderTimes: suggestReminderTimes(safeTimesPerDay),
+                                    }
+                                  : m,
+                              ),
+                            );
+                          }}
+                          className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-medium uppercase tracking-wide text-slate-600">
+                          Reminder times (HH:mm, comma separated)
+                        </label>
+                        <input
+                          type="text"
+                          value={reminderTimesDisplay}
+                          onChange={(event) => {
+                            const raw = event.target.value;
+                            const parts = raw
+                              .split(",")
+                              .map((part) => part.trim())
+                              .filter((part) => part.length > 0);
+                            setItems((current) =>
+                              current.map((m) =>
+                                m.id === item.id ? { ...m, reminderTimes: parts } : m,
+                              ),
+                            );
+                          }}
+                          placeholder="08:00, 20:00"
+                          className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30"
+                        />
+                      </div>
                     </div>
 
-                    <div className="sm:col-span-1">
-                      <label className="block text-xs font-medium uppercase tracking-wide text-slate-600">
-                        Frequency
-                      </label>
-                      <input
-                        type="text"
-                        value={item.frequency ?? ""}
-                        onChange={(event) =>
-                          setItems((current) =>
-                            current.map((m) =>
-                              m.id === item.id ? { ...m, frequency: event.target.value } : m,
-                            ),
-                          )
-                        }
-                        className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30"
-                      />
+                    <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                      <div className="sm:col-span-1">
+                        <label className="block text-xs font-medium uppercase tracking-wide text-slate-600">
+                          Start date
+                        </label>
+                        <input
+                          type="date"
+                          value={item.startDate ?? ""}
+                          onChange={(event) => {
+                            const value = event.target.value;
+                            setItems((current) =>
+                              current.map((m) =>
+                                m.id === item.id ? { ...m, startDate: value || undefined } : m,
+                              ),
+                            );
+                          }}
+                          className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-1">
+                        <label className="block text-xs font-medium uppercase tracking-wide text-slate-600">
+                          End date
+                        </label>
+                        <input
+                          type="date"
+                          value={item.endDate ?? ""}
+                          onChange={(event) => {
+                            const value = event.target.value;
+                            setItems((current) =>
+                              current.map((m) =>
+                                m.id === item.id
+                                  ? { ...m, endDate: value === "" ? null : value }
+                                  : m,
+                              ),
+                            );
+                          }}
+                          className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-light-green-primary focus:outline-none focus:ring-2 focus:ring-light-green-primary/30"
+                        />
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </div>
