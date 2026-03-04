@@ -184,7 +184,7 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "When the user logs out, the device token is unregistered from the backend."
   - `authDelete` helper in `api.ts` already exists (added in MED-UI-1).
 
-- [ ] **NOTIF-FE-5** Handle incoming push notifications — display and deep-link on tap
+- [x] **NOTIF-FE-5** Handle incoming push notifications — display and deep-link on tap
   - Spec AC: "When the user taps the notification, the app opens to /recommendations (or /add or /dashboard depending on type)."
 
 - [ ] **NOTIF-UI-3** When notification permission is denied at OS level, disable toggles with explanation text

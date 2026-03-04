@@ -8,6 +8,45 @@ let initCalled = false;
 const DEVICE_TOKEN_KEY = "notification_device_token";
 const DEVICE_PLATFORM_KEY = "notification_device_platform";
 
+function navigateFromNotificationData(data: unknown): void {
+  if (typeof window === "undefined") return;
+
+  const basePath = window.location.pathname.startsWith("/pwa") ? "/pwa" : "";
+  const payload = (data ?? {}) as { url?: unknown; type?: unknown; notificationType?: unknown };
+
+  let targetUrl: string | undefined;
+
+  if (typeof payload.url === "string" && payload.url.trim()) {
+    targetUrl = payload.url.trim();
+  } else {
+    const type =
+      (typeof payload.type === "string" && payload.type) ||
+      (typeof payload.notificationType === "string" && payload.notificationType) ||
+      "";
+    switch (type) {
+      case "daily_recommendations":
+        targetUrl = "/recommendations";
+        break;
+      case "vitals_reminder":
+        targetUrl = "/add";
+        break;
+      case "medication_reminder":
+        targetUrl = "/dashboard";
+        break;
+      default:
+        targetUrl = undefined;
+    }
+  }
+
+  if (!targetUrl) return;
+
+  if (/^https?:\/\//i.test(targetUrl)) {
+    window.location.href = targetUrl;
+  } else {
+    window.location.href = `${basePath}${targetUrl.startsWith("/") ? targetUrl : `/${targetUrl}`}`;
+  }
+}
+
 export async function initNativePushNotifications(): Promise<void> {
   if (initCalled) return;
   initCalled = true;
@@ -49,6 +88,14 @@ export async function initNativePushNotifications(): Promise<void> {
       }
     } catch {
       // Best-effort; failures should not break the app.
+    }
+  });
+
+  PushNotifications.addListener("pushNotificationActionPerformed", (event) => {
+    try {
+      navigateFromNotificationData(event.notification?.data);
+    } catch {
+      // Navigation from push is best-effort; failures should not block app usage.
     }
   });
 }
