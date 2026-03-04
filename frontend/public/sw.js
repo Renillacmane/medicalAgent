@@ -321,3 +321,102 @@ function getApiUrl() {
   // Fallback – the app stores the real value in IDB
   return "http://localhost:3911";
 }
+
+// ---- Web Push: handle incoming push + notification clicks ----
+
+self.addEventListener("push", (event) => {
+  if (!event.data) {
+    // Best-effort: ignore silent pushes without payload
+    return;
+  }
+
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { body: event.data.text() };
+  }
+
+  const title = typeof payload.title === "string" && payload.title.trim()
+    ? payload.title.trim()
+    : "Healthia";
+
+  const body = typeof payload.body === "string" && payload.body.trim()
+    ? payload.body.trim()
+    : "You have a new health notification.";
+
+  const notificationData = {
+    url: typeof payload.url === "string" ? payload.url : undefined,
+    type:
+      (typeof payload.type === "string" && payload.type) ||
+      (typeof payload.notificationType === "string" && payload.notificationType) ||
+      undefined,
+  };
+
+  const options = {
+    body,
+    icon: "/icons/icon-192x192.png",
+    badge: "/icons/icon-192x192.png",
+    data: notificationData,
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  const notification = event.notification;
+  const data = (notification && notification.data) || {};
+
+  notification.close();
+
+  const type = typeof data.type === "string" ? data.type : "";
+  let targetUrl;
+
+  if (typeof data.url === "string" && data.url.trim()) {
+    targetUrl = data.url.trim();
+  } else {
+    switch (type) {
+      case "daily_recommendations":
+        targetUrl = "/recommendations";
+        break;
+      case "vitals_reminder":
+        targetUrl = "/add";
+        break;
+      case "medication_reminder":
+        targetUrl = "/dashboard";
+        break;
+      default:
+        targetUrl = "/";
+    }
+  }
+
+  if (!targetUrl) {
+    return;
+  }
+
+  const isAbsolute = /^https?:\/\//i.test(targetUrl);
+  const basePath = "/pwa";
+
+  const resolvedUrl = isAbsolute
+    ? targetUrl
+    : `${basePath}${
+        targetUrl.startsWith("/") ? targetUrl : `/${targetUrl}`
+      }`;
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        for (const client of clientList) {
+          if ("focus" in client) {
+            // Focus the first matching client; navigation is handled via URL match
+            return client.focus();
+          }
+        }
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(resolvedUrl);
+        }
+        return undefined;
+      })
+  );
+});

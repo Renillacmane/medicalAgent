@@ -193,9 +193,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
 
 ### Phase 3: PWA web push (browser)
 
-- [ ] **NOTIF-FE-6** Add push event handler to `sw.js`; handle `notificationclick` for deep-linking
+- [x] **NOTIF-FE-6** Add push event handler to `sw.js`; handle `notificationclick` for deep-linking
   - Spec: "Service worker handles push event and displays notification. On notification click, open appropriate page."
-  - `sw.js` exists with install/activate/fetch/sync handlers but no push or notificationclick handling.
+  - Implemented `push` and `notificationclick` handlers in `frontend/public/sw.js`. Push payload JSON is parsed to derive `title`, `body`, `url`, and `type`/`notificationType`. Notifications default to a generic Healthia message when fields are missing. On `notificationclick`, the service worker deep-links to `/pwa/recommendations`, `/pwa/add`, or `/pwa/dashboard` based on notification type (or uses an explicit `url` when provided), opening/focusing a client window accordingly.
 
 - [ ] **NOTIF-FE-7** On opt-in (web), subscribe via `PushManager.subscribe()` with VAPID keys and send subscription to backend
   - Spec: "On opt-in, send subscription object to backend via /notifications/register."
