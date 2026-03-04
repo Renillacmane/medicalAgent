@@ -26,4 +26,4 @@ cd frontend && npm run lint && npm run build && cd ..
 - Monorepo with `backend/` (NestJS + Fastify) and `frontend/` (Next.js + Capacitor)
 - No root `package.json`; each app has its own dependencies and scripts
 - Docs live in `docs/`; specs live in `specs/`
-- `IMPLEMENTATION_PLAN.md` is the canonical task list at repo root
+- `ralph/IMPLEMENTATION_PLAN.md` is the canonical task list (in ralph folder)

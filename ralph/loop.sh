@@ -30,7 +30,7 @@ fi
 if [[ "$MODE" != "plan" && "$MODE" != "build" ]]; then
   echo "Usage: $0 <plan|build> [max_iterations] [cursor_api_key]"
   echo ""
-  echo "  plan   — Gap analysis only; updates IMPLEMENTATION_PLAN.md (no code changes)"
+  echo "  plan   — Gap analysis only; updates ralph/IMPLEMENTATION_PLAN.md (no code changes)"
   echo "  build  — Implements one task per iteration, validates, and commits"
   echo ""
   echo "  max_iterations — Optional. 0 = unlimited (default)"

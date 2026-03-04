@@ -5,7 +5,7 @@ In the Ralph Wiggum loop, **specs** are the **source of truth** for what the pro
 ## Role in the loop
 
 - **Phase 1 (Requirements)**: You and the LLM turn project ideas into **Jobs to Be Done (JTBD)** and then into **one spec per topic of concern**.
-- **Phase 2 (Planning)**: The agent compares `specs/*` to the codebase and produces `IMPLEMENTATION_PLAN.md` (gap analysis).
+- **Phase 2 (Planning)**: The agent compares `specs/*` to the codebase and produces `ralph/IMPLEMENTATION_PLAN.md` (gap analysis).
 - **Phase 3 (Building)**: The agent implements tasks from the plan; “done” means the code satisfies the spec and backpressure (tests, lint, build) passes.
 
 So: **specs describe *what*; the plan and the code describe *how* (and what’s left to do).**

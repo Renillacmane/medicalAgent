@@ -21,19 +21,28 @@ Create at repo root:
 ```
 MedicalAgent/
 ├── ralph/
-│   ├── loop.sh              # Outer loop: feed prompt to agent, optional max iterations
-│   ├── PROMPT_plan.md       # Planning mode: gap analysis → IMPLEMENTATION_PLAN.md
-│   ├── PROMPT_build.md      # Building mode: one task from plan, implement, validate, commit
-│   └── AGENTS.md            # How to build/run/test backend and frontend (operational only)
-├── specs/                   # One .md per topic of concern (source of truth)
+│   ├── loop.sh                  # Outer loop: feed prompt to agent, optional max iterations
+│   ├── PROMPT_plan.md           # Planning mode: gap analysis → IMPLEMENTATION_PLAN.md
+│   ├── PROMPT_build.md          # Building mode: one task from plan, implement, validate, commit
+│   ├── AGENTS.md                # How to build/run/test backend and frontend (operational only)
+│   ├── IMPLEMENTATION_PLAN.md   # Current plan (generated/updated by Ralph)
+│   └── implementation-history/ # Archived plans with timestamps (e.g. IMPLEMENTATION_PLAN_2026-03-04.md)
+├── specs/                       # One .md per topic of concern (source of truth)
 │   ├── daily-recommendations-api.md
 │   ├── daily-recommendations-ui.md
 │   └── ...
-├── IMPLEMENTATION_PLAN.md   # Generated/updated by Ralph (prioritized task list)
 └── (existing backend/ frontend/ docs/)
 ```
 
-Keep `IMPLEMENTATION_PLAN.md` at root so the agent and humans see one canonical plan. `ralph/` holds only the loop and prompts; `AGENTS.md` can live in `ralph/` and be referenced as `ralph/AGENTS.md` in prompts, or at root—either way, prompts must point to a single path.
+Keep the current plan at `ralph/IMPLEMENTATION_PLAN.md`; archive older plans in `ralph/implementation-history/` with readable timestamps (e.g. `IMPLEMENTATION_PLAN_2026-03-04.md`). `ralph/` holds the loop, prompts, plan, and AGENTS.md; prompts point to `ralph/IMPLEMENTATION_PLAN.md`.
+
+**Where things live:**
+
+| Item | Location | Reason |
+|------|----------|--------|
+| **Specs** | **Project root** (`specs/`) | Single source of truth for requirements; shared by plan and build agents; visible to humans and tooling at repo root. Do not move specs into `ralph/`. |
+| **Current implementation plan** | `ralph/IMPLEMENTATION_PLAN.md` | Ralph-owned artifact; plan and build prompts read/write it. |
+| **Plan history** | `ralph/implementation-history/` | Archived snapshots with timestamps; read-only. |
 
 ---
 
@@ -81,19 +90,19 @@ Ralph does not run in a loop for Phase 1; it's a **conversation** (or a single l
 
 ## 3. Phase 2 – Planning (gap analysis; example)
 
-**Goal**: No implementation. Produce or update **IMPLEMENTATION_PLAN.md** by comparing `specs/*` to current code in `backend/src` and `frontend/src`.
+**Goal**: No implementation. Produce or update **ralph/IMPLEMENTATION_PLAN.md** by comparing `specs/*` to current code in `backend/src` and `frontend/src`.
 
-**Mechanics**: Run the loop in **planning mode**: prompt = `PROMPT_plan.md`. Each iteration: agent studies `specs/*`, studies existing code (and `IMPLEMENTATION_PLAN.md` if present), performs gap analysis, writes/updates `IMPLEMENTATION_PLAN.md` with a **prioritized bullet list of tasks**. No commits, no code changes.
+**Mechanics**: Run the loop in **planning mode**: prompt = `PROMPT_plan.md`. Each iteration: agent studies `specs/*`, studies existing code (and `ralph/IMPLEMENTATION_PLAN.md` if present), performs gap analysis, writes/updates `ralph/IMPLEMENTATION_PLAN.md` with a **prioritized bullet list of tasks**. No commits, no code changes.
 
 **Example `PROMPT_plan.md` (conceptual)**
 
 - 0a. Study `specs/*` to learn requirements.
-- 0b. Study `IMPLEMENTATION_PLAN.md` if present.
+- 0b. Study `ralph/IMPLEMENTATION_PLAN.md` if present.
 - 0c. Study `backend/src` and `frontend/src` (and shared libs).
-- 1. Compare specs to code; create/update `IMPLEMENTATION_PLAN.md` with prioritized tasks. Plan only; do not implement.
+- 1. Compare specs to code; create/update `ralph/IMPLEMENTATION_PLAN.md` with prioritized tasks. Plan only; do not implement.
 - Important: Do not assume something is missing; search codebase first. Treat `frontend/src/lib` and `backend/src/common` as shared utilities.
 
-**Example output – `IMPLEMENTATION_PLAN.md` (excerpt)**
+**Example output – `ralph/IMPLEMENTATION_PLAN.md` (excerpt)**
 
 ```markdown
 # Implementation plan (generated/updated by Ralph)
@@ -111,30 +120,30 @@ Planned tasks should be **one unit of work per loop** (small enough for one cont
 
 ## 4. Phase 3 – Building (one task per loop; example)
 
-**Goal**: Implement one task from `IMPLEMENTATION_PLAN.md`, validate with backpressure, update plan and commit. Loop provides fresh context each time.
+**Goal**: Implement one task from `ralph/IMPLEMENTATION_PLAN.md`, validate with backpressure, update plan and commit. Loop provides fresh context each time.
 
 **Mechanics**: Run the loop in **building mode**: prompt = `PROMPT_build.md`. Each iteration:
 
-- Read `IMPLEMENTATION_PLAN.md` and pick the **most important** task.
+- Read `ralph/IMPLEMENTATION_PLAN.md` and pick the **most important** task.
 - Search codebase first ("don't assume not implemented").
 - Implement (using subagents if the agent supports them).
 - Run **backpressure** (see below).
-- Update `IMPLEMENTATION_PLAN.md` (mark done, add discoveries).
+- Update `ralph/IMPLEMENTATION_PLAN.md` (mark done, add discoveries).
 - Commit (and optionally push). Then exit; loop restarts with fresh context.
 
 **Example `PROMPT_build.md` (conceptual)**
 
-- 0a. Study `specs/*`. 0b. Study `IMPLEMENTATION_PLAN.md`. 0c. Source: `backend/src`, `frontend/src`.
+- 0a. Study `specs/*`. 0b. Study `ralph/IMPLEMENTATION_PLAN.md`. 0c. Source: `backend/src`, `frontend/src`.
 - 1. Implement one task from the plan (most important). Search before assuming missing.
 - 2. Run tests/lint/build per `AGENTS.md`.
 - 3. On issues, update plan with findings.
 - 4. When green: update plan, `git add -A`, `git commit`, then exit.
-- 999… Guardrails: single sources of truth; keep `IMPLEMENTATION_PLAN.md` and `AGENTS.md` updated; no placeholders.
+- 999… Guardrails: single sources of truth; keep `ralph/IMPLEMENTATION_PLAN.md` and `ralph/AGENTS.md` updated; no placeholders.
 
 **Example task execution**
 
 - Task: "Recommendations page: add loading state when chart period changes."
-- Agent opens `frontend/src/app/(app)/recommendations/page.tsx`, sees `chartPeriod` state and `getVitalsByPeriod`; adds a local loading state for "chart period changing", sets it around the refetch, shows spinner in chart area; runs `cd frontend && npm run lint && npm run build`; then `cd backend && npm run test`. Updates `IMPLEMENTATION_PLAN.md` (mark task done), commits with message like "feat(recommendations): loading state when chart period changes".
+- Agent opens `frontend/src/app/(app)/recommendations/page.tsx`, sees `chartPeriod` state and `getVitalsByPeriod`; adds a local loading state for "chart period changing", sets it around the refetch, shows spinner in chart area; runs `cd frontend && npm run lint && npm run build`; then `cd backend && npm run test`. Updates `ralph/IMPLEMENTATION_PLAN.md` (mark task done), commits with message like "feat(recommendations): loading state when chart period changes".
 
 ---
 
@@ -165,7 +174,7 @@ Ralph runs these (or the "Full validation" pair) after each implementation step.
 
 1. The task is implemented per spec intent.
 2. Backpressure passes (lint + test + build for the affected app(s)).
-3. `IMPLEMENTATION_PLAN.md` is updated and the change is committed.
+3. `ralph/IMPLEMENTATION_PLAN.md` is updated and the change is committed.
 
 **Optional – Acceptance-driven "done"**: In each spec, write acceptance criteria (e.g. "When chart period changes, loading indicator is shown"). In planning, derive **test requirements** (e.g. "Recommendations page: test that changing period shows loading"). In building, Ralph (or you) adds or updates tests so those requirements pass. Then "done" = backpressure passes **and** acceptance-derived tests pass. This avoids "seems done" without proof.
 
@@ -352,7 +361,7 @@ flowchart LR
   subgraph phase2 [Phase 2 - Planning]
     PlanPrompt[PROMPT_plan.md]
     Gap[Gap analysis]
-    Plan[IMPLEMENTATION_PLAN.md]
+    Plan[ralph/IMPLEMENTATION_PLAN.md]
     PlanPrompt --> Gap --> Plan
   end
 
@@ -375,7 +384,7 @@ flowchart LR
 
 1. Add `ralph/` with `loop.sh`, `PROMPT_plan.md`, `PROMPT_build.md`, and `AGENTS.md` (with the repo's real commands).
 2. Add `specs/` and seed 2–3 example specs (e.g. daily-recommendations-ui, daily-recommendations-api) derived from [ai_agent.md](ai_agent.md) and [frontend_structure.md](frontend_structure.md).
-3. Add initial `IMPLEMENTATION_PLAN.md` (can be empty or a first planning run).
+3. Add initial `ralph/IMPLEMENTATION_PLAN.md` (can be empty or a first planning run). Use `ralph/implementation-history/` for archived plans.
 4. Document in docs how to run Phase 1 (conversation), Phase 2 (`./ralph/loop.sh plan`), Phase 3 (`./ralph/loop.sh build`), and how "done" is defined (backpressure + optional acceptance-driven tests).
 
 This keeps Ralph aligned with the creator's intent: one loop, two prompts (plan vs build), specs as source of truth, backpressure for acceptance, and you "sit on the loop" (tune prompts and AGENTS.md) rather than doing the tasks yourself.
