@@ -7,6 +7,8 @@ import { UnauthorizedError } from "@/lib/api";
 import { getProfile, updateProfile, getSettings, updateSettings } from "@/services/patients.service";
 import { rescheduleFromSettings } from "@/lib/local-notifications";
 import { isNativeCapacitor } from "@/lib/capacitor";
+import { subscribeToWebPush } from "@/lib/pwa/web-push";
+import { registerWebPushSubscription } from "@/services/notifications.service";
 import { formatDate } from "@/lib/format";
 import type { PatientProfile, NotificationSettings } from "@/types/profile";
 import { LoadingPulse } from "@/components/design";
@@ -211,6 +213,22 @@ export default function Profile() {
       rescheduleFromSettings(updated.notificationSettings ?? next).catch(() => {
         // Rescheduling is best-effort (e.g. not on native); don't block UX
       });
+      if (typeof window !== "undefined" && !isNativeCapacitor()) {
+        const anyEnabled =
+          (updated.notificationSettings?.dailyRecommendations ?? false) ||
+          (updated.notificationSettings?.vitalsReminder ?? false) ||
+          (updated.notificationSettings?.medicationReminder ?? false);
+        if (anyEnabled && "PushManager" in window && "Notification" in window) {
+          try {
+            const subscription = await subscribeToWebPush();
+            if (subscription) {
+              await registerWebPushSubscription(subscription);
+            }
+          } catch {
+            // Web push registration is best-effort; do not block settings UX
+          }
+        }
+      }
     } finally {
       setSettingsToggling(null);
     }

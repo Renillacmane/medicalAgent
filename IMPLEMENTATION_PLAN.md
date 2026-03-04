@@ -197,9 +197,11 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec: "Service worker handles push event and displays notification. On notification click, open appropriate page."
   - Implemented `push` and `notificationclick` handlers in `frontend/public/sw.js`. Push payload JSON is parsed to derive `title`, `body`, `url`, and `type`/`notificationType`. Notifications default to a generic Healthia message when fields are missing. On `notificationclick`, the service worker deep-links to `/pwa/recommendations`, `/pwa/add`, or `/pwa/dashboard` based on notification type (or uses an explicit `url` when provided), opening/focusing a client window accordingly.
 
-- [ ] **NOTIF-FE-7** On opt-in (web), subscribe via `PushManager.subscribe()` with VAPID keys and send subscription to backend
+- [x] **NOTIF-FE-7** On opt-in (web), subscribe via `PushManager.subscribe()` with VAPID keys and send subscription to backend
   - Spec: "On opt-in, send subscription object to backend via /notifications/register."
-  - No VAPID key generation or push subscription code exists.
+  - Implemented `subscribeToWebPush` in `frontend/src/lib/pwa/web-push.ts`, which requests Notification permission in the browser, waits for the active service worker, and subscribes via `PushManager.subscribe()` using `NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY` as the VAPID public key. The helper reuses any existing subscription when present.
+  - Extended `frontend/src/services/notifications.service.ts` with `registerWebPushSubscription`, which posts the serialized subscription to `/notifications/register` with `platform: "web"` and `webPushSubscription` in the payload.
+  - Updated `Profile` notification settings toggle handler to, on web (non-native) when any notification type becomes enabled, best-effort call `subscribeToWebPush` and `registerWebPushSubscription` so that enabling notifications from the settings page also registers the browser for web push.
 
 ### Recommendations page bubble
 

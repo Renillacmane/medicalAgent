@@ -20,6 +20,17 @@ export async function registerDeviceToken(
   } satisfies RegisterNotificationPayload);
 }
 
+export async function registerWebPushSubscription(
+  subscription: PushSubscription,
+): Promise<{ success: boolean }> {
+  const platform: NotificationPlatform = "web";
+
+  return authPost<{ success: boolean }>("/notifications/register", {
+    platform,
+    webPushSubscription: subscription.toJSON() as Record<string, unknown>,
+  } satisfies RegisterNotificationPayload);
+}
+
 export async function unregisterDeviceToken(
   deviceToken: string,
   platformOverride?: NotificationPlatform,
@@ -30,3 +41,4 @@ export async function unregisterDeviceToken(
     deviceToken,
   } satisfies RegisterNotificationPayload);
 }
+
