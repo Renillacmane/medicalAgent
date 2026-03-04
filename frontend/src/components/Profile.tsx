@@ -254,6 +254,7 @@ export default function Profile() {
 
   const diet = profile.dietaryPreference;
   const objectives = profile.objectives;
+  const togglesDisabled = nativePermission === "denied";
 
   return (
     <div className="min-h-screen bg-light-green-light px-4 py-8 sm:px-6">
@@ -484,7 +485,7 @@ export default function Profile() {
                   role="switch"
                   aria-checked={settings.dailyRecommendations ?? false}
                   id="notif-daily-rec"
-                  disabled={settingsToggling === "dailyRecommendations"}
+                  disabled={togglesDisabled || settingsToggling === "dailyRecommendations"}
                   onClick={() => handleNotificationToggle("dailyRecommendations", !(settings.dailyRecommendations ?? false))}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-light-green-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                     settings.dailyRecommendations ? "bg-light-green-primary" : "bg-light-green-subtle"
@@ -506,7 +507,7 @@ export default function Profile() {
                   role="switch"
                   aria-checked={settings.vitalsReminder ?? true}
                   id="notif-vitals"
-                  disabled={settingsToggling === "vitalsReminder"}
+                  disabled={togglesDisabled || settingsToggling === "vitalsReminder"}
                   onClick={() => handleNotificationToggle("vitalsReminder", !(settings.vitalsReminder ?? true))}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-light-green-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                     settings.vitalsReminder ? "bg-light-green-primary" : "bg-light-green-subtle"
@@ -528,7 +529,7 @@ export default function Profile() {
                   role="switch"
                   aria-checked={settings.medicationReminder ?? false}
                   id="notif-medication"
-                  disabled={settingsToggling === "medicationReminder"}
+                  disabled={togglesDisabled || settingsToggling === "medicationReminder"}
                   onClick={() => handleNotificationToggle("medicationReminder", !(settings.medicationReminder ?? false))}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-light-green-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                     settings.medicationReminder ? "bg-light-green-primary" : "bg-light-green-subtle"

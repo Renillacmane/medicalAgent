@@ -187,8 +187,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
 - [x] **NOTIF-FE-5** Handle incoming push notifications — display and deep-link on tap
   - Spec AC: "When the user taps the notification, the app opens to /recommendations (or /add or /dashboard depending on type)."
 
-- [ ] **NOTIF-UI-3** When notification permission is denied at OS level, disable toggles with explanation text
+- [x] **NOTIF-UI-3** When notification permission is denied at OS level, disable toggles with explanation text
   - Spec AC: "When notification permission is denied at OS level, toggles are disabled with explanation text."
+  - Implemented in `Profile` notifications section: when native Capacitor permission is `denied`, all three notification toggles are disabled and an inline explanation message is shown.
 
 ### Phase 3: PWA web push (browser)
 
