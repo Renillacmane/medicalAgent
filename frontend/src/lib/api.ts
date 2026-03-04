@@ -97,8 +97,11 @@ export async function authPatch<T>(path: string, body: unknown): Promise<T> {
   return data as T;
 }
 
-export async function authDelete<T>(path: string): Promise<T> {
-  const res = await authFetch(path, { method: "DELETE" });
+export async function authDelete<T>(path: string, body?: unknown): Promise<T> {
+  const res = await authFetch(path, {
+    method: "DELETE",
+    body: body != null ? JSON.stringify(body) : undefined,
+  });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     if (res.status === 401) throw new UnauthorizedError();

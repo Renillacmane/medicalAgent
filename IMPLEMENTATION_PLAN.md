@@ -180,7 +180,7 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Implemented OS-level permission check in `Profile` notifications section using Capacitor Push Notifications.
   - When permission is denied on a native device, the settings page shows an inline message explaining that notifications are disabled at the OS level and how to re-enable them.
 
-- [ ] **NOTIF-FE-4** On logout, unregister device token from backend
+- [x] **NOTIF-FE-4** On logout, unregister device token from backend
   - Spec AC: "When the user logs out, the device token is unregistered from the backend."
   - `authDelete` helper in `api.ts` already exists (added in MED-UI-1).
 

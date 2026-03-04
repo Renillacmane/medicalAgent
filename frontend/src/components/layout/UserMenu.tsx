@@ -7,6 +7,7 @@ import { useBasePath } from "@/lib/base-path";
 import { getProfile } from "@/services/patients.service";
 import { clearToken } from "@/lib/auth";
 import { clearAuthToken } from "@/lib/pwa/offline-store";
+import { unregisterPushNotificationsOnLogout } from "@/lib/push-notifications";
 import type { PatientProfile } from "@/types/profile";
 
 function getInitials(profile: PatientProfile | null): string {
@@ -66,8 +67,13 @@ export default function UserMenu({ variant = "desktop" }: UserMenuProps) {
     return () => document.removeEventListener("click", handleClickOutside);
   }, [open]);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     setOpen(false);
+    try {
+      await unregisterPushNotificationsOnLogout();
+    } catch {
+      // Best-effort; logout should continue even if this fails.
+    }
     clearToken();
     clearAuthToken().catch(() => {});
     router.replace(`${basePath}/login?redirect=${encodeURIComponent(pathname || basePath + "/dashboard")}`);

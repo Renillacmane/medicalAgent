@@ -1,4 +1,4 @@
-import { authPost } from "@/lib/api";
+import { authPost, authDelete } from "@/lib/api";
 import { getCapacitorPlatform } from "@/lib/capacitor";
 
 type NotificationPlatform = "ios" | "android" | "web";
@@ -15,6 +15,17 @@ export async function registerDeviceToken(
 ): Promise<{ success: boolean }> {
   const platform = platformOverride ?? (getCapacitorPlatform() as NotificationPlatform);
   return authPost<{ success: boolean }>("/notifications/register", {
+    platform,
+    deviceToken,
+  } satisfies RegisterNotificationPayload);
+}
+
+export async function unregisterDeviceToken(
+  deviceToken: string,
+  platformOverride?: NotificationPlatform,
+): Promise<{ success: boolean }> {
+  const platform = platformOverride ?? (getCapacitorPlatform() as NotificationPlatform);
+  return authDelete<{ success: boolean }>("/notifications/register", {
     platform,
     deviceToken,
   } satisfies RegisterNotificationPayload);
