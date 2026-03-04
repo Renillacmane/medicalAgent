@@ -176,8 +176,9 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
   - Spec AC: "When the user opens the app on iOS/Android and is authenticated, the app requests notification permission; if granted, it registers the device token with the backend."
   - No push notification initialization code exists. Add to app layout or a dedicated hook.
 
-- [ ] **NOTIF-FE-3** Handle denied permission gracefully — show info in settings that notifications are disabled at OS level
-  - Spec AC: "When the user denies notification permission, the app handles gracefully."
+- [x] **NOTIF-FE-3** Handle denied permission gracefully — show info in settings that notifications are disabled at OS level
+  - Implemented OS-level permission check in `Profile` notifications section using Capacitor Push Notifications.
+  - When permission is denied on a native device, the settings page shows an inline message explaining that notifications are disabled at the OS level and how to re-enable them.
 
 - [ ] **NOTIF-FE-4** On logout, unregister device token from backend
   - Spec AC: "When the user logs out, the device token is unregistered from the backend."

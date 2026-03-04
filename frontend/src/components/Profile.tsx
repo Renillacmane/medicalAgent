@@ -6,6 +6,7 @@ import { useBasePath } from "@/lib/base-path";
 import { UnauthorizedError } from "@/lib/api";
 import { getProfile, updateProfile, getSettings, updateSettings } from "@/services/patients.service";
 import { rescheduleFromSettings } from "@/lib/local-notifications";
+import { isNativeCapacitor } from "@/lib/capacitor";
 import { formatDate } from "@/lib/format";
 import type { PatientProfile, NotificationSettings } from "@/types/profile";
 import { LoadingPulse } from "@/components/design";
@@ -92,6 +93,7 @@ export default function Profile() {
   const basePath = useBasePath();
   const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+  const [nativePermission, setNativePermission] = useState<"unknown" | "granted" | "denied">("unknown");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -128,6 +130,36 @@ export default function Profile() {
       cancelled = true;
     };
   }, [router, basePath]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkNativePermission() {
+      if (typeof window === "undefined" || !isNativeCapacitor()) {
+        return;
+      }
+      try {
+        const { PushNotifications } = await import("@capacitor/push-notifications");
+        const status = await PushNotifications.checkPermissions();
+        if (cancelled) return;
+        const value =
+          status.receive === "granted"
+            ? "granted"
+            : status.receive === "denied"
+            ? "denied"
+            : "unknown";
+        setNativePermission(value);
+      } catch {
+        // Best-effort only; if this fails we keep default "unknown" state.
+      }
+    }
+
+    checkNativePermission();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const startEdit = () => {
     if (profile) {
@@ -509,6 +541,12 @@ export default function Profile() {
                   />
                 </button>
               </div>
+              {nativePermission === "denied" && (
+                <p className="mt-2 text-xs text-red-600" role="note">
+                  Notifications are disabled at the OS level. To receive reminders, enable notifications
+                  for this app in your device settings.
+                </p>
+              )}
             </div>
           </section>
         </div>
