@@ -202,11 +202,11 @@ All tasks done for: **Add Vitals & Lab Results — API** (API-1…API-9), **Add 
 
 ### Recommendations page bubble
 
-- [ ] **NOTIF-UI-4** Show dismissable info bubble on `/recommendations` when daily recommendations notifications are not enabled
+- [x] **NOTIF-UI-4** Show dismissable info bubble on `/recommendations` when daily recommendations notifications are not enabled
   - Spec AC: "When the user visits /recommendations and has not enabled daily recommendations notifications, a dismissable info bubble appears."
   - Bubble text: "Enable notifications to get daily reminders" with link to Settings.
   - Dismissable; once dismissed, don't show again for the session.
-  - Recommendations page (`frontend/src/app/(app)/recommendations/page.tsx`) has no notification bubble.
+  - Implemented: `RecommendationsPage` now fetches `/patients/settings` on mount and, when `notificationSettings.dailyRecommendations` is false and the bubble has not been dismissed in this session, shows an info bubble with copy and a link to Settings. Dismissal is stored in `sessionStorage` so the bubble does not reappear for the remainder of the session.
 
 ---
 

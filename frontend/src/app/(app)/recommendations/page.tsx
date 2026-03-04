@@ -1,12 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
 import { UnauthorizedError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { getDailyVitals, VITALS_PERIOD_OPTIONS, type VitalsPeriodDays } from "@/lib/daily-vitals";
-import { getProfile, getLatestVitalsByPeriod } from "@/services/patients.service";
+import { getProfile, getLatestVitalsByPeriod, getSettings } from "@/services/patients.service";
 import { getDailyRecommendations } from "@/services/recommendations.service";
 import type { Vital } from "@/types/vital";
 import type { PatientProfile } from "@/types/profile";
@@ -73,6 +74,8 @@ export default function RecommendationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [loadedTypes, setLoadedTypes] = useState<RecommendationCategory[]>([]);
   const [retryCount, setRetryCount] = useState(0);
+  const [showNotificationsBubble, setShowNotificationsBubble] = useState(false);
+  const [notificationsBubbleChecked, setNotificationsBubbleChecked] = useState(false);
 
   const handleRetry = () => {
     setError(null);
@@ -122,6 +125,54 @@ export default function RecommendationsPage() {
     };
   }, [router, basePath, retryCount]);
 
+  // Check notification settings to decide whether to show info bubble
+  useEffect(() => {
+    let cancelled = false;
+
+    async function determineBubbleVisibility() {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      const dismissed = window.sessionStorage.getItem("recommendations-notif-bubble-dismissed");
+      if (dismissed === "true") {
+        setNotificationsBubbleChecked(true);
+        return;
+      }
+
+      try {
+        const settings = await getSettings();
+        if (cancelled) return;
+        const enabled = settings.notificationSettings?.dailyRecommendations ?? false;
+        if (!enabled) {
+          setShowNotificationsBubble(true);
+        }
+      } catch (e) {
+        if (e instanceof UnauthorizedError) {
+          // Recommendations page already redirects on Unauthorized; no bubble needed.
+        }
+        // Best-effort only; if this fails we simply don't show the bubble.
+      } finally {
+        if (!cancelled) {
+          setNotificationsBubbleChecked(true);
+        }
+      }
+    }
+
+    void determineBubbleVisibility();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleDismissNotificationsBubble = () => {
+    setShowNotificationsBubble(false);
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("recommendations-notif-bubble-dismissed", "true");
+    }
+  };
+
   // Fetch vitals for the selected period (runs on mount with 7 and when period changes)
   useEffect(() => {
     let cancelled = false;
@@ -163,6 +214,32 @@ export default function RecommendationsPage() {
         <p className="mt-1 text-sm text-light-green-dark-grey">
           Personalized by type with related vitals from the last 7 days.
         </p>
+
+        {notificationsBubbleChecked && showNotificationsBubble && (
+          <div className="mt-4 flex items-start justify-between gap-4 rounded-lg border border-light-green-subtle/80 bg-white/80 p-4 shadow-card">
+            <div>
+              <p className="text-sm font-medium text-light-green-dark">
+                Enable notifications to get daily reminders
+              </p>
+              <p className="mt-1 text-xs text-light-green-dark-grey">
+                Turn on daily recommendations notifications in Settings so you get a reminder each morning.
+              </p>
+              <Link
+                href={`${basePath}/profile`}
+                className="mt-2 inline-flex text-xs font-semibold text-light-green-primary underline underline-offset-2 hover:text-light-green-primary-dark"
+              >
+                Go to Settings
+              </Link>
+            </div>
+            <button
+              type="button"
+              onClick={handleDismissNotificationsBubble}
+              className="ml-2 inline-flex shrink-0 items-center rounded-full px-2 py-1 text-xs font-medium text-light-green-light-grey hover:text-light-green-dark-grey"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start">
           {/* Left: user media + latest data (last 7 calendar days from latest vital) */}
