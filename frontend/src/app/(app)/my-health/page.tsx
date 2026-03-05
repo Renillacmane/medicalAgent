@@ -4,11 +4,12 @@ import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
 import { UnauthorizedError } from "@/lib/api";
-import { getProfile, getVitals, getExams, getDocuments, getMedications } from "@/services/patients.service";
+import { getProfile, getVitals, getExams, getDocuments, getMedications, getSettings } from "@/services/patients.service";
 import { formatDate } from "@/lib/format";
 import { getDailyVitals } from "@/lib/daily-vitals";
 import type { Vital } from "@/types/vital";
 import type { PatientProfile } from "@/types/profile";
+import type { SettingsResponse } from "@/services/patients.service";
 import type { Exam, Medication } from "@/types/health";
 import type { UserHealthDocument } from "@/types/health";
 import type { PrescriptionExtractedData } from "@/types/health";
@@ -79,6 +80,7 @@ export default function MyHealthPage() {
   const [labResults, setLabResults] = useState<UserHealthDocument[]>([]);
   const [prescriptions, setPrescriptions] = useState<UserHealthDocument[]>([]);
   const [medications, setMedications] = useState<Medication[]>([]);
+  const [settings, setSettings] = useState<SettingsResponse | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("vitals");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,8 +102,9 @@ export default function MyHealthPage() {
         return [];
       }),
       getMedications().catch((e) => { if (e instanceof UnauthorizedError) throw e; return []; }),
+      getSettings().catch((e) => { if (e instanceof UnauthorizedError) throw e; return null; }),
     ])
-      .then(([prof, vits, ex, labDocs, prescDocs, meds]) => {
+      .then(([prof, vits, ex, labDocs, prescDocs, meds, settingsData]) => {
         if (cancelled) return;
         if (prof) setProfile(prof);
         if (Array.isArray(vits)) setVitals(vits);
@@ -109,6 +112,7 @@ export default function MyHealthPage() {
         if (Array.isArray(labDocs)) setLabResults(labDocs);
         if (Array.isArray(prescDocs)) setPrescriptions(prescDocs);
         if (Array.isArray(meds)) setMedications(meds);
+        if (settingsData) setSettings(settingsData);
       })
       .catch((e) => {
         if (cancelled) return;
@@ -198,6 +202,18 @@ export default function MyHealthPage() {
                 })
               }
             />
+            {settings && settings.notificationSettings?.medicationReminder === false && (
+              <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Medication notifications are off.{" "}
+                <a
+                  href={`${basePath}/profile`}
+                  className="font-medium text-amber-700 underline hover:text-amber-900"
+                >
+                  Turn them on in Settings
+                </a>{" "}
+                to receive reminders.
+              </p>
+            )}
             <div className="rounded-xl border border-light-green-subtle/60 bg-white shadow-card overflow-hidden">
               <div className="flex border-b border-light-green-subtle/40">
                 {tabs.map(({ id, label }) => (
