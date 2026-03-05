@@ -13,13 +13,12 @@
 
 | # | Task ID | Summary | Depends on | Spec |
 |---|---------|---------|------------|------|
-| 1 | CAL-1 | Reusable MedicationCalendar component (month grid, dots, today, month nav) | — | my-health-medication-calendar-ui |
-| 2 | CAL-2 | Place calendar on My Health below UserPanel, above tabs | CAL-1 | my-health-medication-calendar-ui |
-| 3 | CAL-3 | Map medications + reminderTimes to calendar dots | CAL-1, getMedications/settings | my-health-medication-calendar-ui |
-| 4 | CAL-4 | Dot click → details view (date/time + medications at slot) | CAL-1 | my-health-medication-calendar-ui |
-| 5 | CAL-5 | Month navigation + "Today" control | CAL-1 | my-health-medication-calendar-ui |
-| 6 | CAL-6 | Inline note when medication reminders disabled | CAL-2, getSettings | my-health-medication-calendar-ui |
-| 7 | CAL-7 | Empty and loading states for calendar | CAL-1 | my-health-medication-calendar-ui |
+| 1 | CAL-2 | Place calendar on My Health below UserPanel, above tabs | CAL-1 | my-health-medication-calendar-ui |
+| 2 | CAL-3 | Map medications + reminderTimes to calendar dots | CAL-1, getMedications/settings | my-health-medication-calendar-ui |
+| 3 | CAL-4 | Dot click → details view (date/time + medications at slot) | CAL-1 | my-health-medication-calendar-ui |
+| 4 | CAL-5 | Month navigation + "Today" control | CAL-1 | my-health-medication-calendar-ui |
+| 5 | CAL-6 | Inline note when medication reminders disabled | CAL-2, getSettings | my-health-medication-calendar-ui |
+| 6 | CAL-7 | Empty and loading states for calendar | CAL-1 | my-health-medication-calendar-ui |
 
 ---
 
@@ -125,7 +124,7 @@ All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Res
 
 ## Spec: My Health – Medication calendar UI (`specs/my-health-medication-calendar-ui.md`)
 
-- [ ] **CAL-1** Reusable `MedicationCalendar` component: month grid, dots per day for reminder times, today highlight
+- [x] **CAL-1** Reusable `MedicationCalendar` component: month grid, dots per day for reminder times, today highlight
   - Spec: Month-style grid; one cell per day; dots inside cells for scheduled medication reminder times; navigate previous/next month; highlight "today". Component accepts events (e.g. `{ date, time, medications[] }`) via props so it is reusable.
 
 - [ ] **CAL-2** Place calendar on My Health below UserPanel, above Vitals/Prescription/Exams tabs
@@ -153,7 +152,7 @@ All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Res
 | # | Task ID | Summary | Spec |
 |---|---------|---------|------|
 | — | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web (done) | notifications |
-| 1 | CAL-1 | Reusable MedicationCalendar component | my-health-medication-calendar-ui |
+| — | CAL-1 | Reusable MedicationCalendar component (done) | my-health-medication-calendar-ui |
 | 2 | CAL-2 | Place calendar on My Health below UserPanel | my-health-medication-calendar-ui |
 | 3 | CAL-3 | Map medications + reminderTimes to calendar dots | my-health-medication-calendar-ui |
 | 4 | CAL-4 | Dot click → details view | my-health-medication-calendar-ui |
