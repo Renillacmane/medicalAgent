@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
 import { UnauthorizedError } from "@/lib/api";
@@ -13,9 +13,57 @@ import type { Exam, Medication } from "@/types/health";
 import type { UserHealthDocument } from "@/types/health";
 import type { PrescriptionExtractedData } from "@/types/health";
 import UserPanel from "@/components/health/UserPanel";
-import MedicationCalendar from "@/components/health/MedicationCalendar";
+import MedicationCalendar, { type CalendarEvent } from "@/components/health/MedicationCalendar";
 import PdfPreviewModal from "@/components/health/PdfPreviewModal";
 import RhombusLoader from "@/components/ui/RhombusLoader";
+
+/** Build YYYY-MM-DD for a given date (local date, no TZ shift). */
+function toDateKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Map active medications with startDate/endDate and reminderTimes to calendar events for a date range. */
+function medicationsToCalendarEvents(
+  medications: Medication[],
+  rangeStart: Date,
+  rangeEnd: Date
+): CalendarEvent[] {
+  const active = medications.filter(
+    (m) => m.isActive && Array.isArray(m.reminderTimes) && m.reminderTimes.length > 0
+  );
+  if (active.length === 0) return [];
+
+  const bySlot = new Map<string, Medication[]>();
+  const add = (dateKey: string, time: string, med: Medication) => {
+    const key = `${dateKey}|${time}`;
+    if (!bySlot.has(key)) bySlot.set(key, []);
+    const arr = bySlot.get(key)!;
+    if (!arr.some((x) => x.id === med.id)) arr.push(med);
+  };
+
+  for (let d = new Date(rangeStart); d <= rangeEnd; d.setDate(d.getDate() + 1)) {
+    const dateKey = toDateKey(d);
+    for (const med of active) {
+      const start = med.startDate ?? "";
+      const end = med.endDate ?? null;
+      if (start && dateKey < start) continue;
+      if (end != null && end !== "" && dateKey > end) continue;
+      for (const time of med.reminderTimes!) {
+        add(dateKey, time, med);
+      }
+    }
+  }
+
+  const events: CalendarEvent[] = [];
+  bySlot.forEach((meds, key) => {
+    const [date, time] = key.split("|");
+    events.push({ date, time, medications: meds });
+  });
+  return events;
+}
 
 type TabId = "vitals" | "prescription" | "exams";
 
@@ -75,6 +123,19 @@ export default function MyHealthPage() {
     return () => { cancelled = true; };
   }, [router, basePath]);
 
+  const calendarEvents = useMemo(() => {
+    const start = new Date();
+    start.setFullYear(start.getFullYear() - 1);
+    start.setDate(1);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setFullYear(end.getFullYear() + 1);
+    end.setMonth(11);
+    end.setDate(31);
+    end.setHours(23, 59, 59, 999);
+    return medicationsToCalendarEvents(medications, start, end);
+  }, [medications]);
+
   if (error) {
     return (
       <div className="p-4">
@@ -125,7 +186,7 @@ export default function MyHealthPage() {
           <UserPanel profile={profile} vitals={vitals} dailyVitals={dailyVitals} />
 
           <main className="min-w-0 flex-1 flex flex-col gap-6">
-            <MedicationCalendar events={[]} />
+            <MedicationCalendar events={calendarEvents} />
             <div className="rounded-xl border border-light-green-subtle/60 bg-white shadow-card overflow-hidden">
               <div className="flex border-b border-light-green-subtle/40">
                 {tabs.map(({ id, label }) => (
