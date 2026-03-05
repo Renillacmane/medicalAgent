@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { suggestReminderTimes } from "@/lib/medication-schedule";
-import { updateMedication } from "@/services/patients.service";
-import type { Medication } from "@/types/health";
+import { getDocument, updateMedication } from "@/services/patients.service";
+import type { Medication, UserHealthDocument, PrescriptionExtractedData } from "@/types/health";
 
 const HH_MM_REGEX = /^\d{2}:\d{2}$/;
 
@@ -36,6 +36,8 @@ export default function MedicationEditModal({
   const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sourceDocument, setSourceDocument] = useState<UserHealthDocument | null>(null);
+  const [loadingSourceDocument, setLoadingSourceDocument] = useState(false);
 
   useEffect(() => {
     if (!medication) return;
@@ -46,6 +48,20 @@ export default function MedicationEditModal({
     setIsActive(medication.isActive);
     setError(null);
   }, [medication]);
+
+  useEffect(() => {
+    if (!medication?.sourceDocumentId) {
+      setSourceDocument(null);
+      setLoadingSourceDocument(false);
+      return;
+    }
+    setLoadingSourceDocument(true);
+    setSourceDocument(null);
+    getDocument(medication.sourceDocumentId)
+      .then(setSourceDocument)
+      .catch(() => setSourceDocument(null))
+      .finally(() => setLoadingSourceDocument(false));
+  }, [medication?.sourceDocumentId]);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -196,6 +212,38 @@ export default function MedicationEditModal({
               Medication is active
             </label>
           </div>
+
+          {medication.sourceDocumentId && (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <h3 className="text-xs font-medium uppercase tracking-wide text-slate-600">
+                Original prescription text
+              </h3>
+              {loadingSourceDocument && (
+                <p className="mt-2 text-sm text-slate-500">Loading…</p>
+              )}
+              {!loadingSourceDocument && sourceDocument && (() => {
+                const medications = (sourceDocument.extractedData as PrescriptionExtractedData | undefined)?.medications;
+                if (Array.isArray(medications) && medications.length > 0) {
+                  return (
+                    <ul className="mt-2 space-y-1 text-sm text-slate-700">
+                      {medications.map((m, i) => (
+                        <li key={i}>
+                          {[m.name, m.dosage, m.frequency].filter(Boolean).join(" — ")}
+                          {m.duration ? ` (${m.duration})` : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                }
+                return (
+                  <p className="mt-2 text-sm text-slate-500">No medication details in prescription.</p>
+                );
+              })()}
+              {!loadingSourceDocument && !sourceDocument && (
+                <p className="mt-2 text-sm text-slate-500">Original prescription could not be loaded.</p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-3">

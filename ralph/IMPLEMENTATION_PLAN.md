@@ -13,22 +13,21 @@
 
 | # | Task ID | Summary | Depends on | Spec |
 |---|---------|---------|------------|------|
-| 1 | MED-UI-7 | Original prescription text section in MedicationEditModal when sourceDocumentId set | DOC-API-1 | medication-reminders |
-| 2 | MY-HEALTH-MED-TABLE | Medications table on My Health Prescription tab (all meds, start date desc, origin label) | — | my-health-ui |
-| 3 | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web when reminder enabled but vitals not logged today | — | notifications |
-| 4 | CAL-1 | Reusable MedicationCalendar component (month grid, dots, today, month nav) | — | my-health-medication-calendar-ui |
-| 5 | CAL-2 | Place calendar on My Health below UserPanel, above tabs | CAL-1 | my-health-medication-calendar-ui |
-| 6 | CAL-3 | Map medications + reminderTimes to calendar dots | CAL-1, getMedications/settings | my-health-medication-calendar-ui |
-| 7 | CAL-4 | Dot click → details view (date/time + medications at slot) | CAL-1 | my-health-medication-calendar-ui |
-| 8 | CAL-5 | Month navigation + "Today" control | CAL-1 | my-health-medication-calendar-ui |
-| 9 | CAL-6 | Inline note when medication reminders disabled | CAL-2, getSettings | my-health-medication-calendar-ui |
-| 10 | CAL-7 | Empty and loading states for calendar | CAL-1 | my-health-medication-calendar-ui |
+| 1 | MY-HEALTH-MED-TABLE | Medications table on My Health Prescription tab (all meds, start date desc, origin label) | — | my-health-ui |
+| 2 | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web when reminder enabled but vitals not logged today | — | notifications |
+| 3 | CAL-1 | Reusable MedicationCalendar component (month grid, dots, today, month nav) | — | my-health-medication-calendar-ui |
+| 4 | CAL-2 | Place calendar on My Health below UserPanel, above tabs | CAL-1 | my-health-medication-calendar-ui |
+| 5 | CAL-3 | Map medications + reminderTimes to calendar dots | CAL-1, getMedications/settings | my-health-medication-calendar-ui |
+| 6 | CAL-4 | Dot click → details view (date/time + medications at slot) | CAL-1 | my-health-medication-calendar-ui |
+| 7 | CAL-5 | Month navigation + "Today" control | CAL-1 | my-health-medication-calendar-ui |
+| 8 | CAL-6 | Inline note when medication reminders disabled | CAL-2, getSettings | my-health-medication-calendar-ui |
+| 9 | CAL-7 | Empty and loading states for calendar | CAL-1 | my-health-medication-calendar-ui |
 
 ---
 
 ## Previously completed specs (pruned)
 
-All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Results — UI**, **Daily Recommendations — API**, **Daily Recommendations — UI**, **My Health — UI** (except medications table and calendar), **Medication Reminders** (except DOC-API-1 and MED-UI-7), **Prescription Medication Dialog**, **Notifications** (except NOTIF-VITALS-CATCHUP).
+All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Results — UI**, **Daily Recommendations — API**, **Daily Recommendations — UI**, **My Health — UI** (except medications table and calendar), **Medication Reminders**, **Prescription Medication Dialog**, **Notifications** (except NOTIF-VITALS-CATCHUP).
 
 ---
 
@@ -55,7 +54,7 @@ All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Res
 - [x] **MED-UI-2** Add "Current Medications" section to `Dashboard.tsx` — table with name, dosage, frequency, status
 - [x] **MED-UI-3** Medication row tap opens edit view for reminder settings (inline or modal)
 
-- [ ] **MED-UI-7** Medication edit dialog: "Original prescription text" section when `sourceDocumentId` is set
+- [x] **MED-UI-7** Medication edit dialog: "Original prescription text" section when `sourceDocumentId` is set
   - Spec AC: "When the user opens the medication edit dialog from the dashboard, the dialog includes, at the end of its content, a **read-only 'Original prescription text' section** (when available) that shows the raw medication line(s) as they appeared in the source prescription." Uses medication's `sourceDocumentId` to look up `UserDocument.extractedData`.
   - Depends on DOC-API-1. Frontend: add `getDocument(id)` to patients.service; in `MedicationEditModal`, when medication has `sourceDocumentId`, fetch document and display read-only section (e.g. medication line from extractedData.medications or display full medications list as original text).
 
@@ -155,13 +154,12 @@ All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Res
 
 | # | Task ID | Summary | Spec |
 |---|---------|---------|------|
-| 1 | MED-UI-7 | Original prescription text in MedicationEditModal | medication-reminders |
-| 2 | MY-HEALTH-MED-TABLE | Medications table on My Health Prescription tab | my-health-ui |
-| 3 | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web | notifications |
-| 4 | CAL-1 | Reusable MedicationCalendar component | my-health-medication-calendar-ui |
-| 5 | CAL-2 | Place calendar on My Health below UserPanel | my-health-medication-calendar-ui |
-| 6 | CAL-3 | Map medications + reminderTimes to calendar dots | my-health-medication-calendar-ui |
-| 7 | CAL-4 | Dot click → details view | my-health-medication-calendar-ui |
-| 8 | CAL-5 | Month navigation + "Today" control | my-health-medication-calendar-ui |
-| 9 | CAL-6 | Inline note when medication reminders disabled | my-health-medication-calendar-ui |
-| 10 | CAL-7 | Empty and loading states for calendar | my-health-medication-calendar-ui |
+| 1 | MY-HEALTH-MED-TABLE | Medications table on My Health Prescription tab | my-health-ui |
+| 2 | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web | notifications |
+| 3 | CAL-1 | Reusable MedicationCalendar component | my-health-medication-calendar-ui |
+| 4 | CAL-2 | Place calendar on My Health below UserPanel | my-health-medication-calendar-ui |
+| 5 | CAL-3 | Map medications + reminderTimes to calendar dots | my-health-medication-calendar-ui |
+| 6 | CAL-4 | Dot click → details view | my-health-medication-calendar-ui |
+| 7 | CAL-5 | Month navigation + "Today" control | my-health-medication-calendar-ui |
+| 8 | CAL-6 | Inline note when medication reminders disabled | my-health-medication-calendar-ui |
+| 9 | CAL-7 | Empty and loading states for calendar | my-health-medication-calendar-ui |

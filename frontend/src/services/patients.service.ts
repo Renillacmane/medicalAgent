@@ -57,6 +57,15 @@ export async function getDocuments(documentType?: string): Promise<UserHealthDoc
   return authGet<UserHealthDocument[]>(`/patients/documents${query}`);
 }
 
+/** GET /patients/documents/:id — single document (e.g. for original prescription text). Returns null if not found. */
+export async function getDocument(id: string): Promise<UserHealthDocument | null> {
+  try {
+    return await authGet<UserHealthDocument>(`/patients/documents/${encodeURIComponent(id)}`);
+  } catch {
+    return null;
+  }
+}
+
 /** POST /patients/documents/upload (multipart FormData) */
 export async function uploadDocument(formData: FormData): Promise<{
   id: string;
