@@ -59,6 +59,7 @@ The `UserMedication` schema must support reminder scheduling:
 - When the user views the dashboard, a "Current Medications" section displays active medications.
 - Each row shows: medication name, dosage, frequency, and status (active/inactive).
 - User can tap a medication to edit its reminder settings.
+- When the user opens the medication edit dialog from the dashboard, the dialog includes, at the end of its content, a **read-only "Original prescription text" section** (when available) that shows the raw medication line(s) as they appeared in the source prescription. This uses the medication's `sourceDocumentId` to look up the corresponding `UserDocument.extractedData` and display the original text so the user can confirm that the extracted structured fields match what was written on the prescription.
 
 ### Reminder scheduling
 

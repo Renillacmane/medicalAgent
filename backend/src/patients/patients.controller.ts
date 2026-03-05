@@ -144,7 +144,10 @@ export class PatientsController {
       throw new BadRequestException('Failed to parse PDF file');
     }
 
-    const publicDir = path.join(process.cwd(), '..', 'frontend', 'public', 'documents');
+    // Default: public/documents (dev). Set DOCUMENTS_UPLOAD_DIR to frontend/out/documents for static export deploy.
+    const publicDir =
+      process.env.DOCUMENTS_UPLOAD_DIR ||
+      path.join(process.cwd(), '..', 'frontend', 'public', 'documents');
     if (!fs.existsSync(publicDir)) {
       fs.mkdirSync(publicDir, { recursive: true });
     }

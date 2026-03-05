@@ -74,6 +74,11 @@ The app sends push and local notifications to remind users about health actions:
 - When enabled and the scheduled time arrives, a local notification fires: "Time to log your vitals".
 - When the user taps the notification, the app opens to `/add`.
 - Default schedule: 9:00 AM local time (configurable in future iteration).
+- **One reminder per day**: The vitals reminder is delivered **at most once per calendar day** per user.
+- **Catch-up on next login (web)**:
+  - If the user did **not receive or act on** the scheduled vitals reminder (e.g. app was closed at 9:00), then **on the next authenticated web session** (PWA) a **non-modal bubble** appears reminding them to log vitals.
+  - The bubble can appear on a relevant page (e.g. `/add` or dashboard) with copy such as "You haven't logged vitals today. Tap here to add them." and a link/action to open the vitals form.
+  - Once shown for a given day and dismissed or acted upon, the bubble does **not** reappear again that day.
 
 ### Medication reminder notification
 
