@@ -192,16 +192,37 @@ export default function MyHealthPage() {
           <UserPanel profile={profile} vitals={vitals} dailyVitals={dailyVitals} />
 
           <main className="min-w-0 flex-1 flex flex-col gap-6">
-            <MedicationCalendar
-              events={calendarEvents}
-              onSlotClick={(slot) =>
-                setSelectedSlot({
-                  date: slot.date,
-                  time: slot.time,
-                  medications: slot.medications as Medication[],
-                })
-              }
-            />
+            {loading ? (
+              <div className="rounded-xl border border-light-green-subtle/60 bg-white shadow-card overflow-hidden">
+                <div className="flex items-center justify-between border-b border-light-green-subtle/40 px-4 py-3">
+                  <h2 className="text-sm font-semibold text-light-green-dark">Medication schedule</h2>
+                </div>
+                <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 py-10" role="status" aria-label="Loading medication schedule">
+                  <RhombusLoader size={44} />
+                  <span className="text-sm text-light-green-dark-grey">Loading…</span>
+                </div>
+              </div>
+            ) : calendarEvents.length === 0 ? (
+              <div className="rounded-xl border border-light-green-subtle/60 bg-white shadow-card overflow-hidden">
+                <div className="flex items-center justify-between border-b border-light-green-subtle/40 px-4 py-3">
+                  <h2 className="text-sm font-semibold text-light-green-dark">Medication schedule</h2>
+                </div>
+                <p className="py-8 text-center text-sm text-light-green-dark-grey px-4">
+                  No medications scheduled yet. Add medications or configure reminders to see them here.
+                </p>
+              </div>
+            ) : (
+              <MedicationCalendar
+                events={calendarEvents}
+                onSlotClick={(slot) =>
+                  setSelectedSlot({
+                    date: slot.date,
+                    time: slot.time,
+                    medications: slot.medications as Medication[],
+                  })
+                }
+              />
+            )}
             {settings && settings.notificationSettings?.medicationReminder === false && (
               <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 Medication notifications are off.{" "}

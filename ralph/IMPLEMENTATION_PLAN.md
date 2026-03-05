@@ -13,8 +13,7 @@
 
 | # | Task ID | Summary | Depends on | Spec |
 |---|---------|---------|------------|------|
-| 1 | CAL-5 | Month navigation + "Today" control | CAL-1 | my-health-medication-calendar-ui |
-| 2 | CAL-7 | Empty and loading states for calendar | CAL-1 | my-health-medication-calendar-ui |
+| — | — | *No remaining tasks for current specs.* | — | — |
 
 ---
 
@@ -139,7 +138,7 @@ All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Res
   - Spec AC: "When `notificationSettings.medicationReminder` is **false**, the calendar still displays schedule dots. An inline note appears: e.g. 'Medication notifications are off. Turn them on in Settings to receive reminders.'"
   - Done: My Health fetches settings; when medicationReminder is false, inline note with link to profile (Settings) appears below the calendar.
 
-- [ ] **CAL-7** Empty and loading states
+- [x] **CAL-7** Empty and loading states
   - Loading → skeleton/indicator. No active medications with reminderTimes → empty state message (e.g. "No medications scheduled yet. Add medications or configure reminders to see them here.").
 
 ---
