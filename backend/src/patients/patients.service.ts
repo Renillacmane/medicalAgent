@@ -149,7 +149,37 @@ export class PatientsService {
       .limit(100)
       .lean()
       .exec();
-    return docs.map((d) => ({
+    return docs.map((d) => this.mapDocumentToResponse(d));
+  }
+
+  /**
+   * Get a single document by id for the authenticated user (for original prescription text, etc.).
+   * Returns null if not found or not owned by user.
+   */
+  async getDocument(userId: string, documentId: string) {
+    const doc = await this.userDocumentModel
+      .findOne({
+        _id: new Types.ObjectId(documentId),
+        userId: new Types.ObjectId(userId),
+      })
+      .lean()
+      .exec();
+    if (!doc) return null;
+    return this.mapDocumentToResponse(doc);
+  }
+
+  private mapDocumentToResponse(d: {
+    _id: Types.ObjectId;
+    documentType: string;
+    originalFilename: string;
+    attachmentId: string;
+    extractedData?: Record<string, unknown>;
+    analysisSummary?: string;
+    documentDate?: Date;
+    processedAt?: Date;
+    status: string;
+  }) {
+    return {
       id: (d as { _id: Types.ObjectId })._id?.toString?.(),
       documentType: d.documentType,
       originalFilename: d.originalFilename,
@@ -159,7 +189,7 @@ export class PatientsService {
       documentDate: d.documentDate,
       processedAt: d.processedAt,
       status: d.status,
-    }));
+    };
   }
 
   async getMedications(userId: string) {

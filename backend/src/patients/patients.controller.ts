@@ -97,6 +97,17 @@ export class PatientsController {
     return this.patientsService.getDocuments(userId, documentType);
   }
 
+  @Get('documents/:id')
+  async getDocument(@CurrentUser() user: User, @Param('id') id: string) {
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+    const document = await this.patientsService.getDocument(userId, id);
+    if (!document) {
+      throw new NotFoundException('Document not found');
+    }
+    return document;
+  }
+
   @Post('documents/upload')
   async uploadDocument(
     @CurrentUser() user: User,
@@ -146,8 +157,7 @@ export class PatientsController {
 
     // Default: public/documents (dev). Set DOCUMENTS_UPLOAD_DIR to frontend/out/documents for static export deploy.
     const publicDir =
-      process.env.DOCUMENTS_UPLOAD_DIR ||
-      path.join(process.cwd(), '..', 'frontend', 'public', 'documents');
+      process.env.DOCUMENTS_UPLOAD_DIR || path.join(process.cwd(), '..', 'frontend', 'public', 'documents');
     if (!fs.existsSync(publicDir)) {
       fs.mkdirSync(publicDir, { recursive: true });
     }
