@@ -13,21 +13,20 @@
 
 | # | Task ID | Summary | Depends on | Spec |
 |---|---------|---------|------------|------|
-| 1 | MY-HEALTH-MED-TABLE | Medications table on My Health Prescription tab (all meds, start date desc, origin label) | — | my-health-ui |
-| 2 | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web when reminder enabled but vitals not logged today | — | notifications |
-| 3 | CAL-1 | Reusable MedicationCalendar component (month grid, dots, today, month nav) | — | my-health-medication-calendar-ui |
-| 4 | CAL-2 | Place calendar on My Health below UserPanel, above tabs | CAL-1 | my-health-medication-calendar-ui |
-| 5 | CAL-3 | Map medications + reminderTimes to calendar dots | CAL-1, getMedications/settings | my-health-medication-calendar-ui |
-| 6 | CAL-4 | Dot click → details view (date/time + medications at slot) | CAL-1 | my-health-medication-calendar-ui |
-| 7 | CAL-5 | Month navigation + "Today" control | CAL-1 | my-health-medication-calendar-ui |
-| 8 | CAL-6 | Inline note when medication reminders disabled | CAL-2, getSettings | my-health-medication-calendar-ui |
-| 9 | CAL-7 | Empty and loading states for calendar | CAL-1 | my-health-medication-calendar-ui |
+| 1 | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web when reminder enabled but vitals not logged today | — | notifications |
+| 2 | CAL-1 | Reusable MedicationCalendar component (month grid, dots, today, month nav) | — | my-health-medication-calendar-ui |
+| 3 | CAL-2 | Place calendar on My Health below UserPanel, above tabs | CAL-1 | my-health-medication-calendar-ui |
+| 4 | CAL-3 | Map medications + reminderTimes to calendar dots | CAL-1, getMedications/settings | my-health-medication-calendar-ui |
+| 5 | CAL-4 | Dot click → details view (date/time + medications at slot) | CAL-1 | my-health-medication-calendar-ui |
+| 6 | CAL-5 | Month navigation + "Today" control | CAL-1 | my-health-medication-calendar-ui |
+| 7 | CAL-6 | Inline note when medication reminders disabled | CAL-2, getSettings | my-health-medication-calendar-ui |
+| 8 | CAL-7 | Empty and loading states for calendar | CAL-1 | my-health-medication-calendar-ui |
 
 ---
 
 ## Previously completed specs (pruned)
 
-All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Results — UI**, **Daily Recommendations — API**, **Daily Recommendations — UI**, **My Health — UI** (except medications table and calendar), **Medication Reminders**, **Prescription Medication Dialog**, **Notifications** (except NOTIF-VITALS-CATCHUP).
+All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Results — UI**, **Daily Recommendations — API**, **Daily Recommendations — UI**, **My Health — UI** (except calendar), **Medication Reminders**, **Prescription Medication Dialog**, **Notifications** (except NOTIF-VITALS-CATCHUP).
 
 ---
 
@@ -119,9 +118,9 @@ All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Res
 
 ## Spec: My Health — UI (`specs/my-health-ui.md`) — remaining
 
-- [ ] **MY-HEALTH-MED-TABLE** Prescription tab: medications table below documents table
+- [x] **MY-HEALTH-MED-TABLE** Prescription tab: medications table below documents table
   - Spec AC: "A **medications table** below the documents table: rows for **all medications** (active and inactive) from `GET /patients/medications`, ordered by **start date descending** (fallback to creation when start date missing). Columns: medication name, dosage, frequency, status (active/inactive), start date, end date, origin label ('From prescription' when `sourceDocumentId` set, else 'Manual')."
-  - Current: My Health does not call `getMedications()`; Prescription tab shows only the documents table. Add medications fetch and a second table below the documents table with the required columns and sort order.
+  - Done: My Health fetches medications with initial data; Prescription tab shows documents section then medications table (sorted by start date desc, origin label).
 
 ---
 
@@ -154,12 +153,11 @@ All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Res
 
 | # | Task ID | Summary | Spec |
 |---|---------|---------|------|
-| 1 | MY-HEALTH-MED-TABLE | Medications table on My Health Prescription tab | my-health-ui |
-| 2 | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web | notifications |
-| 3 | CAL-1 | Reusable MedicationCalendar component | my-health-medication-calendar-ui |
-| 4 | CAL-2 | Place calendar on My Health below UserPanel | my-health-medication-calendar-ui |
-| 5 | CAL-3 | Map medications + reminderTimes to calendar dots | my-health-medication-calendar-ui |
-| 6 | CAL-4 | Dot click → details view | my-health-medication-calendar-ui |
-| 7 | CAL-5 | Month navigation + "Today" control | my-health-medication-calendar-ui |
-| 8 | CAL-6 | Inline note when medication reminders disabled | my-health-medication-calendar-ui |
-| 9 | CAL-7 | Empty and loading states for calendar | my-health-medication-calendar-ui |
+| 1 | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web | notifications |
+| 2 | CAL-1 | Reusable MedicationCalendar component | my-health-medication-calendar-ui |
+| 3 | CAL-2 | Place calendar on My Health below UserPanel | my-health-medication-calendar-ui |
+| 4 | CAL-3 | Map medications + reminderTimes to calendar dots | my-health-medication-calendar-ui |
+| 5 | CAL-4 | Dot click → details view | my-health-medication-calendar-ui |
+| 6 | CAL-5 | Month navigation + "Today" control | my-health-medication-calendar-ui |
+| 7 | CAL-6 | Inline note when medication reminders disabled | my-health-medication-calendar-ui |
+| 8 | CAL-7 | Empty and loading states for calendar | my-health-medication-calendar-ui |

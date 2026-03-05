@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
 import { UnauthorizedError } from "@/lib/api";
-import { getProfile, getVitals, getExams, getDocuments } from "@/services/patients.service";
+import { getProfile, getVitals, getExams, getDocuments, getMedications } from "@/services/patients.service";
 import { formatDate } from "@/lib/format";
 import { getDailyVitals } from "@/lib/daily-vitals";
 import type { Vital } from "@/types/vital";
 import type { PatientProfile } from "@/types/profile";
-import type { Exam } from "@/types/health";
+import type { Exam, Medication } from "@/types/health";
 import type { UserHealthDocument } from "@/types/health";
 import type { PrescriptionExtractedData } from "@/types/health";
 import UserPanel from "@/components/health/UserPanel";
@@ -28,6 +28,7 @@ export default function MyHealthPage() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [labResults, setLabResults] = useState<UserHealthDocument[]>([]);
   const [prescriptions, setPrescriptions] = useState<UserHealthDocument[]>([]);
+  const [medications, setMedications] = useState<Medication[]>([]);
   const [activeTab, setActiveTab] = useState<TabId>("vitals");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,14 +48,16 @@ export default function MyHealthPage() {
         if (e instanceof UnauthorizedError) throw e;
         return [];
       }),
+      getMedications().catch((e) => { if (e instanceof UnauthorizedError) throw e; return []; }),
     ])
-      .then(([prof, vits, ex, labDocs, prescDocs]) => {
+      .then(([prof, vits, ex, labDocs, prescDocs, meds]) => {
         if (cancelled) return;
         if (prof) setProfile(prof);
         if (Array.isArray(vits)) setVitals(vits);
         if (Array.isArray(ex)) setExams(ex);
         if (Array.isArray(labDocs)) setLabResults(labDocs);
         if (Array.isArray(prescDocs)) setPrescriptions(prescDocs);
+        if (Array.isArray(meds)) setMedications(meds);
       })
       .catch((e) => {
         if (cancelled) return;
@@ -100,6 +103,13 @@ export default function MyHealthPage() {
     const dA = new Date(a.date).getTime();
     const dB = new Date(b.date).getTime();
     return dB - dA;
+  });
+
+  /** Medications sorted by start date descending; fallback to createdAt */
+  const medicationsByStartDate = [...medications].sort((a, b) => {
+    const dateA = a.startDate || a.createdAt || "";
+    const dateB = b.startDate || b.createdAt || "";
+    return new Date(dateB).getTime() - new Date(dateA).getTime();
   });
 
   return (
@@ -176,71 +186,111 @@ export default function MyHealthPage() {
                     </div>
                   )
                 ) : activeTab === "prescription" ? (
-                  prescriptions.length === 0 ? (
-                    <p className="text-sm text-light-green-dark-grey py-4">{NO_DATA_MSG}</p>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm text-left">
-                        <thead>
-                          <tr className="border-b border-light-green-subtle/60 text-light-green-dark-grey">
-                            <th className="py-2 pr-4 font-medium">Date</th>
-                            <th className="py-2 pr-4 font-medium">Doctor</th>
-                            <th className="py-2 pr-4 font-medium">Medications</th>
-                            <th className="py-2 font-medium">PDF</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {prescriptions.map((doc) => {
-                            const data = doc.extractedData as PrescriptionExtractedData;
-                            const date = data?.prescriptionDate ?? doc.documentDate ?? doc.processedAt;
-                            const doctor = data?.doctorName ?? "—";
-                            const meds = data?.medications?.map((m) => `${m.name} ${m.dosage} ${m.frequency}`).join("; ") ?? "—";
-                            const pdfUrl = hasPdfPath(doc.attachmentId) ? `${basePath}${doc.attachmentId}` : null;
-                            return (
-                              <tr key={doc.id} className="border-b border-light-green-subtle/30">
-                                <td className="py-2 pr-4 text-light-green-dark">{date ? formatDate(String(date), "short") : "—"}</td>
-                                <td className="py-2 pr-4">{doctor}</td>
-                                <td className="py-2 pr-4 max-w-xs truncate" title={meds}>{meds}</td>
-                                <td className="py-2">
-                                  {pdfUrl ? (
-                                    <span className="flex items-center gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={() => setPreviewUrl(pdfUrl)}
-                                        className="text-light-green-primary hover:text-light-green-dark transition-colors"
-                                        aria-label="Preview PDF"
-                                        title="Preview"
-                                      >
-                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                      </button>
-                                      <a
-                                        href={pdfUrl}
-                                        download
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-light-green-primary hover:text-light-green-dark transition-colors"
-                                        aria-label="Download PDF"
-                                        title="Download"
-                                      >
-                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
-                                        </svg>
-                                      </a>
-                                    </span>
-                                  ) : (
-                                    <span className="text-light-green-light-grey">—</span>
-                                  )}
-                                </td>
+                  <div className="space-y-6">
+                    <section>
+                      <h2 className="text-sm font-medium text-light-green-dark mb-2">Prescription documents</h2>
+                      {prescriptions.length === 0 ? (
+                        <p className="text-sm text-light-green-dark-grey py-4">{NO_DATA_MSG}</p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm text-left">
+                            <thead>
+                              <tr className="border-b border-light-green-subtle/60 text-light-green-dark-grey">
+                                <th className="py-2 pr-4 font-medium">Date</th>
+                                <th className="py-2 pr-4 font-medium">Doctor</th>
+                                <th className="py-2 pr-4 font-medium">Medications</th>
+                                <th className="py-2 font-medium">PDF</th>
                               </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )
+                            </thead>
+                            <tbody>
+                              {prescriptions.map((doc) => {
+                                const data = doc.extractedData as PrescriptionExtractedData;
+                                const date = data?.prescriptionDate ?? doc.documentDate ?? doc.processedAt;
+                                const doctor = data?.doctorName ?? "—";
+                                const meds = data?.medications?.map((m) => `${m.name} ${m.dosage} ${m.frequency}`).join("; ") ?? "—";
+                                const pdfUrl = hasPdfPath(doc.attachmentId) ? `${basePath}${doc.attachmentId}` : null;
+                                return (
+                                  <tr key={doc.id} className="border-b border-light-green-subtle/30">
+                                    <td className="py-2 pr-4 text-light-green-dark">{date ? formatDate(String(date), "short") : "—"}</td>
+                                    <td className="py-2 pr-4">{doctor}</td>
+                                    <td className="py-2 pr-4 max-w-xs truncate" title={meds}>{meds}</td>
+                                    <td className="py-2">
+                                      {pdfUrl ? (
+                                        <span className="flex items-center gap-2">
+                                          <button
+                                            type="button"
+                                            onClick={() => setPreviewUrl(pdfUrl)}
+                                            className="text-light-green-primary hover:text-light-green-dark transition-colors"
+                                            aria-label="Preview PDF"
+                                            title="Preview"
+                                          >
+                                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                          </button>
+                                          <a
+                                            href={pdfUrl}
+                                            download
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-light-green-primary hover:text-light-green-dark transition-colors"
+                                            aria-label="Download PDF"
+                                            title="Download"
+                                          >
+                                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                                            </svg>
+                                          </a>
+                                        </span>
+                                      ) : (
+                                        <span className="text-light-green-light-grey">—</span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </section>
+                    <section>
+                      <h2 className="text-sm font-medium text-light-green-dark mb-2">Medications</h2>
+                      {medicationsByStartDate.length === 0 ? (
+                        <p className="text-sm text-light-green-dark-grey py-4">{NO_DATA_MSG}</p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm text-left">
+                            <thead>
+                              <tr className="border-b border-light-green-subtle/60 text-light-green-dark-grey">
+                                <th className="py-2 pr-4 font-medium">Name</th>
+                                <th className="py-2 pr-4 font-medium">Dosage</th>
+                                <th className="py-2 pr-4 font-medium">Frequency</th>
+                                <th className="py-2 pr-4 font-medium">Status</th>
+                                <th className="py-2 pr-4 font-medium">Start date</th>
+                                <th className="py-2 pr-4 font-medium">End date</th>
+                                <th className="py-2 font-medium">Origin</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {medicationsByStartDate.map((m) => (
+                                <tr key={m.id} className="border-b border-light-green-subtle/30">
+                                  <td className="py-2 pr-4 text-light-green-dark">{m.name}</td>
+                                  <td className="py-2 pr-4">{m.dosage ?? "—"}</td>
+                                  <td className="py-2 pr-4">{m.frequency ?? "—"}</td>
+                                  <td className="py-2 pr-4">{m.isActive ? "Active" : "Inactive"}</td>
+                                  <td className="py-2 pr-4">{m.startDate ? formatDate(m.startDate, "short") : "—"}</td>
+                                  <td className="py-2 pr-4">{m.endDate ? formatDate(m.endDate, "short") : "—"}</td>
+                                  <td className="py-2">{m.sourceDocumentId ? "From prescription" : "Manual"}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </section>
+                  </div>
                 ) : examsCombined.length === 0 ? (
                   <p className="text-sm text-light-green-dark-grey py-4">{NO_DATA_MSG}</p>
                 ) : (
