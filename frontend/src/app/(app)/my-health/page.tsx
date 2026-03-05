@@ -13,6 +13,7 @@ import type { Exam, Medication } from "@/types/health";
 import type { UserHealthDocument } from "@/types/health";
 import type { PrescriptionExtractedData } from "@/types/health";
 import UserPanel from "@/components/health/UserPanel";
+import MedicationCalendar from "@/components/health/MedicationCalendar";
 import PdfPreviewModal from "@/components/health/PdfPreviewModal";
 import RhombusLoader from "@/components/ui/RhombusLoader";
 
@@ -123,7 +124,8 @@ export default function MyHealthPage() {
         <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start">
           <UserPanel profile={profile} vitals={vitals} dailyVitals={dailyVitals} />
 
-          <main className="min-w-0 flex-1">
+          <main className="min-w-0 flex-1 flex flex-col gap-6">
+            <MedicationCalendar events={[]} />
             <div className="rounded-xl border border-light-green-subtle/60 bg-white shadow-card overflow-hidden">
               <div className="flex border-b border-light-green-subtle/40">
                 {tabs.map(({ id, label }) => (
