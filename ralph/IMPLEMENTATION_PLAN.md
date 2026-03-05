@@ -13,14 +13,13 @@
 
 | # | Task ID | Summary | Depends on | Spec |
 |---|---------|---------|------------|------|
-| 1 | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web when reminder enabled but vitals not logged today | — | notifications |
-| 2 | CAL-1 | Reusable MedicationCalendar component (month grid, dots, today, month nav) | — | my-health-medication-calendar-ui |
-| 3 | CAL-2 | Place calendar on My Health below UserPanel, above tabs | CAL-1 | my-health-medication-calendar-ui |
-| 4 | CAL-3 | Map medications + reminderTimes to calendar dots | CAL-1, getMedications/settings | my-health-medication-calendar-ui |
-| 5 | CAL-4 | Dot click → details view (date/time + medications at slot) | CAL-1 | my-health-medication-calendar-ui |
-| 6 | CAL-5 | Month navigation + "Today" control | CAL-1 | my-health-medication-calendar-ui |
-| 7 | CAL-6 | Inline note when medication reminders disabled | CAL-2, getSettings | my-health-medication-calendar-ui |
-| 8 | CAL-7 | Empty and loading states for calendar | CAL-1 | my-health-medication-calendar-ui |
+| 1 | CAL-1 | Reusable MedicationCalendar component (month grid, dots, today, month nav) | — | my-health-medication-calendar-ui |
+| 2 | CAL-2 | Place calendar on My Health below UserPanel, above tabs | CAL-1 | my-health-medication-calendar-ui |
+| 3 | CAL-3 | Map medications + reminderTimes to calendar dots | CAL-1, getMedications/settings | my-health-medication-calendar-ui |
+| 4 | CAL-4 | Dot click → details view (date/time + medications at slot) | CAL-1 | my-health-medication-calendar-ui |
+| 5 | CAL-5 | Month navigation + "Today" control | CAL-1 | my-health-medication-calendar-ui |
+| 6 | CAL-6 | Inline note when medication reminders disabled | CAL-2, getSettings | my-health-medication-calendar-ui |
+| 7 | CAL-7 | Empty and loading states for calendar | CAL-1 | my-health-medication-calendar-ui |
 
 ---
 
@@ -110,9 +109,9 @@ All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Res
 
 - [x] **NOTIF-UI-4** Show dismissable info bubble on `/recommendations` when daily recommendations notifications not enabled
 
-- [ ] **NOTIF-VITALS-CATCHUP** Vitals reminder catch-up bubble on web (PWA)
+- [x] **NOTIF-VITALS-CATCHUP** Vitals reminder catch-up bubble on web (PWA)
   - Spec AC: "If the user did **not receive or act on** the scheduled vitals reminder, then **on the next authenticated web session** (PWA) a **non-modal bubble** appears reminding them to log vitals. Bubble copy: 'You haven't logged vitals today. Tap here to add them.' with link/action to vitals form. Once shown for a given day and dismissed or acted upon, the bubble does **not** reappear again that day."
-  - On relevant pages (e.g. `/add` or dashboard) when on web/PWA: check vitals reminder enabled, user has not logged vitals today, bubble not dismissed for today; show dismissable bubble with link to add vitals. Persist "shown today" in sessionStorage keyed by date.
+  - Implemented: `VitalsCatchUpBubble` in app shell (web-only); sessionStorage key `vitals-catchup-bubble-dismissed-YYYY-MM-DD`; mark dismissed when user submits vitals for today or dismisses.
 
 ---
 
@@ -153,11 +152,11 @@ All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Res
 
 | # | Task ID | Summary | Spec |
 |---|---------|---------|------|
-| 1 | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web | notifications |
-| 2 | CAL-1 | Reusable MedicationCalendar component | my-health-medication-calendar-ui |
-| 3 | CAL-2 | Place calendar on My Health below UserPanel | my-health-medication-calendar-ui |
-| 4 | CAL-3 | Map medications + reminderTimes to calendar dots | my-health-medication-calendar-ui |
-| 5 | CAL-4 | Dot click → details view | my-health-medication-calendar-ui |
-| 6 | CAL-5 | Month navigation + "Today" control | my-health-medication-calendar-ui |
-| 7 | CAL-6 | Inline note when medication reminders disabled | my-health-medication-calendar-ui |
-| 8 | CAL-7 | Empty and loading states for calendar | my-health-medication-calendar-ui |
+| — | NOTIF-VITALS-CATCHUP | Vitals catch-up bubble on web (done) | notifications |
+| 1 | CAL-1 | Reusable MedicationCalendar component | my-health-medication-calendar-ui |
+| 2 | CAL-2 | Place calendar on My Health below UserPanel | my-health-medication-calendar-ui |
+| 3 | CAL-3 | Map medications + reminderTimes to calendar dots | my-health-medication-calendar-ui |
+| 4 | CAL-4 | Dot click → details view | my-health-medication-calendar-ui |
+| 5 | CAL-5 | Month navigation + "Today" control | my-health-medication-calendar-ui |
+| 6 | CAL-6 | Inline note when medication reminders disabled | my-health-medication-calendar-ui |
+| 7 | CAL-7 | Empty and loading states for calendar | my-health-medication-calendar-ui |

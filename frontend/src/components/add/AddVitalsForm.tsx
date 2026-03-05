@@ -6,6 +6,7 @@ import { useBasePath } from "@/lib/base-path";
 import { UnauthorizedError } from "@/lib/api";
 import { createVital } from "@/services/patients.service";
 import { todayISO } from "@/lib/format";
+import { markVitalsCatchUpDismissedForToday } from "@/lib/vitals-catchup-bubble";
 import { addPendingVital } from "@/lib/pwa/offline-store";
 import { syncPendingVitals, requestBackgroundSync } from "@/lib/pwa/sync-manager";
 import type { CreateVitalPayload } from "@/types/vital";
@@ -97,6 +98,9 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
         await requestBackgroundSync();
         setQueued(true);
         setSuccess(true);
+        if (payload.date === todayISO()) {
+          markVitalsCatchUpDismissedForToday();
+        }
         onSuccess?.();
       } catch {
         setError("Failed to save vital for offline sync.");
@@ -110,6 +114,9 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
     try {
       await createVital(payload);
       setSuccess(true);
+      if (payload.date === todayISO()) {
+        markVitalsCatchUpDismissedForToday();
+      }
       onSuccess?.();
     } catch (err) {
       if (err instanceof UnauthorizedError) {
@@ -122,6 +129,9 @@ export default function AddVitalsForm({ onSuccess, onBack }: Props) {
         await requestBackgroundSync();
         setQueued(true);
         setSuccess(true);
+        if (payload.date === todayISO()) {
+          markVitalsCatchUpDismissedForToday();
+        }
         onSuccess?.();
       } catch {
         setError(err instanceof Error ? err.message : "Failed to save vital");

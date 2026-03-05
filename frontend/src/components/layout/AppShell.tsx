@@ -13,6 +13,7 @@ import { useIsSmallViewport } from "@/lib/use-viewport-size";
 import { LoadingPulse } from "@/components/design";
 import ManifestUpdateBanner from "@/components/pwa/ManifestUpdateBanner";
 import OfflineBanner from "@/components/pwa/OfflineBanner";
+import VitalsCatchUpBubble from "@/components/notifications/VitalsCatchUpBubble";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
 import DesignFooter from "@/components/design/DesignFooter";
 import GoToTop from "@/components/design/GoToTop";
@@ -88,7 +89,10 @@ function AppShellInner({ children }: AppShellProps) {
       <div className="flex h-dvh min-h-screen flex-col overflow-hidden bg-light-green-light">
         <OfflineBanner />
         {!isWidget && <Header showNavInDesktop={!showBottomMenu} />}
-        <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</main>
+        <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <VitalsCatchUpBubble />
+          {children}
+        </main>
         {!isWidget && (
           <DesignFooter
             title={
