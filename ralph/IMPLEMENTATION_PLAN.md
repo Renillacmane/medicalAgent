@@ -132,7 +132,7 @@ All tasks done for: **Add Vitals & Lab Results — API**, **Add Vitals & Lab Res
 - [x] **CAL-4** Dot interaction: details view (date/time + list of medications at that slot)
   - Spec AC: Clicking a dot opens a details view (popover/panel/modal) with date/time and list of medications (name, dosage, frequency; optional start/end). Close via backdrop or Escape.
 
-- [ ] **CAL-5** Month navigation and "Today" control
+- [x] **CAL-5** Month navigation and "Today" control
   - Previous/next month; "Today" jumps to current month and highlights today. Dots recalculated for visible month.
 
 - [x] **CAL-6** When medication reminders disabled in settings: show inline note, still show schedule
