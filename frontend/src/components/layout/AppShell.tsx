@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { App } from "@capacitor/app";
 import { hasValidToken } from "@/lib/auth";
 import { useBasePath } from "@/lib/base-path";
 import { useWidgetMode } from "@/lib/widget-mode";
 import { useIsNativeCapacitor } from "@/lib/capacitor/use-is-native-capacitor";
 import { initNativePushNotifications } from "@/lib/push-notifications";
+import { syncPendingVitals } from "@/lib/pwa/sync-manager";
 import { usePWAInstall, PWAInstallProvider } from "@/lib/pwa/install-context";
 import { useMobileBrowser } from "@/lib/use-mobile-browser";
 import { useIsSmallViewport } from "@/lib/use-viewport-size";
@@ -74,6 +76,33 @@ function AppShellInner({ children }: AppShellProps) {
       // Best-effort: failures should not block the app shell.
     });
   }, [authChecked, isNative]);
+
+  // When app returns to foreground (native only), drain pending vitals queue.
+  useEffect(() => {
+    if (isNative !== true) return;
+
+    let cancelled = false;
+    let handle: { remove: () => Promise<void> } | null = null;
+
+    App.addListener("appStateChange", ({ isActive }) => {
+      if (isActive) {
+        syncPendingVitals().catch(() => {
+          // Best-effort: failures leave queued vitals for next attempt.
+        });
+      }
+    }).then((h) => {
+      if (cancelled) {
+        h.remove().catch(() => {});
+      } else {
+        handle = h;
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      handle?.remove().catch(() => {});
+    };
+  }, [isNative]);
 
   if (!authChecked) {
     return (
