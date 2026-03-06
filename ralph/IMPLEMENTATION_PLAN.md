@@ -13,7 +13,6 @@
 
 | # | Task ID | Summary | Depends on | Spec |
 |---|---------|---------|------------|------|
-| 1 | OFFLINE-MOBILE-2 | (Optional) Use `@capacitor/network` for more reliable connectivity detection on native; trigger sync on status change to connected | OFFLINE-MOBILE-1 | offline-vitals-submission-mobile |
 
 ---
 
@@ -49,7 +48,7 @@
 
 ### Optional
 
-- [ ] **OFFLINE-MOBILE-2** Use `@capacitor/network` to detect connectivity more reliably on mobile; sync when status changes to connected
+- [x] **OFFLINE-MOBILE-2** Use `@capacitor/network` to detect connectivity more reliably on mobile; sync when status changes to connected
 
 ---
 
