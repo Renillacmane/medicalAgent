@@ -5,13 +5,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { App } from "@capacitor/app";
 import { hasValidToken } from "@/lib/auth";
 import { useBasePath } from "@/lib/base-path";
-import { useWidgetMode } from "@/lib/widget-mode";
+import { useIsWidget } from "@/lib/widget-mode";
+import { useCompactMode } from "@/lib/use-compact-mode";
 import { useIsNativeCapacitor } from "@/lib/capacitor/use-is-native-capacitor";
 import { initNativePushNotifications } from "@/lib/push-notifications";
 import { syncPendingVitals } from "@/lib/pwa/sync-manager";
-import { usePWAInstall, PWAInstallProvider } from "@/lib/pwa/install-context";
-import { useMobileBrowser } from "@/lib/use-mobile-browser";
-import { useIsSmallViewport } from "@/lib/use-viewport-size";
+import { PWAInstallProvider } from "@/lib/pwa/install-context";
 import { LoadingPulse } from "@/components/design";
 import ManifestUpdateBanner from "@/components/pwa/ManifestUpdateBanner";
 import OfflineBanner from "@/components/pwa/OfflineBanner";
@@ -37,28 +36,31 @@ function AppShellInner({ children }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const basePath = useBasePath();
-  const isWidget = useWidgetMode();
+  const isWidget = useIsWidget();
+  const isCompact = useCompactMode();
   const isNative = useIsNativeCapacitor();
-  const pwa = usePWAInstall(); // now correctly inside the provider
-  const isMobileBrowser = useMobileBrowser();
-  const isSmallViewport = useIsSmallViewport();
 
-  // Determine if bottom menu should be shown
-  const showBottomMenu = (() => {
-    // Always show in Native (including when isNative is null - still checking) and widget mode
-    if (isNative !== false || isWidget) return true;
+  // for future reference
+  // const pwa = usePWAInstall(); // now correctly inside the provider
+  // const isMobileBrowser = useMobileBrowser();
+  // const isSmallViewport = useIsSmallViewport();
 
-    // In PWA standalone: show if format is small, else behave like desktop
-    if (pwa?.isStandalone) {
-      return isSmallViewport;
-    }
+  // // Determine if bottom menu should be shown
+  // const showBottomMenu = (() => {
+  //   // Always show in Native (including when isNative is null - still checking) and widget mode
+  //   if (isNative !== false || isWidget) return true;
 
-    // In mobile browser: show bottom menu
-    if (isMobileBrowser) return true;
+  //   // In PWA standalone: show if format is small, else behave like desktop
+  //   if (pwa?.isStandalone) {
+  //     return isSmallViewport;
+  //   }
 
-    // Desktop: don't show bottom menu (navigation will be in Header)
-    return false;
-  })();
+  //   // In mobile browser: show bottom menu
+  //   if (isMobileBrowser) return true;
+
+  //   // Desktop: don't show bottom menu (navigation will be in Header)
+  //   return false;
+  // })();
 
   useEffect(() => {
     if (!hasValidToken()) {
@@ -117,12 +119,18 @@ function AppShellInner({ children }: AppShellProps) {
       <ManifestUpdateBanner />
       <div className="flex h-dvh min-h-screen flex-col overflow-hidden bg-light-green-light">
         <OfflineBanner />
-        {!isWidget && <Header showNavInDesktop={!showBottomMenu} />}
+        {!isWidget && (
+          <Header
+            showNavInDesktop={!isCompact}
+            isCompact={isCompact}
+            onAboutClick={() => setAboutOpen(true)}
+          />
+        )}
         <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <VitalsCatchUpBubble />
           {children}
         </main>
-        {!isWidget && (
+        {!isWidget && !isCompact && (
           <DesignFooter
             title={
               <>
@@ -136,8 +144,8 @@ function AppShellInner({ children }: AppShellProps) {
             withTopMargin={false}
           />
         )}
-        {!isWidget && <GoToTop scrollContainerRef={mainRef} bottomOffset={showBottomMenu ? "5rem" : "1.5rem"} />}
-        {showBottomMenu && <AppNav />}
+        {!isWidget && <GoToTop scrollContainerRef={mainRef} bottomOffset={isCompact ? "5rem" : "1.5rem"} />}
+        {isCompact && <AppNav />}
       </div>
       {!isWidget && <InstallPrompt />}
       <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />

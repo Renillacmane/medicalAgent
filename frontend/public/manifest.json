@@ -1,6 +1,6 @@
 {
   "id": "/pwa/dashboard",
-  "version": "3",
+  "version": "4",
   "name": "Healthia - Medical Agent",
   "short_name": "Healthia",
   "description": "AI-powered daily health recommendations",
@@ -28,5 +28,5 @@
       "purpose": "maskable"
     }
   ],
-  "scope": "/pwa"
+  "scope": "/"
 }

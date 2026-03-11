@@ -75,12 +75,10 @@ export default function Widget({ embedBaseUrl = EMBED_BASE }: WidgetProps) {
                 <HealthIcon className="h-5 w-5" />
               </button>
               {/*
-                "Open in new tab" uses a real <a> tag with target="_blank".
-                /dashboard is OUTSIDE the PWA scope ("/pwa"), so it opens in a regular browser tab.
-                Relative path is sufficient - browser resolves it relative to current origin.
+                "Open in new tab" uses ?widget=1 so the new tab uses compact layout (bottom nav, minimal chrome).
               */}
               <a
-                href="/dashboard"
+                href="/dashboard?widget=1"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"

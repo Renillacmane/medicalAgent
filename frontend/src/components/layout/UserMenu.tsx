@@ -30,9 +30,11 @@ function getDisplayName(profile: PatientProfile | null): string {
 type UserMenuProps = {
   /** When true, menu is inside mobile sheet so use full width / compact style if needed */
   variant?: "desktop" | "mobile";
+  /** Called when user chooses About (opens About modal) */
+  onAboutClick?: () => void;
 };
 
-export default function UserMenu({ variant = "desktop" }: UserMenuProps) {
+export default function UserMenu({ variant = "desktop", onAboutClick }: UserMenuProps) {
   const router = useRouter();
   const pathname = usePathname();
   const basePath = useBasePath();
@@ -112,6 +114,18 @@ export default function UserMenu({ variant = "desktop" }: UserMenuProps) {
         >
           My profile
         </Link>
+        {onAboutClick && (
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onAboutClick();
+            }}
+            className="block w-full px-4 py-2 text-left text-sm text-light-green-dark-grey transition-colors hover:bg-light-green-light hover:text-light-green-primary"
+          >
+            About
+          </button>
+        )}
         <button
           type="button"
           onClick={handleSignOut}
@@ -167,6 +181,19 @@ export default function UserMenu({ variant = "desktop" }: UserMenuProps) {
           >
             My profile
           </Link>
+          {onAboutClick && (
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onAboutClick();
+              }}
+              role="menuitem"
+              className="block w-full px-4 py-2.5 text-left text-sm text-light-green-dark-grey transition-colors hover:bg-light-green-light hover:text-light-green-primary"
+            >
+              About
+            </button>
+          )}
           <button
             type="button"
             onClick={handleSignOut}

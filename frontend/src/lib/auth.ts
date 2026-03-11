@@ -1,13 +1,35 @@
 /**
- * Client-side auth helpers. Token is in localStorage (client-only).
- * Use hasValidToken() before loading protected pages to redirect if session is lost.
+ * Client-side auth helpers.
+ *
+ * Token can be stored either in localStorage (\"remember on this device\") or
+ * in sessionStorage (cleared when the browser is closed). Use hasValidToken()
+ * before loading protected pages to redirect if session is lost.
  */
 
 const TOKEN_KEY = "access_token";
 
-export function getToken(): string | null {
+function getFromStorage(): string | null {
   if (typeof window === "undefined") return null;
+  // Prefer sessionStorage (non-remembered sessions) first, then fallback to localStorage.
+  const sessionToken = sessionStorage.getItem(TOKEN_KEY);
+  if (sessionToken) return sessionToken;
   return localStorage.getItem(TOKEN_KEY);
+}
+
+export function getToken(): string | null {
+  return getFromStorage();
+}
+
+/**
+ * Store the token either in localStorage (remember = true) or sessionStorage (remember = false).
+ */
+export function setToken(token: string, remember: boolean): void {
+  if (typeof window === "undefined") return;
+  // Always clear previous locations to avoid stale copies.
+  localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+  const target = remember ? localStorage : sessionStorage;
+  target.setItem(TOKEN_KEY, token);
 }
 
 /**
@@ -44,4 +66,5 @@ export function hasValidToken(): boolean {
 export function clearToken(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
 }

@@ -14,15 +14,13 @@ function getInitialWidgetMode(): boolean {
 }
 
 /**
- * True when the app is running inside the widget iframe (or was opened with ?widget=1).
- * Used to hide header/footer and show a minimal layout.
+ * True when the app is in widget context (iframe or opened with ?widget=1).
+ * Used only for widget display: hide header/footer/install, show minimal chrome.
  * Persists in sessionStorage so client-side nav inside the iframe keeps widget mode.
- * 
- * IMPORTANT: Widget mode is automatically cleared when:
- * - Running in PWA standalone mode (we're in the installed app, not an iframe)
- * - Navigating to PWA scope URLs (/pwa/*) from outside an iframe
+ *
+ * Cleared when: PWA standalone, or navigating to /pwa/* outside an iframe.
  */
-export function useWidgetMode(): boolean {
+export function useIsWidget(): boolean {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [isWidget, setIsWidget] = useState(getInitialWidgetMode);
@@ -63,3 +61,6 @@ export function useWidgetMode(): boolean {
 
   return isWidget;
 }
+
+/** @deprecated Use useIsWidget() instead. */
+export const useWidgetMode = useIsWidget;

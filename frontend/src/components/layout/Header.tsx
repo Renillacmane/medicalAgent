@@ -8,14 +8,27 @@ import { NAV_TABS, NavTabId } from "./nav-config";
 import InstallButton from "@/components/pwa/InstallButton";
 import UserMenu from "./UserMenu";
 
+export { QUOTE_TEXT };
+
+const QUOTE_TEXT = '"Big Things Happen When You Do the Little Things Right" — Don Gabor';
+
 type HeaderProps = {
   onClose?: () => void;
   onBack?: () => void;
   showBack?: boolean;
   showNavInDesktop?: boolean;
+  isCompact?: boolean;
+  onAboutClick?: () => void;
 };
 
-export default function Header({ onClose, onBack, showBack, showNavInDesktop = false }: HeaderProps) {
+export default function Header({
+  onClose,
+  onBack,
+  showBack,
+  showNavInDesktop = false,
+  isCompact = false,
+  onAboutClick,
+}: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const basePath = useBasePath();
@@ -29,20 +42,27 @@ export default function Header({ onClose, onBack, showBack, showNavInDesktop = f
     <header className="shrink-0 border-b border-light-green-subtle/50 bg-white shadow-card">
       <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
-            {showBack && onBack && (
-              <button
-                type="button"
-                onClick={onBack}
-                className="shrink-0 rounded-lg p-1.5 text-light-green-dark-grey transition-colors hover:bg-light-green-light/50 hover:text-light-green-primary"
-                aria-label="Go back"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              {showBack && onBack && (
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="shrink-0 rounded-lg p-1.5 text-light-green-dark-grey transition-colors hover:bg-light-green-light/50 hover:text-light-green-primary"
+                  aria-label="Go back"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+              <h1 className="truncate text-lg font-semibold text-light-green-primary">Healthia</h1>
+            </div>
+            {isCompact && (
+              <p className="truncate pl-8 text-xs text-light-green-dark-grey sm:pl-0" aria-hidden>
+                {QUOTE_TEXT}
+              </p>
             )}
-            <h1 className="truncate text-lg font-semibold text-light-green-primary">Healthia</h1>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {showNavInDesktop && (
@@ -70,7 +90,7 @@ export default function Header({ onClose, onBack, showBack, showNavInDesktop = f
                       </Link>
                     );
                   })}
-                  <UserMenu variant="desktop" />
+                  <UserMenu variant="desktop" onAboutClick={onAboutClick} />
                 </nav>
                 {/* Mobile sandwich menu */}
                 <div className="relative sm:hidden">
@@ -115,7 +135,7 @@ export default function Header({ onClose, onBack, showBack, showNavInDesktop = f
                           </Link>
                         );
                       })}
-                      <UserMenu variant="mobile" />
+                      <UserMenu variant="mobile" onAboutClick={onAboutClick} />
                     </div>
                   )}
                 </div>

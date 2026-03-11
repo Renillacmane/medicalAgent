@@ -1,4 +1,5 @@
 import { apiUrl } from "./config";
+import { getToken } from "./auth";
 import {
   setCachedData,
   getCachedData,
@@ -11,16 +12,6 @@ export class UnauthorizedError extends Error {
     super("Please sign in again.");
     this.name = "UnauthorizedError";
   }
-}
-
-/**
- * Client-side auth API helpers. Token is read from localStorage (client-only),
- * so data fetching runs in Client Components (useEffect). For server-side
- * fetching or Server Actions we'd need auth via cookie.
- */
-function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("access_token");
 }
 
 export function authFetch(

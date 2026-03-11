@@ -47,6 +47,7 @@ You can add **constraints**, **out-of-scope**, or **references** (e.g. to `docs/
 | User sees daily recommendations | API that returns daily recommendations | `daily-recommendations-api.md` |
 | User sees daily recommendations | Recommendations page and charts | `daily-recommendations-ui.md` |
 | User sees daily recommendations | Loading and error behavior | `recommendations-error-loading.md` |
+| User records vitals on mobile while offline | Offline vitals queue and sync (Capacitor) | `offline-vitals-submission-mobile.md` |
 
 See the example spec files in this folder (or in `docs/ralph-wiggum-loop.md`) for the exact structure.
 
