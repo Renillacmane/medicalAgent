@@ -28,5 +28,8 @@
       "purpose": "maskable"
     }
   ],
-  "scope": "/"
+  "scope": "/pwa/",
+  "launch_handler": {
+    "client_mode": "navigate-new"
+  }
 }
