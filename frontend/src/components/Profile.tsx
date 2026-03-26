@@ -279,7 +279,7 @@ export default function Profile() {
       <div className="mx-auto max-w-6xl px-4 py-8 ">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold text-light-green-dark">My profile</h2>
+            <h2 className="text-xl font-semibold text-light-green-dark">My profile</h2>
             <p className="mt-1 text-sm text-light-green-dark-grey">Your account and health profile.</p>
           </div>
           {!isEditing ? (
