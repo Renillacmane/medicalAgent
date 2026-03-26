@@ -13,6 +13,7 @@ import {
 import { getSettings, getVitals } from "@/services/patients.service";
 import { UnauthorizedError } from "@/lib/api";
 import type { Vital } from "@/types/vital";
+import NotificationBubble from "./NotificationBubble";
 
 function hasVitalsForToday(vitals: Vital[], todayStr: string): boolean {
   return vitals.some((v) => (v.date ?? "").slice(0, 10) === todayStr);
@@ -77,8 +78,8 @@ export default function VitalsCatchUpBubble() {
   if (!checked || !show) return null;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-6">
-      <div className="flex items-start justify-between gap-4 rounded-lg border border-light-green-subtle/80 bg-white/80 p-4 shadow-card">
+    <div className="mx-auto max-w-6xl px-4 pt-4">
+      <NotificationBubble className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-light-green-dark">
             You haven&apos;t logged vitals today. Tap here to add them.
@@ -99,7 +100,7 @@ export default function VitalsCatchUpBubble() {
         >
           Dismiss
         </button>
-      </div>
+      </NotificationBubble>
     </div>
   );
 }

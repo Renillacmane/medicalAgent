@@ -24,7 +24,7 @@ export default function RegisterPage() {
       
       {/* Main content */}
       <main className="flex-1">
-        <div className="mx-auto w-full max-w-md flex-1 flex-col items-center justify-center p-6 flex">
+        <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center p-6">
           <div className="w-full">
             <div className="mb-8 text-center">
               <h1 className="mb-2 text-3xl font-bold text-light-green-dark">Create account</h1>

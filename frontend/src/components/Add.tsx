@@ -83,9 +83,9 @@ export default function Add() {
   }
 
   return (
-    <div className="min-h-screen bg-light-green-light px-4 py-8 sm:px-6">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="text-2xl font-semibold text-light-green-dark">Add</h1>
+    <div className="min-h-screen bg-light-green-light sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 py-8 ">
+        <h2 className="text-2xl font-semibold text-light-green-dark">Update your health data</h2>
         <p className="mt-1 text-sm text-light-green-dark-grey">Choose what type of data to add.</p>
 
         <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">

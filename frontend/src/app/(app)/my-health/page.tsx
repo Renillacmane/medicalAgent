@@ -183,7 +183,7 @@ export default function MyHealthPage() {
   return (
     <div className="min-h-screen bg-light-green-light pb-20">
       <div className="mx-auto max-w-6xl px-4 py-6">
-        <h1 className="text-xl font-semibold text-light-green-dark">My Health</h1>
+        <h2 className="text-xl font-semibold text-light-green-dark">My Health</h2>
         <p className="mt-1 text-sm text-light-green-dark-grey">
           Your vitals, prescriptions, and exams in one place.
         </p>

@@ -159,7 +159,7 @@ export default function UserPanel({ profile, vitals, dailyVitals }: UserPanelPro
             <dd className="font-medium text-light-green-dark">{height != null ? `${height} cm` : "—"}</dd>
           </div>
           <div className="flex justify-between py-1.5">
-            <dt className="text-light-green-dark-grey">Weight</dt>
+            <dt className="text-light-green-dark-grey">Weight (latest)</dt>
             <dd className="font-medium text-light-green-dark">{weight != null ? `${weight} kg` : "—"}</dd>
           </div>
           <div className="flex justify-between py-1.5">

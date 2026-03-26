@@ -2,6 +2,7 @@
 
 import { usePWAInstall } from "@/lib/pwa/install-context";
 import { useMobileBrowser } from "@/lib/use-mobile-browser";
+import NotificationBubble from "@/components/notifications/NotificationBubble";
 
 function isIOS(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -27,7 +28,7 @@ export default function InstallPrompt() {
   const instruction = "Tap the Share button, then 'Add to Home Screen'.";
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 z-50 mx-auto max-w-sm animate-[slideUp_0.3s_ease-out] rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
+    <NotificationBubble className="fixed bottom-20 left-4 right-4 z-50 mx-auto max-w-sm animate-[slideUp_0.3s_ease-out]">
       <p className="text-sm font-medium text-slate-800">
         Add Healthia to your home screen
       </p>
@@ -54,6 +55,6 @@ export default function InstallPrompt() {
           {canInstall ? "Not now" : "Got it"}
         </button>
       </div>
-    </div>
+    </NotificationBubble>
   );
 }
