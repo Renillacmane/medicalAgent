@@ -8,7 +8,7 @@ async function bootstrap() {
   // CORS on adapter so preflight (OPTIONS) and PATCH are allowed from browser.
   adapter.enableCors({
     origin: true,
-    credentials: true,
+    credentials: false,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });

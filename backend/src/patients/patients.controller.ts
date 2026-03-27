@@ -11,6 +11,7 @@ import {
   NotFoundException,
   BadRequestException,
   Req,
+  Res,
 } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -30,6 +31,8 @@ import { PDFParse } from 'pdf-parse';
 import type { LoadParameters } from 'pdf-parse';
 import * as path from 'path';
 import * as fs from 'fs';
+import type { FastifyReply } from 'fastify';
+import { createReadStream } from 'fs';
 
 @Controller('patients')
 @UseGuards(JwtAuthGuard)
@@ -155,17 +158,18 @@ export class PatientsController {
       throw new BadRequestException('Failed to parse PDF file');
     }
 
-    // Default: public/documents (dev). Set DOCUMENTS_UPLOAD_DIR to frontend/out/documents for static export deploy.
-    const publicDir =
-      process.env.DOCUMENTS_UPLOAD_DIR || path.join(process.cwd(), '..', 'frontend', 'public', 'documents');
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true });
+    // Store uploads on the backend server (not inside the frontend build output).
+    const uploadDir = process.env.DOCUMENTS_UPLOAD_DIR || path.join(process.cwd(), 'uploads', 'documents');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
 
     const filename = `${Date.now()}_${String(data.filename)}`;
-    const filePath = path.join(publicDir, filename);
+    const filePath = path.join(uploadDir, filename);
     fs.writeFileSync(filePath, buffer);
-    const attachmentId = `/documents/${filename}`;
+    // Keep a stable storage key in DB; the frontend will fetch the PDF via an authenticated API route.
+    // This is intentionally NOT a public/static path.
+    const attachmentId = `file:${filename}`;
 
     const processors: Record<
       string,
@@ -209,6 +213,45 @@ export class PatientsController {
       status: result.status,
       message: 'Document uploaded successfully',
     };
+  }
+
+  /**
+   * Stream a stored PDF file for an owned document.
+   * Frontend should use this for preview/download when backend is a separate server.
+   */
+  @Get('documents/file/:id')
+  async getDocumentFile(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+    @Res({ passthrough: false }) reply: FastifyReply,
+  ) {
+    void req;
+    const doc = user as User & { id?: string; _id?: { toString(): string } };
+    const userId = doc.id ?? doc._id?.toString?.() ?? '';
+
+    const record = await this.patientsService.getDocument(userId, id);
+    if (!record) throw new NotFoundException('Document not found');
+
+    const uploadDir = process.env.DOCUMENTS_UPLOAD_DIR || path.join(process.cwd(), 'uploads', 'documents');
+
+    // attachmentId format: "file:<storedFilename>"
+    const raw = record.attachmentId || '';
+    const storedFilename = raw.startsWith('file:') ? raw.slice('file:'.length) : path.basename(raw);
+    const safeName = path.basename(storedFilename);
+    const filePath = path.join(uploadDir, safeName);
+
+    if (!fs.existsSync(filePath)) {
+      throw new NotFoundException('File not found');
+    }
+
+    reply.header('Content-Type', 'application/pdf');
+    // Use original filename to improve download name.
+    reply.header(
+      'Content-Disposition',
+      `inline; filename="${encodeURIComponent(record.originalFilename || 'document.pdf')}"`,
+    );
+    return reply.send(createReadStream(filePath));
   }
 
   @Get('medications')

@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePath } from "@/lib/base-path";
-import { UnauthorizedError } from "@/lib/api";
+import { UnauthorizedError, authFetch } from "@/lib/api";
 import { getProfile, getVitals, getExams, getDocuments, getMedications, getSettings } from "@/services/patients.service";
 import { formatDate } from "@/lib/format";
 import { getDailyVitals } from "@/lib/daily-vitals";
@@ -158,14 +158,55 @@ export default function MyHealthPage() {
     { id: "exams", label: "Exams" },
   ];
 
-  const hasPdfPath = (attachmentId: string) => attachmentId.startsWith("/");
+  const documentFilePath = (documentId: string) => `/patients/documents/file/${encodeURIComponent(documentId)}`;
+
+  async function downloadDocument(documentId: string, filename: string) {
+    try {
+      const res = await authFetch(documentFilePath(documentId));
+      if (!res.ok) throw new Error("Failed to download PDF");
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename || "document.pdf";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to download PDF");
+    }
+  }
+
+  async function openDocumentPreview(documentId: string, filename: string) {
+    try {
+      const res = await authFetch(documentFilePath(documentId));
+      if (!res.ok) throw new Error("Failed to load PDF preview");
+      const blob = await res.blob();
+      setPreviewUrl((prev) => {
+        if (prev && prev.startsWith("blob:")) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(blob);
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load PDF preview");
+    }
+  }
+
+  function closePreview() {
+    setPreviewUrl((prev) => {
+      if (prev && prev.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }
 
   // Exams tab: legacy UserExam records + lab result documents (from uploads)
   const examsFromDocs: Exam[] = labResults.map((doc) => ({
     id: doc.id,
     name: doc.originalFilename || "Lab results",
     date: doc.documentDate ?? doc.processedAt ?? "",
-    attachmentId: doc.attachmentId,
+    // For documents, PDFs are fetched through the backend file endpoint (see pdfUrl below).
+    attachmentId: "",
   }));
   const examsCombined: Exam[] = [...examsFromDocs, ...exams].sort((a, b) => {
     const dA = new Date(a.date).getTime();
@@ -319,18 +360,18 @@ export default function MyHealthPage() {
                                 const date = data?.prescriptionDate ?? doc.documentDate ?? doc.processedAt;
                                 const doctor = data?.doctorName ?? "—";
                                 const meds = data?.medications?.map((m) => `${m.name} ${m.dosage} ${m.frequency}`).join("; ") ?? "—";
-                                const pdfUrl = hasPdfPath(doc.attachmentId) ? `${basePath}${doc.attachmentId}` : null;
+                                const canOpenPdf = Boolean(doc.id);
                                 return (
                                   <tr key={doc.id} className="border-b border-light-green-subtle/30">
                                     <td className="py-2 pr-4 text-light-green-dark">{date ? formatDate(String(date), "short") : "—"}</td>
                                     <td className="py-2 pr-4">{doctor}</td>
                                     <td className="py-2 pr-4 max-w-xs truncate" title={meds}>{meds}</td>
                                     <td className="py-2">
-                                      {pdfUrl ? (
+                                      {canOpenPdf ? (
                                         <span className="flex items-center gap-2">
                                           <button
                                             type="button"
-                                            onClick={() => setPreviewUrl(pdfUrl)}
+                                            onClick={() => openDocumentPreview(doc.id, doc.originalFilename)}
                                             className="text-light-green-primary hover:text-light-green-dark transition-colors"
                                             aria-label="Preview PDF"
                                             title="Preview"
@@ -340,11 +381,9 @@ export default function MyHealthPage() {
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
                                           </button>
-                                          <a
-                                            href={pdfUrl}
-                                            download
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                          <button
+                                            type="button"
+                                            onClick={() => downloadDocument(doc.id, doc.originalFilename)}
                                             className="text-light-green-primary hover:text-light-green-dark transition-colors"
                                             aria-label="Download PDF"
                                             title="Download"
@@ -352,7 +391,7 @@ export default function MyHealthPage() {
                                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
                                             </svg>
-                                          </a>
+                                          </button>
                                         </span>
                                       ) : (
                                         <span className="text-light-green-light-grey">—</span>
@@ -416,19 +455,20 @@ export default function MyHealthPage() {
                       </thead>
                       <tbody>
                         {examsCombined.map((exam) => {
-                          const pdfUrl = exam.attachmentId && hasPdfPath(exam.attachmentId)
-                            ? `${basePath}${exam.attachmentId}`
-                            : null;
+                          const canOpenPdf =
+                            exam.id && labResults.some((d) => d.id === exam.id)
+                              ? true
+                              : false;
                           return (
                             <tr key={exam.id} className="border-b border-light-green-subtle/30">
                               <td className="py-2 pr-4 text-light-green-dark">{exam.name}</td>
                               <td className="py-2 pr-4">{formatDate(exam.date, "short")}</td>
                               <td className="py-2">
-                                {pdfUrl ? (
+                                {canOpenPdf ? (
                                   <span className="flex items-center gap-2">
                                     <button
                                       type="button"
-                                      onClick={() => setPreviewUrl(pdfUrl)}
+                                      onClick={() => openDocumentPreview(exam.id, exam.name)}
                                       className="text-light-green-primary hover:text-light-green-dark transition-colors"
                                       aria-label="Preview PDF"
                                       title="Preview"
@@ -438,11 +478,9 @@ export default function MyHealthPage() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                       </svg>
                                     </button>
-                                    <a
-                                      href={pdfUrl}
-                                      download
-                                      target="_blank"
-                                      rel="noopener noreferrer"
+                                    <button
+                                      type="button"
+                                      onClick={() => downloadDocument(exam.id, exam.name)}
                                       className="text-light-green-primary hover:text-light-green-dark transition-colors"
                                       aria-label="Download PDF"
                                       title="Download"
@@ -450,7 +488,7 @@ export default function MyHealthPage() {
                                       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
                                       </svg>
-                                    </a>
+                                    </button>
                                   </span>
                                 ) : (
                                   <span className="text-light-green-light-grey">—</span>
@@ -470,7 +508,7 @@ export default function MyHealthPage() {
       </div>
 
       <CalendarSlotDetailsModal slot={selectedSlot} onClose={() => setSelectedSlot(null)} />
-      <PdfPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />
+      <PdfPreviewModal url={previewUrl} onClose={closePreview} />
     </div>
   );
 }
